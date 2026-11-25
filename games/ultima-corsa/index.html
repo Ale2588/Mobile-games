@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ultima Corsa — illustrata</title>
+<link rel="icon" href="art/appicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0a0e1c; --ink: #e9e4d6; --muted: #8b8aa3; --amber: #f4b545; --amber2: #ffd98a;
+    --blood: #d23447; --block: #121831; --street: #1f2745;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--night); color: var(--ink);
+    font-family: Inter, system-ui, sans-serif; overscroll-behavior: none; }
+  #app { max-width: 460px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column;
+    padding: 10px 12px 12px; user-select: none; }
+  header { display: flex; flex-direction: column; gap: 8px; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; letter-spacing: .5px; line-height: 1; }
+  .cond { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .cond b { color: var(--amber2); font-weight: 600; }
+  .score { text-align: right; }
+  .score .n { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; color: var(--amber); line-height: .9; }
+  .score .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sky { position: relative; height: 18px; border-radius: 9px; overflow: hidden;
+    background: linear-gradient(90deg, #0d1330 0%, #1b1f4a 55%, #5b3a6b 80%, #e98b5a 100%); }
+  .sky .done { position: absolute; inset: 0 auto 0 0; background: rgba(10,14,28,.0); border-right: 2px solid var(--amber2); }
+  .sky .lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 8px; font-size: 10px; color: rgba(255,255,255,.8); letter-spacing: .5px; }
+  .row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .oil { display: flex; gap: 4px; align-items: center; }
+  .oil svg { width: 16px; height: 20px; }
+  .chips { display: flex; gap: 5px; }
+  .chip { font-size: 11px; padding: 4px 7px; border-radius: 999px; background: #161c36; color: var(--muted);
+    display: flex; gap: 4px; align-items: center; border: 1px solid transparent; }
+  .chip.active { border-color: rgba(244,181,69,.5); color: var(--ink); }
+  .chip .s { color: var(--ink); font-weight: 700; }
+  .chip .m { font-weight: 700; color: var(--amber); }
+  .chip .m.lost { color: var(--blood); text-decoration: line-through; }
+  #boardWrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; margin-top: 8px; }
+  svg#board { width: 100%; height: 100%; max-height: 100%; touch-action: manipulation; }
+  .msg { min-height: 38px; font-size: 13px; text-align: center; color: var(--ink); display: flex;
+    align-items: center; justify-content: center; padding: 4px 8px; line-height: 1.3; }
+  .msg .bad { color: #ff7a88; } .msg .good { color: var(--amber2); }
+  footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  button { font: inherit; border: 0; cursor: pointer; }
+  .ghost { background: #161c36; color: var(--ink); padding: 10px 14px; border-radius: 12px; font-size: 13px; }
+  .primary { background: var(--amber); color: #1b1305; padding: 14px 18px; border-radius: 14px; font-weight: 700; font-size: 15px; width: 100%; }
+  .overlay { position: fixed; inset: 0; background: rgba(5,7,15,.86); display: flex; align-items: flex-end; justify-content: center; z-index: 10; }
+  .overlay.hidden { display: none; }
+  .sheet { width: 100%; max-width: 460px; background: #10152b; border-radius: 22px 22px 0 0; padding: 22px 20px 20px;
+    max-height: 92dvh; overflow: auto; border-top: 1px solid #2a3159; }
+  .sheet h2 { font-family: 'Cormorant Garamond', serif; font-size: 30px; margin: 0 0 4px; }
+  .sheet .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+  .rules { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 10px; }
+  .rules li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; font-size: 14px; line-height: 1.35; align-items: start; }
+  .rules svg { width: 30px; height: 30px; }
+  .night { background: #161c36; border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+  .night b { color: var(--amber2); }
+  table.res { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 14px; }
+  table.res td { padding: 8px 4px; border-bottom: 1px solid #222a4d; }
+  table.res td.r { text-align: right; } table.res .tot td { border: 0; font-weight: 700; font-size: 18px; }
+  .big { font-family: 'Cormorant Garamond', serif; font-size: 56px; color: var(--amber); line-height: 1; font-weight: 700; }
+  .btns { display: grid; gap: 8px; }
+  .btns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tiny { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+  .tools { display: flex; gap: 6px; align-items: center; }
+  .card { width: 58px; height: 58px; border-radius: 12px; background: #161c36; color: var(--ink); border: 1.5px solid #2a3159;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 9.5px; padding: 0; }
+  .card svg { width: 24px; height: 24px; }
+  .card.empty { background: transparent; border: 1.5px dashed #262d52; }
+  .card.armed { border-color: var(--amber); background: #2a2410; color: var(--amber2); transform: translateY(-4px); }
+  .card:disabled { opacity: .35; }
+  .prog { display: flex; flex-direction: column; gap: 3px; margin-left: 2px; }
+  .prog i { width: 6px; height: 6px; border-radius: 50%; background: #262d52; display: block; }
+  .prog i.on { background: var(--amber); }
+  .offer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 12px; }
+  .ocard { background: #161c36; border: 1.5px solid #2f3768; border-radius: 16px; padding: 14px 12px; text-align: left; color: var(--ink); }
+  .ocard svg { width: 40px; height: 40px; }
+  .ocard .t { font-weight: 700; font-size: 15px; margin: 6px 0 4px; color: var(--amber2); }
+  .ocard .d { font-size: 12.5px; color: #c9c5d8; line-height: 1.35; }
+  .ocard .k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+  .tool { background: #161c36; color: var(--ink); padding: 8px 12px; border-radius: 12px; font-size: 13px;
+    display: flex; align-items: center; gap: 6px; border: 1.5px solid transparent; }
+  .tool svg { width: 20px; height: 20px; }
+  .tool.armed { border-color: var(--amber); background: #2a2410; color: var(--amber2); }
+  .tool:disabled { opacity: .3; }
+  @keyframes warn { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  .warn { animation: warn .9s infinite; }
+  .msg.hint { background: #18203f; border: 1px solid rgba(244,181,69,.45); border-radius: 14px; padding: 10px 12px;
+    min-height: 58px; font-size: 14px; text-align: left; justify-content: flex-start; margin-top: 6px; }
+  .msg.hint b { color: var(--amber2); }
+  @keyframes nudge { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-5px) } 75% { transform: translateX(5px) } }
+  .nudge { animation: nudge .3s 2; }
+  @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+  .bob { animation: bob 1s infinite; transform-box: fill-box; }
+  .secondary { background: transparent; color: var(--amber2); padding: 10px; font-size: 14px; width: 100%; }
+  .oil.many svg { width: 12px; height: 17px; }
+  .chips { gap: 4px !important; }
+  .chip { padding: 4px 6px !important; font-size: 10.5px !important; }
+  .ups { display: flex; gap: 3px; margin-left: 6px; }
+  .ups svg { width: 20px; height: 20px; }
+  .modes { margin-bottom: 14px; gap: 6px !important; }
+  .daily { display: flex; align-items: center; gap: 12px; background: #161c36; border-radius: 12px; padding: 12px 14px; margin-top: 12px; }
+  .daily .nm { font-weight: 700; font-size: 14.5px; }
+  .daily .dt { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .daily .ghost { border: 1px solid rgba(244,181,69,.5); color: var(--amber2); font-weight: 600; flex-shrink: 0; }
+  .lv .need { font-size: 11px; color: var(--muted); text-align: right; max-width: 110px; line-height: 1.2; }
+  .levels { display: grid; gap: 6px; margin: 0 0 6px; position: relative; }
+  .lv { display: grid; grid-template-columns: 12px 1fr auto; gap: 12px; align-items: center; text-align: left;
+    background: #161c36; color: var(--ink); border-radius: 12px; padding: 8px 14px; border: 1px solid transparent; }
+  .lv .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .lv .dt { font-size: 11px; color: var(--muted); }
+  .lv .nm { font-size: 14.5px; font-weight: 600; }
+  .lv .st { font-size: 15px; letter-spacing: 1px; color: var(--amber); }
+  .lv .st .off { color: #2f3768; }
+  .lv.locked { opacity: .4; }
+  .lv.next { border-color: rgba(244,181,69,.6); }
+  .idate { color: var(--amber2); font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+  .story { font-family: 'Cormorant Garamond', serif; font-size: 20px; line-height: 1.3; margin: 6px 0 14px; color: #ddd7c6; font-style: italic; }
+  .goal { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .goal b { color: var(--amber); }
+  .estars { font-size: 30px; letter-spacing: 4px; color: var(--amber); margin: 2px 0 6px; }
+  .estars .off { color: #2f3768; }
+  .banner { margin: -22px -20px 14px; height: 190px; background-size: cover; background-position: center 30%; border-radius: 22px 22px 0 0;
+    position: relative; }
+  .banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(16,21,43,0) 40%, #10152b 100%); border-radius: inherit; }
+  .banner.tall { height: 240px; }
+  #ovSplash { background: #0a0e1c center / cover no-repeat; align-items: flex-end; }
+  #ovSplash .inner { width: 100%; max-width: 460px; padding: 0 22px 34px; background: linear-gradient(180deg, rgba(10,14,28,0) 0%, rgba(10,14,28,.92) 45%); padding-top: 120px; }
+  #ovSplash h1 { font-family: 'Cormorant Garamond', serif; font-size: 52px; margin: 0; line-height: 1; color: #f6efdd; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
+  #ovSplash p { color: #d9d2bf; margin: 8px 0 20px; font-size: 15px; }
+  .card img { width: 26px; height: 26px; object-fit: contain; }
+  .rules img { width: 30px; height: 30px; object-fit: contain; }
+  .ups img { width: 20px; height: 20px; object-fit: contain; }
+  .ent { transition: transform .28s ease, opacity .3s; }
+  @keyframes pulse { 0%,100% { opacity: .35 } 50% { opacity: .8 } }
+  .reach { animation: pulse 1.6s infinite; }
+  @keyframes flick { 0%,100% { opacity: 1 } 50% { opacity: .9 } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="top">
+      <div>
+        <div class="title">Ultima Corsa</div>
+        <div class="cond" id="cond"></div>
+      </div>
+      <div class="score"><div class="n" id="score">0</div><div class="l" id="scoreLbl">punti</div></div>
+    </div>
+    <div class="sky"><div class="done" id="skyDone"></div><div class="lbl"><span>☾</span><span id="turnLbl"></span><span>☀</span></div></div>
+    <div class="row2">
+      <div class="oil"><span id="oil" class="oil"></span><span id="ups" class="ups"></span></div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </header>
+  <div id="boardWrap"><svg id="board" viewBox="0 0 360 504" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div class="msg" id="msg"></div>
+  <footer>
+    <button class="ghost" id="btnRules">?</button>
+    <div class="tools" id="hand"></div>
+    <button class="ghost" id="btnRestart">↺</button>
+  </footer>
+</div>
+
+<div class="overlay" id="ovSplash">
+  <div class="inner">
+    <h1>Ultima Corsa</h1>
+    <p>Sei il lampionaio. Stanotte la città è dei vampiri: riporta tutti a casa prima dell'alba.</p>
+    <button class="primary" id="btnSplash">Avanti</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovRules">
+  <div class="sheet">
+    <h2>Ultima Corsa</h2>
+    <div class="sub">Sei il lampionaio. Stanotte la città è dei vampiri: porta la gente al tram prima dell'alba.</div>
+    <ul class="rules" id="rulesList"></ul>
+    <div class="night" id="nightBox"></div>
+    <div class="btns">
+      <button class="primary" id="btnStart">Torna alla notte</button>
+      <button class="ghost" id="btnSeason">La stagione</button>
+      <button class="secondary" id="btnTut">Rifai la prima notte guidata</button>
+    </div>
+    <div class="tiny">Prototipo v0.8</div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovSeason">
+  <div class="sheet">
+    <div class="banner" id="seasonBanner"></div>
+    <h2>La stagione</h2>
+    <div class="sub">Dieci capitoli, dall'equinozio al solstizio. <b style="color:var(--amber2)">Perdi al massimo 4 persone in un capitolo per aprire il successivo.</b></div>
+    <div class="btns modes">
+      <button class="primary" id="btnContinue">Gioca</button>
+    </div>
+    <div class="levels" id="levelList"></div>
+    <div class="daily">
+      <div><div class="nm">Sfida di oggi</div><div class="dt">Fuori dalla stagione: ogni giorno una città nuova, uguale per tutti.</div></div>
+      <button class="ghost" id="btnDaily2">Gioca</button>
+    </div>
+    <button class="secondary" id="btnTut2">Rifai la prima notte guidata</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovIntro">
+  <div class="sheet">
+    <div class="banner tall" id="inBanner"></div>
+    <div class="idate" id="inDate"></div>
+    <h2 id="inName"></h2>
+    <div class="story" id="inStory"></div>
+    <div class="night" id="inNews"></div>
+    <div class="goal" id="inGoal"></div>
+    <div class="btns">
+      <button class="primary" id="btnGo">Inizia la notte</button>
+      <button class="secondary" id="btnBack">Torna alla stagione</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovEnd">
+  <div class="sheet">
+    <h2 id="endTitle">L'alba</h2>
+    <div class="sub" id="endSub"></div>
+    <div class="big" id="endScore"></div>
+    <div class="estars" id="endStars"></div>
+    <table class="res" id="endTable"></table>
+    <div class="btns">
+      <button class="primary" id="btnDaily" style="display:none">Inizia la stagione</button>
+      <button class="primary" id="btnNext" style="display:none">Prossima notte</button>
+      <button class="primary" id="btnCopy">Copia il risultato</button>
+      <div class="btns2">
+        <button class="ghost" id="btnAgain">Rigioca la notte</button>
+        <button class="ghost" id="btnRandom">Notte casuale</button>
+      </div>
+    </div>
+    <div class="tiny" id="best"></div>
+  </div>
+</div>
+
+<script>/* Ultima Corsa — logica di gioco (pura, senza DOM) — v0.6 */
+(function (root) {
+  const COLS = 5, ROWS = 7, LAMP_MAX = 5, OIL_MAX = 4, MAX_WAIT = 9, HAND_MAX = 4;
+  const N = COLS * ROWS;
+  const id = (r, c) => r * COLS + c;
+  const rowOf = n => Math.floor(n / COLS);
+  const colOf = n => n % COLS;
+  const DISTRICTS = [{ key: 'colle', name: 'Colle' }, { key: 'mercato', name: 'Mercato' }, { key: 'porto', name: 'Porto' }];
+  const districtOf = n => { const r = rowOf(n); return r <= 1 ? 0 : r <= 4 ? 1 : 2; };
+  const DROWS = [[0, 1], [2, 3, 4], [5, 6]];
+  const CONDS = [
+    { key: 'quieta', name: 'Notte quieta', desc: 'Nessuna regola speciale.' },
+    { key: 'nebbia', name: 'Nebbia', desc: 'Vedi le frecce dei vampiri solo entro 2 passi da te.' },
+    { key: 'luna', name: 'Luna piena', desc: 'I vampiri fanno 2 passi per turno.' },
+    { key: 'sciopero', name: 'Sciopero', desc: 'La fermata del Mercato è chiusa.' },
+  ];
+  const NB = [];
+  for (let n = 0; n < N; n++) {
+    const r = rowOf(n), c = colOf(n), a = [];
+    if (r > 0) a.push(id(r - 1, c));
+    if (r < ROWS - 1) a.push(id(r + 1, c));
+    if (c > 0) a.push(id(r, c - 1));
+    if (c < COLS - 1) a.push(id(r, c + 1));
+    NB.push(a);
+  }
+  const manhattan = (a, b) => Math.abs(rowOf(a) - rowOf(b)) + Math.abs(colOf(a) - colOf(b));
+
+  // ---------- carte e potenziamenti ----------
+  const CARDS = {
+    falo: { name: 'Falò', kind: 'move', desc: 'Illumina anche i 4 incroci intorno e scaccia i vampiri che ci stanno.' },
+    campana: { name: 'Campana', kind: 'move', desc: 'In questo turno tutti i passeggeri fanno 2 passi.' },
+    corsa: { name: 'Corsa', kind: 'move', desc: 'In questo turno puoi fare 2 incroci in più.' },
+    gas: { name: 'Lampione a gas', kind: 'move', desc: 'Il lampione dove arrivi resta acceso fino all\'alba.' },
+    tanica: { name: 'Tanica', kind: 'instant', desc: 'Subito +3 latte d\'olio, anche oltre il pieno.' },
+    croce: { name: 'Croce', kind: 'instant', desc: 'Subito il vampiro più vicino a te fugge.' },
+  };
+  const UPGRADES = {
+    birra: { name: 'Pinta di birra', desc: 'Per il resto della notte cammini 1 incrocio in più per turno (al massimo 3).' },
+    lanterna: { name: 'Lanterna grande', desc: 'Per il resto della notte i tuoi lampioni durano 2 turni in più.' },
+    borraccia: { name: 'Borraccia', desc: 'Per il resto della notte porti 2 latte in più, e fai subito il pieno.' },
+  };
+
+  // ---------- la stagione: dall'equinozio al solstizio ----------
+  const DAILY = { vtypes: ['ombra', 'ombra', 'conte', 'sposa'], turns: 20, pax: 0.6, big: 0.4, vampEvery: 3, maxV: 5, canal: null, items: 2, itemEvery: 5, ups: ['birra', 'lanterna', 'borraccia'], cards: Object.keys(CARDS), hand: ['falo', 'campana'] };
+  const LEVELS = [
+    { date: '21 marzo', name: 'Equinozio', seed: 3105, cond: 'quieta', turns: 16, pax: 0.55, big: 0.3, vampEvery: 2, maxV: 5, v0: 2, vampRefill: true, canal: false, items: 3, itemEvery: 6,
+      ups: ['birra'], cards: ['falo', 'campana', 'tanica'], hand: ['falo'], stars: [8, 16, 24],
+      story: 'Notte e giorno durano uguale. In città si parla di gente che non torna a casa.', news: 'Sul terreno trovi dei <b>?</b>: passaci sopra per scoprire cosa nascondono.' },
+    { date: '18 aprile', name: 'Il canale', seed: 4180, cond: 'quieta', turns: 15, pax: 0.6, big: 0.35, vampEvery: 2, maxV: 4, v0: 2, vampRefill: true, canal: true, items: 3, itemEvery: 6,
+      ups: ['birra', 'borraccia'], cards: ['falo', 'campana', 'tanica', 'croce'], hand: ['falo'], stars: [8, 16, 24],
+      story: 'Le acque del canale sono salite. Restano pochi ponti, per tutti.', news: 'Il <b>canale</b> si attraversa solo sui ponti, anche per i vampiri.' },
+    { date: '24 maggio', name: 'La festa', seed: 5240, cond: 'quieta', turns: 14, pax: 0.75, big: 0.5, vampEvery: 2, maxV: 4, v0: 2, vampRefill: true, canal: null, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: ['falo', 'campana', 'tanica', 'croce', 'corsa'], hand: ['campana'], stars: [10, 20, 30],
+      story: 'È la notte della festa: tanta gente per strada, e tutti vogliono tornare in tram.', news: 'Nuova carta: la <b>Corsa</b>.' },
+    { date: '21 giugno', name: 'La notte più corta', seed: 6213, cond: 'quieta', turns: 12, pax: 0.9, big: 0.6, vampEvery: 3, maxV: 5, v0: 2, vampRefill: true, canal: null, items: 3, itemEvery: 4,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: ['falo', 'campana', 'tanica', 'croce', 'corsa'], hand: ['campana'], stars: [6, 14, 24],
+      story: 'Il solstizio d\'estate. L\'alba arriva presto, ma la città è piena.', news: 'Solo <b>12 turni</b>: è una corsa.' },
+    { date: '10 agosto', name: 'San Lorenzo', seed: 8102, cond: 'luna', turns: 13, pax: 0.8, big: 0.5, vampEvery: 2, maxV: 6, v0: 2, vampRefill: true, canal: null, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['croce'], stars: [9, 20, 32],
+      story: 'Tutti col naso all\'insù a guardare le stelle cadenti. Anche la luna è piena.', news: '<b>Luna piena</b>: i vampiri fanno 2 passi per turno. Nuova carta: il <b>Lampione a gas</b>.' },
+    { date: '15 settembre', name: 'Lo sciopero', seed: 9153, cond: 'sciopero', turns: 15, pax: 0.65, big: 0.4, vampEvery: 3, maxV: 4, v0: 2, vampRefill: true, canal: null, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['falo', 'campana'], stars: [8, 16, 26],
+      story: 'I tranvieri incrociano le braccia. Il Mercato resta senza fermata.', news: '<b>Sciopero</b>: la fermata del Mercato è chiusa.' },
+    { date: '23 settembre', name: 'Equinozio d\'autunno', seed: 9233, cond: 'quieta', turns: 16, pax: 0.6, big: 0.4, vampEvery: 2, maxV: 4, v0: 3, vampRefill: true, canal: null, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['falo', 'campana'], stars: [9, 18, 28],
+      vtypes: ['ombra', 'ombra', 'conte'], story: 'Da stanotte il buio vince sulla luce. I vampiri sono di più.', news: 'Arriva <b>il Conte</b>: ogni 3 turni diventa pipistrello e <b>vola sopra la luce</b> (freccia viola).' },
+    { date: '31 ottobre', name: 'La nebbia', seed: 10312, cond: 'nebbia', turns: 18, pax: 0.55, big: 0.4, vampEvery: 2, maxV: 4, v0: 2, vampRefill: true, canal: null, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['falo', 'campana'], stars: [9, 20, 32],
+      vtypes: ['ombra', 'ombra', 'conte'], story: 'La nebbia sale dal canale e copre tutto. Si vede solo vicino.', news: '<b>Nebbia</b>: vedi le frecce dei vampiri solo entro 2 passi da te.' },
+    { date: '23 novembre', name: 'Le notti lunghe', seed: 11232, cond: 'luna', turns: 20, pax: 0.5, big: 0.3, vampEvery: 3, maxV: 4, v0: 3, vampRefill: true, canal: true, items: 3, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['falo', 'campana'], stars: [8, 16, 26],
+      vtypes: ['ombra', 'conte', 'sposa'], story: 'Le strade si svuotano presto. Chi è fuori, è fuori da solo.', news: 'Arriva <b>la Sposa</b>: ogni turno <b>spegne un lampione</b> accanto a sé (cerchio rosso con la ×).' },
+    { date: '21 dicembre', name: 'Il solstizio', seed: 12211, cond: 'nebbia', turns: 24, pax: 0.55, big: 0.4, vampEvery: 3, maxV: 4, v0: 3, vampRefill: true, canal: true, items: 4, itemEvery: 5,
+      ups: ['birra', 'borraccia', 'lanterna'], cards: Object.keys(CARDS), hand: ['falo', 'campana'], stars: [10, 20, 32],
+      vtypes: ['ombra', 'conte', 'sposa'], story: 'La notte più lunga dell\'anno. Se la città arriva all\'alba, la primavera tornerà.', news: '<b>24 turni</b>, nebbia, canale e tutti e tre i vampiri. Il gran finale.' },
+  ];
+
+  function rand(st) {
+    let t = (st.s = (st.s + 0x6D2B79F5) | 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  const pick = (st, arr) => arr[Math.floor(rand(st) * arr.length)];
+
+  const openStops = st => st.stops.filter(s => !(st.cond === 'sciopero' && s.d === 1)).map(s => s.node);
+  const isStop = (st, n) => openStops(st).includes(n);
+  const isLit = (st, n) => isStop(st, n) || st.lamps[n] > 0;
+  const vampAt = (st, n) => st.vamps.some(v => v.node === n);
+  const lampMax = (st, n) => (st.plazas.includes(n) ? LAMP_MAX * 2 : LAMP_MAX) + (st.lampBonus || 0);
+  const waiting = st => st.pass.filter(p => p.status === 'wait');
+  const activeDistrict = st => {
+    const t = typeof st === 'number' ? st : st.turn, T = typeof st === 'number' ? 20 : st.turns;
+    return t <= T / 3 ? 0 : t <= (2 * T) / 3 ? 1 : 2;
+  };
+
+  function bfs(st, sources, passable) {
+    const dist = new Array(N).fill(-1), par = new Array(N).fill(-1), q = [];
+    for (const s of sources) { dist[s] = 0; q.push(s); }
+    while (q.length) {
+      const u = q.shift();
+      const nb = st.adj[u].slice().sort((a, b) => (isLit(st, b) ? 1 : 0) - (isLit(st, a) ? 1 : 0));
+      for (const v of nb) if (dist[v] < 0 && passable(v)) { dist[v] = dist[u] + 1; par[v] = u; q.push(v); }
+    }
+    return { dist, par };
+  }
+
+  // ---------- città ----------
+  function genCity(st) {
+    const adj = NB.map(a => a.slice()), off = new Array(N).fill(false);
+    const cut = (a, b) => { adj[a] = adj[a].filter(x => x !== b); adj[b] = adj[b].filter(x => x !== a); };
+    const link = (a, b) => { if (!adj[a].includes(b)) adj[a].push(b); if (!adj[b].includes(a)) adj[b].push(a); };
+    const connected = () => {
+      let start = -1, total = 0;
+      for (let n = 0; n < N; n++) if (!off[n]) { total++; if (start < 0) start = n; }
+      const seen = new Set([start]), q = [start];
+      while (q.length) { const u = q.shift(); for (const v of adj[u]) if (!seen.has(v)) { seen.add(v); q.push(v); } }
+      return seen.size === total;
+    };
+    st.stops = DROWS.map((rows, d) => ({ node: id(d === 1 ? 3 : pick(st, rows), 1 + Math.floor(rand(st) * 3)), d }));
+    const stopSet = new Set(st.stops.map(s => s.node));
+    st.canal = null;
+    const wantCanal = st.cfg.canal === null ? rand(st) < 0.5 : st.cfg.canal;
+    if (wantCanal) {
+      const r = rand(st) < 0.5 ? 1 : 4;
+      const bridges = [0, 1, 2, 3, 4].sort(() => rand(st) - 0.5).slice(0, 2);
+      for (let c = 0; c < COLS; c++) if (!bridges.includes(c)) cut(id(r, c), id(r + 1, c));
+      st.canal = { r, bridges };
+    }
+    st.parks = [];
+    const nParks = Math.floor(rand(st) * 3);
+    for (let k = 0, tries = 0; k < nParks && tries < 20; tries++) {
+      const n = Math.floor(rand(st) * N);
+      if (off[n] || stopSet.has(n) || colOf(n) === 0 || colOf(n) === COLS - 1) continue;
+      const saved = adj[n].slice();
+      off[n] = true; for (const m of saved) cut(n, m);
+      if (connected() && saved.every(m => adj[m].length >= 1)) { st.parks.push(n); k++; }
+      else { off[n] = false; for (const m of saved) link(n, m); }
+    }
+    const edges = [];
+    for (let a = 0; a < N; a++) for (const b of adj[a]) if (a < b) edges.push([a, b]);
+    edges.sort(() => rand(st) - 0.5);
+    for (const [a, b] of edges) {
+      if (rand(st) > 0.22) continue;
+      if (st.canal && rowOf(a) === st.canal.r && b === a + COLS) continue;
+      const minA = stopSet.has(a) ? 2 : 1, minB = stopSet.has(b) ? 2 : 1;
+      if (adj[a].length <= minA || adj[b].length <= minB) continue;
+      cut(a, b);
+      if (!connected()) link(a, b);
+    }
+    st.plazas = [];
+    const pc = [];
+    for (let n = 0; n < N; n++) if (!off[n] && !stopSet.has(n) && adj[n].length >= 3) pc.push(n);
+    const nPl = 1 + (rand(st) < 0.5 ? 1 : 0);
+    for (let k = 0; k < nPl && pc.length; k++) st.plazas.push(pc.splice(Math.floor(rand(st) * pc.length), 1)[0]);
+    st.adj = adj; st.off = off;
+  }
+
+  // ---------- comparse ----------
+  function spawnPassenger(st, d, size) {
+    size = size || 1;
+    const ok = n => !st.off[n] && !isStop(st, n) && !isLit(st, n) && n !== st.pos && !vampAt(st, n) &&
+      !waiting(st).some(p => p.node === n) && !st.items.some(i => i.node === n) &&
+      st.vamps.every(v => manhattan(v.node, n) >= 3);
+    let cand = [];
+    for (let n = 0; n < N; n++) if (districtOf(n) === d && ok(n)) cand.push(n);
+    if (!cand.length) for (let n = 0; n < N; n++) if (ok(n)) cand.push(n);
+    if (!cand.length) return;
+    const node = pick(st, cand);
+    spawnAt(st, node, size);
+    st.events.push({ type: 'spawnP', d: districtOf(node), size });
+  }
+  function spawnVampire(st, d) {
+    const edge = n => colOf(n) === 0 || colOf(n) === COLS - 1 || rowOf(n) === 0 || rowOf(n) === ROWS - 1;
+    const ok = n => !st.off[n] && edge(n) && !isLit(st, n) && !vampAt(st, n) && n !== st.pos &&
+      !waiting(st).some(p => manhattan(p.node, n) < 3) && manhattan(n, st.pos) >= 2;
+    let cand = [];
+    for (let n = 0; n < N; n++) if (districtOf(n) === d && ok(n)) cand.push(n);
+    if (!cand.length) for (let n = 0; n < N; n++) if (ok(n)) cand.push(n);
+    if (!cand.length) return;
+    const type = pick(st, st.cfg.vtypes || ['ombra']);
+    addVampire(st, pick(st, cand), type);
+    st.events.push({ type: 'spawnV', d, vtype: type });
+  }
+  function spawnAt(st, node, size) {
+    for (let i = 0; i < size; i++) st.pass.push({ id: 'p' + st.nextId++, node, d: districtOf(node), status: 'wait' });
+  }
+  function addVampire(st, node, type) {
+    type = type || 'ombra';
+    st.vamps.push({ id: 'v' + st.nextId++, node, plan: [], type, cd: type === 'conte' ? 2 : 0, fly: false, douse: -1 });
+  }
+
+  function itemKind(st) {
+    const ups = st.cfg.ups.filter(u => (u === 'birra' ? st.move < 3 : u === 'lanterna' ? !st.lampBonus : u === 'borraccia' ? st.oilMax === OIL_MAX : false));
+    if (ups.length && rand(st) < 0.35) return { cat: 'up', kind: pick(st, ups) };
+    return { cat: 'card', kind: pick(st, st.cfg.cards) };
+  }
+  function placeItem(st, near) {
+    const ok = n => !st.off[n] && !isStop(st, n) && n !== st.pos && !vampAt(st, n) &&
+      !waiting(st).some(p => p.node === n) && !st.items.some(i => i.node === n || manhattan(i.node, n) < 2) &&
+      manhattan(n, st.pos) >= 2 && (near === undefined || districtOf(n) === near);
+    const cand = [];
+    for (let n = 0; n < N; n++) if (ok(n)) cand.push(n);
+    if (!cand.length) return;
+    st.items.push({ id: 'i' + st.nextId++, node: pick(st, cand), ...itemKind(st) });
+  }
+
+  function planVampires(st) {
+    const steps = st.cond === 'luna' ? 2 : 1;
+    const reserved = new Set();
+    for (const v of st.vamps) {
+      const passable = n => !isLit(st, n) && n !== st.pos && !(vampAt(st, n) && n !== v.node) && !reserved.has(n);
+      const { dist, par } = bfs(st, [v.node], passable);
+      let target = -1, best = 1e9;
+      for (const p of waiting(st)) if (dist[p.node] > 0 && dist[p.node] < best) { best = dist[p.node]; target = p.node; }
+      if (target < 0 && !isLit(st, st.pos))
+        for (const a of st.adj[st.pos]) if (dist[a] > 0 && dist[a] < best) { best = dist[a]; target = a; }
+      if (target < 0) {
+        const ad = activeDistrict(st);
+        const c = [];
+        for (let n = 0; n < N; n++) if (dist[n] > 0 && districtOf(n) === ad) c.push(n);
+        if (!c.length) for (let n = 0; n < N; n++) if (dist[n] > 0) c.push(n);
+        if (c.length) { c.sort((a, b) => dist[a] - dist[b]); target = c[Math.floor(rand(st) * Math.min(3, c.length))]; }
+      }
+      v.plan = []; v.fly = false; v.douse = -1;
+      if (target >= 0) {
+        const path = [];
+        for (let n = target; n !== v.node && n >= 0; n = par[n]) path.unshift(n);
+        v.plan = path.slice(0, steps);
+      }
+      if (v.type === 'conte' && v.cd <= 0) planFlight(st, v, reserved);
+      if (v.plan.length) reserved.add(v.plan[v.plan.length - 1]);
+      if (v.type === 'sposa') {
+        const at = v.plan.length ? v.plan[v.plan.length - 1] : v.node;
+        const lamps = st.adj[at].filter(n => st.lamps[n] > 0 && !isStop(st, n) && !st.perm.includes(n));
+        if (lamps.length) {
+          lamps.sort((a, b) => (waiting(st).some(p => p.node === b) - waiting(st).some(p => p.node === a)) || (st.lamps[a] - st.lamps[b]));
+          v.douse = lamps[0];
+        }
+      }
+    }
+  }
+  // Il Conte in volo: fino a 2 incroci, anche sopra la luce, ma deve atterrare al buio
+  function planFlight(st, v, reserved) {
+    const free = n => !st.off[n] && n !== st.pos && !(vampAt(st, n) && n !== v.node) && !reserved.has(n);
+    const { dist, par } = bfs(st, [v.node], free);
+    let target = -1, best = 1e9;
+    for (const p of waiting(st)) if (!isLit(st, p.node) && dist[p.node] > 0 && dist[p.node] < best) { best = dist[p.node]; target = p.node; }
+    if (target < 0) return;
+    const path = [];
+    for (let n = target; n !== v.node && n >= 0; n = par[n]) path.unshift(n);
+    let plan = path.slice(0, 2);
+    while (plan.length && isLit(st, plan[plan.length - 1])) plan.pop();
+    if (!plan.length || !plan.some(n => isLit(st, n))) return;
+    v.plan = plan; v.fly = true;
+  }
+
+  // ---------- partita ----------
+  function baseState(seed, cfg) {
+    return {
+      seed, s: seed | 0, turn: 1, turns: cfg.turns, cfg, oil: OIL_MAX, oilMax: OIL_MAX, move: 2, lampBonus: 0, pos: 0,
+      lamps: new Array(N).fill(0), pass: [], vamps: [], items: [], ups: [], nextId: 1,
+      stats: DISTRICTS.map(() => ({ saved: 0, taken: 0 })),
+      events: [], over: false, touched: [], hand: cfg.hand.slice(), perm: [],
+    };
+  }
+
+  function newGame(seed, condKey, opts) {
+    opts = opts || {};
+    if (opts.tutorial) {
+      const st = baseState(seed, { ...DAILY, turns: 12, hand: ['falo', 'campana'], cards: ['tanica'], ups: ['birra'] });
+      st.tutorial = true; st.cond = 'quieta';
+      st.adj = NB.map(a => a.slice()); st.off = new Array(N).fill(false);
+      st.stops = [{ node: id(1, 2), d: 0 }, { node: id(3, 2), d: 1 }, { node: id(5, 2), d: 2 }];
+      st.canal = null; st.parks = []; st.plazas = [id(1, 3)];
+      st.pos = id(3, 2);
+      return st;
+    }
+    const cfg = opts.level !== undefined ? LEVELS[opts.level] : DAILY;
+    const st = baseState(opts.level !== undefined ? cfg.seed : seed, cfg);
+    st.level = opts.level;
+    st.cond = cfg.cond || condKey || pick(st, CONDS).key;
+    genCity(st);
+    st.pos = st.stops[1].node;
+    spawnPassenger(st, 0, 2); spawnPassenger(st, 0, 1); spawnPassenger(st, 1, 2);
+    const v0 = cfg.v0 !== undefined ? cfg.v0 : 2;
+    for (let i = 0; i < v0; i++) spawnVampire(st, [0, 2, 1][i % 3]);
+    for (let i = 0; i < cfg.items; i++) placeItem(st);
+    planVampires(st);
+    st.events = [];
+    return st;
+  }
+
+  function legalMoves(st, card) {
+    const res = new Map();
+    res.set(st.pos, { path: [st.pos], kind: 'wait' });
+    const range = st.move + (card === 'corsa' ? 2 : 0);
+    const { dist, par } = bfs(st, [st.pos], n => !vampAt(st, n));
+    for (let n = 0; n < N; n++) if (dist[n] > 0 && dist[n] <= range) {
+      const path = [];
+      for (let m = n; m >= 0; m = par[m]) path.unshift(m);
+      res.set(n, { path, kind: 'walk' });
+    }
+    if (isStop(st, st.pos)) for (const s of openStops(st)) if (s !== st.pos && !vampAt(st, s))
+      res.set(s, { path: [st.pos, s], kind: 'tram' });
+    return res;
+  }
+
+  function capture(st, node) {
+    for (const p of waiting(st)) if (p.node === node) {
+      p.status = 'taken'; st.stats[p.d].taken++;
+      st.events.push({ type: 'taken', d: p.d });
+    }
+  }
+
+  // Dove va un passeggero: verso la luce. Se la luce porta al tram la segue,
+  // altrimenti entra comunque nell'incrocio illuminato vicino.
+  function paxMaps(st) {
+    return {
+      lit: bfs(st, openStops(st), n => isLit(st, n)).dist,
+      all: bfs(st, openStops(st), n => !st.off[n]).dist,
+    };
+  }
+  function paxNext(st, p, maps) {
+    maps = maps || paxMaps(st);
+    const L = maps.lit, A = maps.all;
+    const litHere = isLit(st, p.node);
+    const here = litHere && L[p.node] >= 0 ? L[p.node] : 1e9;
+    let best = -1;
+    for (const q of st.adj[p.node]) if (isLit(st, q) && L[q] >= 0 && L[q] < here && (best < 0 || L[q] < L[best])) best = q;
+    if (best >= 0) return best;
+    if (here < 1e9) return -1;
+    const cands = st.adj[p.node].filter(q => isLit(st, q));
+    if (!cands.length) return -1;
+    cands.sort((a, b) => (A[a] - A[b]) || ((b === st.pos) - (a === st.pos)));
+    const q = cands[0];
+    if (!litHere) return q;
+    return A[q] < A[p.node] ? q : -1;
+  }
+  function paxStep(st) {
+    const maps = paxMaps(st);
+    for (const p of waiting(st)) {
+      const best = paxNext(st, p, maps);
+      if (best >= 0) {
+        p.node = best;
+        if (isStop(st, best)) { p.status = 'saved'; st.stats[p.d].saved++; st.events.push({ type: 'saved', d: p.d }); }
+      }
+    }
+  }
+  function vampStep(st) {
+    for (const v of st.vamps) {
+      if (v.fly) {
+        const end = v.plan[v.plan.length - 1];
+        const ok = !isLit(st, end) && end !== st.pos && !st.vamps.some(o => o !== v && o.node === end);
+        if (ok) { v.node = end; capture(st, end); st.events.push({ type: 'fly' }); v.cd = 3; }
+        else st.events.push({ type: 'blocked' });
+      } else {
+        for (const step of v.plan) {
+          if (isLit(st, step) || step === st.pos || st.vamps.some(o => o !== v && o.node === step)) { st.events.push({ type: 'blocked' }); break; }
+          v.node = step; capture(st, step);
+        }
+        if (v.type === 'conte') v.cd = Math.max(0, v.cd - 1);
+      }
+      if (v.type === 'sposa' && v.douse >= 0 && st.lamps[v.douse] > 0 && st.adj[v.node].includes(v.douse) && !st.perm.includes(v.douse)) {
+        st.lamps[v.douse] = 0;
+        st.touched = st.touched.filter(n => n !== v.douse);
+        st.events.push({ type: 'douse' });
+      }
+      v.plan = []; v.fly = false; v.douse = -1;
+    }
+  }
+  function endTurn(st) {
+    let stun = false;
+    if (!isLit(st, st.pos) && st.vamps.some(v => st.adj[st.pos].includes(v.node))) stun = true;
+    for (let n = 0; n < N; n++) if (st.lamps[n] > 0 && !st.touched.includes(n) && !st.perm.includes(n)) st.lamps[n]--;
+    st.touched = [];
+    st.turn++;
+    if (st.turn > st.turns) {
+      st.over = true;
+      for (const p of waiting(st)) { p.status = 'dawn'; st.stats[p.d].saved++; }
+      st.events.push({ type: 'dawn' });
+      return stun;
+    }
+    if (st.tutorial) { planVampires(st); return stun; }
+    const cfg = st.cfg, ad = activeDistrict(st);
+    const phaseTurn = st.turn === Math.floor(st.turns / 3) + 1 || st.turn === Math.floor((2 * st.turns) / 3) + 1;
+    if (phaseTurn) st.events.push({ type: 'phase', d: ad });
+    if (st.turn <= st.turns - 3 && waiting(st).length < MAX_WAIT) {
+      if (rand(st) < cfg.pax) {
+        const size = rand(st) < 0.35 ? 1 : rand(st) < 1 - cfg.big ? 2 : 3;
+        spawnPassenger(st, rand(st) < 0.8 ? ad : Math.floor(rand(st) * 3), size);
+      }
+      if (phaseTurn) spawnPassenger(st, ad, 2);
+    }
+    const maxV = st.cond === 'luna' ? cfg.maxV - 1 : cfg.maxV;
+    if (st.turn % cfg.vampEvery === 0 && st.vamps.length < maxV) spawnVampire(st, ad);
+    if (cfg.vampRefill && st.vamps.length < Math.min(2, maxV)) spawnVampire(st, ad);
+    if (st.turn % cfg.itemEvery === 0 && st.items.length < 3 && st.turn < st.turns - 2) { placeItem(st, ad); st.events.push({ type: 'newItem' }); }
+    planVampires(st);
+    return stun;
+  }
+  function worldStep(st, paxSteps) {
+    for (let k = 0; k < (paxSteps || 1); k++) paxStep(st);
+    vampStep(st);
+    return endTurn(st);
+  }
+
+  function pickUp(st, nodes) {
+    for (const n of nodes) {
+      const it = st.items.find(i => i.node === n);
+      if (!it) continue;
+      if (it.cat === 'card') {
+        if (st.hand.length >= HAND_MAX) { st.events.push({ type: 'handFull' }); continue; }
+        st.hand.push(it.kind);
+      } else {
+        if (it.kind === 'birra') st.move = Math.min(3, st.move + 1);
+        if (it.kind === 'lanterna') st.lampBonus = 2;
+        if (it.kind === 'borraccia') { st.oilMax = OIL_MAX + 2; st.oil = st.oilMax; }
+        st.ups.push(it.kind);
+      }
+      st.items = st.items.filter(i => i !== it);
+      st.events.push({ type: 'item', cat: it.cat, kind: it.kind });
+    }
+  }
+
+  function useCard(st, card) {
+    const i = st.hand.indexOf(card);
+    if (i < 0) return false;
+    st.hand.splice(i, 1);
+    return true;
+  }
+  function playInstant(st, card) {
+    if (st.over || !CARDS[card] || CARDS[card].kind !== 'instant' || !useCard(st, card)) return false;
+    st.events = [];
+    if (card === 'tanica') { st.oil += 3; st.events.push({ type: 'tanica' }); }
+    if (card === 'croce') {
+      if (st.vamps.length) {
+        let best = st.vamps[0];
+        for (const v of st.vamps) if (manhattan(v.node, st.pos) < manhattan(best.node, st.pos)) best = v;
+        st.vamps = st.vamps.filter(v => v !== best);
+      }
+      st.events.push({ type: 'croce' });
+    }
+    return true;
+  }
+
+  function applyMove(st, dest, tool) {
+    if (st.over) return false;
+    if (tool && (!st.hand.includes(tool) || CARDS[tool].kind !== 'move')) tool = null;
+    const mv = legalMoves(st, tool).get(dest);
+    if (!mv) return false;
+    if (tool) useCard(st, tool);
+    st.events = [];
+    if (mv.kind !== 'tram') {
+      const visit = mv.kind === 'wait' ? [st.pos] : mv.path.slice(1);
+      for (const n of visit) if (st.lamps[n] > 0) { st.lamps[n] = Math.max(st.lamps[n], lampMax(st, n)); st.touched.push(n); }
+      pickUp(st, mv.path.slice(1));
+    } else st.events.push({ type: 'tram' });
+    st.pos = dest;
+    if (!isLit(st, dest) && mv.kind !== 'tram') {
+      if (st.oil > 0) { st.lamps[dest] = lampMax(st, dest); st.oil--; st.touched.push(dest); st.events.push({ type: 'light' }); }
+      else if (tool !== 'gas' && tool !== 'falo') st.events.push({ type: 'noOil' });
+    }
+    if (tool === 'gas' && !isStop(st, dest)) {
+      st.lamps[dest] = lampMax(st, dest);
+      if (!st.perm.includes(dest)) st.perm.push(dest);
+      st.events.push({ type: 'gas' });
+    }
+    if (tool === 'falo') {
+      for (const n of [dest, ...st.adj[dest]]) if (!isStop(st, n)) { st.lamps[n] = lampMax(st, n); if (!st.touched.includes(n)) st.touched.push(n); }
+      const before = st.vamps.length;
+      st.vamps = st.vamps.filter(v => !isLit(st, v.node));
+      st.events.push({ type: 'falo', fled: before - st.vamps.length });
+    }
+    if (tool === 'campana') st.events.push({ type: 'campana' });
+    if (isStop(st, dest) && st.oil < st.oilMax) { st.oil = st.oilMax; st.events.push({ type: 'refill' }); }
+    const stun = worldStep(st, tool === 'campana' ? 2 : 1);
+    if (stun && !st.over) { st.events.push({ type: 'stun' }); worldStep(st); }
+    return true;
+  }
+
+  function score(st) {
+    let total = 0;
+    const rows = st.stats.map((s, i) => {
+      const mult = s.taken === 0 && s.saved > 0 ? 2 : 1;
+      total += s.saved * mult;
+      return { name: DISTRICTS[i].name, saved: s.saved, taken: s.taken, mult, pts: s.saved * mult };
+    });
+    const lost = st.stats.reduce((a, s) => a + s.taken, 0);
+    let stars = 0;
+    if (st.level !== undefined) for (const t of LOSS_STARS) if (lost <= t) stars++;
+    return { total, rows, stars, lost };
+  }
+
+  const LOSS_STARS = [4, 2, 0];
+  const dailySeed = (d = new Date()) => d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+
+  const api = {
+    LOSS_STARS, COLS, ROWS, LAMP_MAX, OIL_MAX, N, HAND_MAX, DISTRICTS, CONDS, NB, CARDS, UPGRADES, LEVELS,
+    rowOf, colOf, districtOf, isStop, isLit, openStops, legalMoves, applyMove, newGame, score, lampMax,
+    playInstant, paxNext, paxMaps, waiting, dailySeed, bfs, manhattan, activeDistrict, spawnAt, addVampire, planVampires, id,
+  };
+  if (typeof module !== 'undefined') module.exports = api; else root.UC = api;
+})(this);
+</script>
+<script>
+(function () {
+  const S = 72, M = 36;
+  const X = n => M + UC.colOf(n) * S, Y = n => M + UC.rowOf(n) * S;
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const board = $('board');
+  let st, seed, daily = true, lastMsg = '';
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  };
+
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  // ---------- icone ----------
+  const ICON = {
+    lamplighter: '<circle cx="15" cy="17" r="9" fill="#f4b545" stroke="#ffe3a3" stroke-width="2"/><path d="M15 3 C18 7 18 9 15 11 C12 9 12 7 15 3Z" fill="#ffd98a"/>',
+    lamp: '<circle cx="15" cy="15" r="11" fill="none" stroke="#2a3159" stroke-width="3"/><path d="M15 4 A11 11 0 1 1 4 15" fill="none" stroke="#f4b545" stroke-width="3" stroke-linecap="round"/><circle cx="15" cy="15" r="4" fill="#ffe3a3"/>',
+    pax: '<circle cx="15" cy="9" r="4" fill="#efeaf7"/><path d="M9 24 Q15 11 21 24Z" fill="#efeaf7"/><path d="M15 24 L28 24" stroke="#efeaf7" stroke-dasharray="2 3" stroke-width="1.5"/>',
+    vamp: '<circle cx="15" cy="15" r="11" fill="#5a0c1a"/><circle cx="11" cy="13" r="2" fill="#ff4d5e"/><circle cx="19" cy="13" r="2" fill="#ff4d5e"/><path d="M2 27 L28 27" stroke="#d23447" stroke-dasharray="4 3" stroke-width="2"/>',
+    tram: '<rect x="5" y="8" width="20" height="14" rx="4" fill="#f4b545"/><rect x="8" y="11" width="6" height="5" fill="#1b1305"/><rect x="16" y="11" width="6" height="5" fill="#1b1305"/>',
+    falo: '<path d="M15 3 C22 11 23 16 15 26 C7 16 8 11 15 3Z" fill="#f4b545"/><path d="M15 12 C18 16 18 19 15 23 C12 19 12 16 15 12Z" fill="#ffe3a3"/>',
+    campana: '<path d="M8 21 Q8 8 15 7 Q22 8 22 21Z" fill="#e9e4d6"/><rect x="6" y="21" width="18" height="2.5" rx="1" fill="#e9e4d6"/><circle cx="15" cy="26" r="2" fill="#e9e4d6"/>',
+    corsa: '<path d="M4 10 H16 M2 15 H14 M6 20 H18" stroke="#9fd4ff" stroke-width="2.2" stroke-linecap="round"/><path d="M18 8 L27 15 L18 22Z" fill="#9fd4ff"/>',
+    gas: '<rect x="13" y="12" width="4" height="15" fill="#6e7aa8"/><path d="M9 6 H21 L19 13 H11Z" fill="#2a3159" stroke="#9fd4ff" stroke-width="1.5"/><path d="M15 6.5 C17 8.5 17 10 15 11.5 C13 10 13 8.5 15 6.5Z" fill="#9fd4ff"/>',
+    tanica: '<path d="M8 9 H20 L24 13 V26 H8Z" fill="#f4b545"/><rect x="18" y="4" width="4" height="5" fill="#f4b545"/><path d="M12 16 L20 24 M20 16 L12 24" stroke="#1b1305" stroke-width="2"/>',
+    croce: '<rect x="13" y="3" width="4" height="24" rx="1" fill="#e9e4d6"/><rect x="7" y="9" width="16" height="4" rx="1" fill="#e9e4d6"/>',
+    conte: '<path d="M2 13 Q8 4 13 11 L15 8 L17 11 Q22 4 28 13 Q22 11 19 17 L15 22 L11 17 Q8 11 2 13Z" fill="#2a0a3a" stroke="#b48cff" stroke-width="1.4"/><circle cx="13" cy="13" r="1.4" fill="#ff4d5e"/><circle cx="17" cy="13" r="1.4" fill="#ff4d5e"/>',
+    sposa: '<path d="M5 26 L9 10 Q15 2 21 10 L25 26Z" fill="#e8dccb"/><circle cx="15" cy="6" r="4" fill="#d23447"/><circle cx="12.5" cy="14" r="1.5" fill="#ff4d5e"/><circle cx="17.5" cy="14" r="1.5" fill="#ff4d5e"/>',
+    birra: '<rect x="7" y="9" width="13" height="17" rx="2" fill="#f4b545"/><path d="M20 12 h3 a3 3 0 0 1 0 8 h-3" fill="none" stroke="#f4b545" stroke-width="2"/><path d="M6 10 C6 5 21 5 21 10Z" fill="#f2eee2"/>',
+    lanterna: '<path d="M10 9 H20 L22 24 H8Z" fill="#2a3159" stroke="#ffcf6e" stroke-width="1.6"/><path d="M15 12 C18 15 18 18 15 21 C12 18 12 15 15 12Z" fill="#ffcf6e"/><path d="M12 9 C12 5 18 5 18 9" fill="none" stroke="#ffcf6e" stroke-width="1.6"/>',
+    borraccia: '<path d="M11 8 H19 V11 C23 13 23 15 23 18 V25 H7 V18 C7 15 7 13 11 11Z" fill="#7fb0d8"/><rect x="12" y="4" width="6" height="4" fill="#4d6f8f"/>',
+    item: '<rect x="5" y="5" width="20" height="20" rx="5" fill="#2a2410" stroke="#f4b545" stroke-width="2"/><text x="15" y="21" text-anchor="middle" font-size="15" font-weight="700" fill="#ffd98a" font-family="Inter">?</text>',
+    card: '<rect x="5" y="4" width="14" height="20" rx="3" fill="#2a3159" stroke="#f4b545" stroke-width="1.5"/><rect x="11" y="7" width="14" height="20" rx="3" fill="#161c36" stroke="#f4b545" stroke-width="1.5"/><path d="M18 12 C21 15 21 17 18 21 C15 17 15 15 18 12Z" fill="#f4b545"/>',
+    dawn: '<circle cx="15" cy="20" r="8" fill="#e98b5a"/><path d="M3 22 H27" stroke="#e9e4d6" stroke-width="2"/>',
+  };
+  const IMG = { falo: 'ic_falo', campana: 'ic_campana', corsa: 'ic_corsa', gas: 'ic_gas', tanica: 'ic_tanica', croce: 'ic_croce',
+    birra: 'ic_birra', lanterna: 'ic_lanterna', borraccia: 'ic_borraccia', item: 'ic_item', lamplighter: 'lamp1', pax: 'pax3', vamp: 'vamp', conte: 'vamp_dracula', sposa: 'vamp_sposa' };
+  const icon = k => IMG[k] ? `<img src="art/${IMG[k]}.png" alt="">` : `<svg viewBox="0 0 30 30">${ICON[k]}</svg>`;
+  const ic = k => icon(k);
+  const SEASON_IMG = i => 'art/' + (i <= 2 ? 'primavera' : i <= 4 ? 'estate' : i <= 7 ? 'autunno' : 'inverno') + '.jpg';
+  document.getElementById('ovSplash').style.backgroundImage = 'url(art/keyart.jpg)';
+  const RULES = [
+    ['lamplighter', '<b>Tocca un incrocio</b> a 1-2 passi: il lampionaio ci va e, se è buio, accende il lampione. Costa 1 latta d\'olio.'],
+    ['lamp', 'I lampioni <b>si spengono da soli</b>: il cerchietto si svuota a ogni turno e diventa rosso all\'ultimo. Nelle <b>piazze</b> dura il doppio. Se ci passi sopra li ravvivi gratis (anche toccando te stesso per aspettare).'],
+    ['pax', 'I passeggeri <b>vanno verso la luce</b>: se un incrocio vicino è illuminato, ci vanno. Poi seguono la strada illuminata fino al tram. La linea tratteggiata mostra il loro prossimo passo.'],
+    ['vamp', 'I vampiri si muovono <b>solo al buio</b>. La freccia rossa dice dove colpiranno: chi è lì viene preso. Un lampione acceso li blocca. Se resti al buio accanto a uno, perdi un turno.'],
+    ['conte', '<b>Il Conte</b> ogni 3 turni diventa pipistrello e <b>vola sopra la luce</b>, fino a 2 incroci: freccia viola. Deve atterrare al buio.'],
+    ['sposa', '<b>La Sposa</b> ogni turno <b>spegne un lampione</b> accanto a sé: è quello col cerchio rosso e la ×. I lampioni a gas resistono.'],
+    ['tram', 'Alle fermate fai <b>il pieno d\'olio</b>. Da una fermata puoi prendere il tram per un\'altra.'],
+    ['item', 'Sul terreno trovi dei <b>?</b>: passaci sopra per prenderli. Possono essere <b>carte</b> o <b>potenziamenti</b> che valgono per tutta la notte, come la <b>pinta di birra</b> che ti fa camminare 3 incroci.'],
+    ['card', '<b>Carte</b> (al massimo 4): tocca la carta e poi dove andare. Tanica e Croce agiscono subito.'],
+    ['dawn', '<b>All\'alba</b> è salvo chi non è stato preso: al tram, alla luce o ancora in strada. Nei <b>capitoli</b> contano le persone perse (al massimo 4 per una stella). Nella <b>sfida di oggi</b> conta chi salvi, e un quartiere senza vittime vale il doppio.'],
+  ];
+  $('rulesList').innerHTML = RULES.map(([k, t]) => `<li>${ic(k)}<span>${t}</span></li>`).join('');
+
+  const canSVG = full => `<svg viewBox="0 0 16 20"><path d="M3 6 h10 v12 h-10z" fill="${full ? '#f4b545' : 'none'}" stroke="${full ? '#f4b545' : '#3a4270'}" stroke-width="1.5"/><path d="M6 6 V3 h4 v3" fill="none" stroke="${full ? '#f4b545' : '#3a4270'}" stroke-width="1.5"/></svg>`;
+
+  // ---------- livelli SVG statici ----------
+  const defs = el('defs', {}, board);
+  defs.innerHTML = `
+    <radialGradient id="glow"><stop offset="0" stop-color="#ffcf6e" stop-opacity=".75"/><stop offset=".45" stop-color="#f4a63a" stop-opacity=".28"/><stop offset="1" stop-color="#f4a63a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glowStop"><stop offset="0" stop-color="#ffe7a8" stop-opacity=".8"/><stop offset="1" stop-color="#f4a63a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="haloW"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".6" stop-color="#ffffff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="haloB"><stop offset="0" stop-color="#5fb3ff" stop-opacity=".95"/><stop offset=".6" stop-color="#3d8bff" stop-opacity=".75"/><stop offset="1" stop-color="#3d8bff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="haloR"><stop offset="0" stop-color="#ff3b4f" stop-opacity=".95"/><stop offset=".6" stop-color="#ff2a40" stop-opacity=".7"/><stop offset="1" stop-color="#ff2a40" stop-opacity="0"/></radialGradient>
+    <pattern id="pCobble" patternUnits="userSpaceOnUse" width="26" height="26"><image href="art/t_cobble.jpg" width="26" height="26"/></pattern>
+    <pattern id="pPark" patternUnits="userSpaceOnUse" width="124" height="124"><image href="art/t_park.jpg" width="124" height="124"/></pattern>
+    <pattern id="pWater" patternUnits="userSpaceOnUse" width="30" height="100"><image href="art/t_water.jpg" width="30" height="100"/></pattern>
+    <pattern id="pPlaza" patternUnits="objectBoundingBox" width="1" height="1"><image href="art/t_plaza.jpg" width="48" height="48"/></pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#ff4d5e"/></marker>
+    <marker id="arrowV" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#b48cff"/></marker>`;
+  const gBg = el('g', {}, board), gGlow = el('g', {}, board), gStreet = el('g', {}, board),
+    gRail = el('g', {}, board), gLamp = el('g', {}, board), gReach = el('g', {}, board),
+    gPlan = el('g', {}, board), gEnt = el('g', {}, board), gHit = el('g', {}, board);
+
+  function drawStatic() {
+    gBg.innerHTML = '';
+    const BLOCK = '#11162d';
+    el('rect', { x: 0, y: 0, width: 360, height: 504, fill: '#0a0e1c', rx: 16 }, gBg);
+    let s = st.seed % 233280 || 7;
+    const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    for (let rr = -1; rr < UC.ROWS; rr++) for (let cc = -1; cc < UC.COLS; cc++) {
+      const x = M + cc * S + 9, y = M + rr * S + 9, w = S - 18, h = S - 18;
+      el('rect', { x, y, width: w, height: h, rx: 6, fill: BLOCK }, gBg);
+    }
+    for (let n = 0; n < UC.N; n++) {
+      if (st.off[n]) continue;
+      const c = UC.colOf(n), rw = UC.rowOf(n);
+      if (c < UC.COLS - 1 && !st.off[n + 1] && !st.adj[n].includes(n + 1))
+        el('rect', { x: X(n) + 8, y: Y(n) - 10, width: S - 16, height: 20, fill: BLOCK }, gBg);
+      if (rw < UC.ROWS - 1 && !st.off[n + UC.COLS] && !st.adj[n].includes(n + UC.COLS))
+        el('rect', { x: X(n) - 10, y: Y(n) + 8, width: 20, height: S - 16, fill: BLOCK }, gBg);
+    }
+    for (let i = 0; i < 70; i++) {
+      const x = 6 + r() * 348, y = 6 + r() * 492;
+      el('rect', { x, y, width: 4, height: 5, fill: r() < .25 ? '#3b3420' : '#1a2140' }, gBg);
+    }
+    if (st.canal) {
+      const y1 = Y(st.canal.r * UC.COLS) + 12, y2 = Y((st.canal.r + 1) * UC.COLS) - 12;
+      el('rect', { x: 0, y: y1, width: 360, height: y2 - y1, fill: '#0c2033' }, gBg);
+      el('rect', { x: 0, y: y1, width: 360, height: y2 - y1, fill: 'url(#pWater)', opacity: .8 }, gBg);
+      for (let i = 0; i < 9; i++) {
+        const wx = 10 + r() * 330, wy = y1 + 8 + r() * (y2 - y1 - 16);
+        el('path', { d: `M${wx} ${wy} q4 -3 8 0 t8 0`, stroke: '#1d3f5c', fill: 'none', 'stroke-width': 1.5 }, gBg);
+      }
+    }
+    for (const n of st.parks) {
+      el('rect', { x: X(n) - S + 10, y: Y(n) - S + 10, width: 2 * S - 20, height: 2 * S - 20, rx: 16, fill: '#0e2018' }, gBg);
+      el('rect', { x: X(n) - S + 10, y: Y(n) - S + 10, width: 2 * S - 20, height: 2 * S - 20, rx: 16, fill: 'url(#pPark)', opacity: .5 }, gBg);
+      continue;
+      for (let i = 0; i < 7; i++) {
+        const a = r() * Math.PI * 2, d = 10 + r() * 38;
+        el('circle', { cx: X(n) + Math.cos(a) * d, cy: Y(n) + Math.sin(a) * d, r: 6 + r() * 6, fill: '#15331f' }, gBg);
+      }
+    }
+    const lbl = [['COLLE', 0, 1], ['MERCATO', 2, 4], ['PORTO', 5, 6]];
+    for (const [t, a, b] of lbl) {
+      const y = M + ((a + b) / 2) * S;
+      el('text', { x: 352, y, fill: '#2c3460', 'font-size': 9, 'font-weight': 700, 'letter-spacing': 2,
+        'text-anchor': 'middle', transform: `rotate(90 352 ${y})`, 'font-family': 'Inter' }, gBg).textContent = t;
+    }
+    gRail.innerHTML = '';
+    for (const n of st.plazas) {
+      el('rect', { x: X(n) - 24, y: Y(n) - 24, width: 48, height: 48, rx: 6, fill: 'url(#pPlaza)', stroke: '#3a4372', 'stroke-width': 1.5, opacity: .9 }, gRail);
+      el('rect', { x: X(n) - 16, y: Y(n) - 16, width: 32, height: 32, rx: 3, fill: 'none', stroke: '#323a66', 'stroke-dasharray': '3 3' }, gRail);
+    }
+    const pts = st.stops.map(s => `${X(s.node)},${Y(s.node)}`).join(' ');
+    el('polyline', { points: pts, fill: 'none', stroke: '#3a2f22', 'stroke-width': 7, 'stroke-linejoin': 'round', opacity: .85 }, gRail);
+    el('polyline', { points: pts, fill: 'none', stroke: '#6b563b', 'stroke-width': 7, 'stroke-dasharray': '1.5 6', opacity: .9 }, gRail);
+    gHit.innerHTML = '';
+    for (let n = 0; n < UC.N; n++) {
+      if (st.off[n]) continue;
+      const c = el('circle', { cx: X(n), cy: Y(n), r: 34, fill: 'transparent' }, gHit);
+      c.style.cursor = 'pointer';
+      c.addEventListener('click', () => onTap(n));
+    }
+  }
+
+  // ---------- entità con transizioni ----------
+  const ents = new Map();
+  function ent(key, build) {
+    let g = ents.get(key);
+    if (!g) { g = el('g', { class: 'ent' }, gEnt); build(g); ents.set(key, g); g._new = true; }
+    return g;
+  }
+  function place(g, n, dx = 0, dy = 0) {
+    const t = `translate(${X(n) + dx}px, ${Y(n) + dy}px)`;
+    if (g._new) { g.style.transition = 'none'; g.style.transform = t; g.getBoundingClientRect(); g.style.transition = ''; g._new = false; }
+    else g.style.transform = t;
+  }
+
+  function render() {
+    const lit = n => UC.isLit(st, n);
+    const moves = st.over ? new Map() : UC.legalMoves(st, armed);
+    // luce
+    gGlow.innerHTML = '';
+    for (let n = 0; n < UC.N; n++) {
+      if (UC.isStop(st, n)) { el('circle', { cx: X(n), cy: Y(n), r: 46, fill: 'url(#glowStop)' }, gGlow); continue; }
+      const L = st.lamps[n];
+      if (L > 0) el('circle', { cx: X(n), cy: Y(n), r: 18 + Math.min(L, 5) * 7, fill: 'url(#glow)', opacity: .45 + Math.min(L, 5) * .11 }, gGlow);
+    }
+    // strade
+    gStreet.innerHTML = '';
+    for (let n = 0; n < UC.N; n++) for (const m of st.adj[n]) if (m > n) {
+      el('line', { x1: X(n), y1: Y(n), x2: X(m), y2: Y(m), stroke: '#1d2443', 'stroke-width': 14, 'stroke-linecap': 'round' }, gStreet);
+      el('line', { x1: X(n), y1: Y(n), x2: X(m), y2: Y(m), stroke: 'url(#pCobble)', 'stroke-width': 14, 'stroke-linecap': 'round', opacity: .55 }, gStreet);
+      if (lit(n) && lit(m)) el('line', { x1: X(n), y1: Y(n), x2: X(m), y2: Y(m), stroke: '#f4b545', 'stroke-opacity': .55, 'stroke-width': 4, 'stroke-linecap': 'round' }, gStreet);
+    }
+    // lampioni e fermate
+    gLamp.innerHTML = '';
+    for (let n = 0; n < UC.N; n++) {
+      const stop = st.stops.find(s => s.node === n);
+      if (stop) {
+        const open = UC.isStop(st, n);
+        el('rect', { x: X(n) - 15, y: Y(n) - 11, width: 30, height: 22, rx: 6, fill: open ? '#f4b545' : '#2a2f4a', stroke: open ? '#ffe3a3' : '#444b72', 'stroke-width': 1.5 }, gLamp);
+        el('rect', { x: X(n) - 10, y: Y(n) - 6, width: 8, height: 6, fill: open ? '#1b1305' : '#141830' }, gLamp);
+        el('rect', { x: X(n) + 2, y: Y(n) - 6, width: 8, height: 6, fill: open ? '#1b1305' : '#141830' }, gLamp);
+        if (!open) el('path', { d: `M${X(n) - 12} ${Y(n) - 9} L${X(n) + 12} ${Y(n) + 9} M${X(n) + 12} ${Y(n) - 9} L${X(n) - 12} ${Y(n) + 9}`, stroke: '#d23447', 'stroke-width': 2.5 }, gLamp);
+        continue;
+      }
+      if (st.off[n]) continue;
+      const L = st.lamps[n];
+      el('circle', { cx: X(n), cy: Y(n), r: 3.5, fill: L > 0 ? '#ffe3a3' : '#323a5e' }, gLamp);
+      if (L > 0) { // anello che si svuota
+        const R = 17, C = 2 * Math.PI * R, perm = st.perm.includes(n), last = L <= 1 && !perm;
+        if (perm) { el('circle', { cx: X(n), cy: Y(n), r: R, fill: 'none', stroke: '#9fd4ff', 'stroke-width': 3.5 }, gLamp); continue; }
+        el('circle', { cx: X(n), cy: Y(n), r: R, fill: 'none', stroke: 'rgba(10,14,28,.65)', 'stroke-width': 4.5 }, gLamp);
+        const a = el('circle', { cx: X(n), cy: Y(n), r: R, fill: 'none', stroke: last ? '#ff4d5e' : '#ffcf6e', 'stroke-width': 3.5,
+          'stroke-linecap': 'round', 'stroke-dasharray': `${C * Math.min(1, L / UC.lampMax(st, n))} ${C}`, transform: `rotate(-90 ${X(n)} ${Y(n)})` }, gLamp);
+        if (last) a.setAttribute('class', 'warn');
+      }
+    }
+    // raggiungibili
+    gReach.innerHTML = '';
+    const step = tutStep();
+    if (step && step.only != null && !st.over) {
+      const n = step.only;
+      el('circle', { cx: X(n), cy: Y(n), r: 26, fill: 'rgba(244,181,69,.12)', stroke: '#f4b545', 'stroke-width': 3, class: 'reach' }, gReach);
+      const g = el('g', { class: 'bob' }, gReach);
+      el('path', { d: `M${X(n) - 9} ${Y(n) - 44} L${X(n) + 9} ${Y(n) - 44} L${X(n)} ${Y(n) - 31}Z`, fill: '#f4b545' }, g);
+    }
+    if (UC.isStop(st, st.pos) && !st.over && !(step && step.only != null && step.only !== st.pos && !UC.isStop(st, step.only))) {
+      const pts = st.stops.filter(s => UC.isStop(st, s.node)).map(s => `${X(s.node)},${Y(s.node)}`).join(' ');
+      el('polyline', { points: pts, fill: 'none', stroke: '#ffd98a', 'stroke-width': 2.5, 'stroke-dasharray': '6 5', opacity: .8, class: 'reach' }, gReach);
+    }
+    for (const [n, mv] of moves) {
+      if (n === st.pos) continue;
+      if (step && step.only != null) continue;
+      if (mv.kind === 'tram') el('text', { x: X(n), y: Y(n) + 30, fill: '#ffd98a', 'font-size': 9, 'font-weight': 700, 'text-anchor': 'middle', 'letter-spacing': 1, 'font-family': 'Inter' }, gReach).textContent = 'TRAM';
+      el('circle', { cx: X(n), cy: Y(n), r: 20, fill: 'none', stroke: mv.kind === 'tram' ? '#ffd98a' : '#e9e4d6',
+        'stroke-width': 1.5, 'stroke-dasharray': '3 4', class: 'reach' }, gReach);
+    }
+    // piani dei vampiri e percorsi dei passeggeri
+    gPlan.innerHTML = '';
+    const maps = UC.paxMaps(st);
+    for (const p of UC.waiting(st)) {
+      const best = UC.paxNext(st, p, maps);
+      if (best >= 0) el('line', { x1: X(p.node), y1: Y(p.node), x2: X(best), y2: Y(best), stroke: '#efeaf7', 'stroke-width': 2, 'stroke-dasharray': '2 4', opacity: .8 }, gPlan);
+    }
+    for (const v of st.vamps) {
+      if (st.cond === 'nebbia' && UC.manhattan(v.node, st.pos) > 2) continue;
+      if (v.douse >= 0) {
+        const d = v.douse, R = 21;
+        el('circle', { cx: X(d), cy: Y(d), r: R, fill: 'rgba(255,59,79,.12)', stroke: '#ff3b4f', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, gPlan);
+        el('path', { d: `M${X(d) + 10} ${Y(d) - 24} l10 10 M${X(d) + 20} ${Y(d) - 24} l-10 10`, stroke: '#ff3b4f', 'stroke-width': 3, 'stroke-linecap': 'round' }, gPlan);
+      }
+      if (!v.plan.length) continue;
+      const col = v.fly ? '#b48cff' : '#ff4d5e';
+      const pts = [v.node, ...v.plan].map(n => `${X(n)},${Y(n)}`).join(' ');
+      el('polyline', { points: pts, fill: 'none', stroke: col, 'stroke-width': v.fly ? 3 : 2.5, 'stroke-dasharray': v.fly ? '2 5' : '5 4', 'marker-end': v.fly ? 'url(#arrowV)' : 'url(#arrow)', opacity: .95 }, gPlan);
+      const t = v.plan[v.plan.length - 1];
+      el('circle', { cx: X(t), cy: Y(t), r: 14, fill: v.fly ? 'rgba(180,140,255,.18)' : 'rgba(210,52,71,.18)', stroke: col, 'stroke-width': 1.2 }, gPlan);
+    }
+    // entità
+    const alive = new Set();
+    // passeggeri (sfalsati se sullo stesso nodo)
+    const count = {};
+    for (const p of UC.waiting(st)) {
+      const k = count[p.node] = (count[p.node] || 0) + 1;
+      const g = ent(p.id, g => { g.innerHTML = `<circle cx="0" cy="-2" r="14" fill="url(#haloW)"/><image href="art/pax${parseInt(p.id.slice(1)) % 6}.png" x="-10" y="-14" width="20" height="24"/>`; });
+      const off = [[11, 9], [-11, 9], [11, -11], [-11, -11]][(k - 1) % 4];
+      place(g, p.node, off[0], off[1]); alive.add(p.id);
+    }
+    for (const v of st.vamps) {
+      const spr = v.type === 'conte' ? 'vamp_dracula' : v.type === 'sposa' ? 'vamp_sposa' : 'vamp';
+      const g = ent(v.id, g => { g.innerHTML = `<circle cx="0" cy="-2" r="20" fill="url(#haloR)"/><image href="art/${spr}.png" x="-13" y="-18" width="26" height="34"/><circle class="flyb" cx="11" cy="-14" r="6" fill="#b48cff" stroke="#fff" stroke-width="1.2" style="display:none"/>`; });
+      g.querySelector('.flyb').style.display = v.fly ? '' : 'none';
+      place(g, v.node); alive.add(v.id);
+    }
+    for (const it of st.items) {
+      const g = ent(it.id, g => { g.innerHTML = '<circle r="14" fill="#f4b545" opacity=".22"/><image href="art/ic_item.png" x="-13" y="-12" width="26" height="24"/>'; });
+      if (g._new) gEnt.insertBefore(g, gEnt.firstChild);
+      place(g, it.node); alive.add(it.id);
+    }
+    const lg = ent('me', g => { g.innerHTML = '<circle cx="0" cy="-8" r="24" fill="url(#haloB)"/><image href="art/lamp1.png" x="-15" y="-30" width="30" height="42"/>'; });
+    place(lg, st.pos); alive.add('me');
+    gEnt.appendChild(lg);
+    for (const [k, g] of ents) if (!alive.has(k)) { g.remove(); ents.delete(k); }
+
+    // HUD
+    const sc = UC.score(st);
+    if (st.level !== undefined) {
+      $('score').innerHTML = `<span style="color:${sc.lost ? '#ff7a88' : 'var(--amber)'}">${sc.lost}</span>`;
+      $('scoreLbl').innerHTML = `perse · <span style="color:var(--amber);letter-spacing:1px">${'★'.repeat(sc.stars)}</span><span style="color:#2f3768;letter-spacing:1px">${'★'.repeat(3 - sc.stars)}</span>`;
+    } else { $('score').textContent = sc.total; $('scoreLbl').textContent = 'punti'; }
+    const c = UC.CONDS.find(c => c.key === st.cond);
+    const LV = st.level !== undefined ? UC.LEVELS[st.level] : null;
+    $('cond').innerHTML = st.tutorial ? 'Prima notte · <b>guidata</b>' : LV ? `${LV.date} · <b>${LV.name}</b>` : `${daily ? 'Stanotte' : 'Notte casuale'} · <b>${c.name}</b>`;
+    const t = Math.min(st.turn, st.turns);
+    $('skyDone').style.width = `${((t - 1) / st.turns) * 100}%`;
+    $('turnLbl').textContent = st.over ? 'alba' : `turno ${t} di ${st.turns}`;
+    $('oil').classList.toggle('many', Math.max(st.oilMax, st.oil) > 4 || st.ups.length > 0);
+    $('oil').innerHTML = Array.from({ length: Math.max(st.oilMax, st.oil) }, (_, i) => canSVG(i < st.oil)).join('');
+    $('ups').innerHTML = st.ups.map(u => icon(u)).join('');
+    const ad = UC.activeDistrict(st);
+    $('chips').innerHTML = sc.rows.map((r, i) =>
+      `<div class="chip ${i === ad && !st.over ? 'active' : ''}">${r.name} <span class="s">${r.saved}</span><span class="m ${r.taken ? 'lost' : ''}">×2</span></div>`).join('');
+  }
+
+  // ---------- messaggi ----------
+  const DN = d => UC.DISTRICTS[d].name;
+  function describe(evs) {
+    const out = [];
+    const n = t => evs.filter(e => e.type === t);
+    if (n('taken').length) out.push(`<span class="bad">${n('taken').length === 1 ? 'Un passeggero è stato preso' : n('taken').length + ' passeggeri presi'} (${[...new Set(n('taken').map(e => DN(e.d)))].join(', ')}).</span>`);
+    if (n('saved').length) out.push(`<span class="good">${n('saved').length === 1 ? 'Un passeggero è salito sul tram' : n('saved').length + ' passeggeri sul tram'}.</span>`);
+    if (n('falo').length) out.push(n('falo')[0].fled ? `<span class="good">Il falò scaccia ${n('falo')[0].fled === 1 ? 'un vampiro' : n('falo')[0].fled + ' vampiri'}.</span>` : '<span class="good">Il falò illumina l\'incrocio.</span>');
+    for (const e of n('item')) {
+      const d = e.cat === 'card' ? UC.CARDS[e.kind] : UC.UPGRADES[e.kind];
+      out.unshift(e.cat === 'card' ? `<span class="good">Hai trovato una carta: <b>${d.name}</b>.</span> ${d.desc}` : `<span class="good"><b>${d.name}</b>!</span> ${d.desc}`);
+    }
+    if (n('handFull').length) out.push('Mano piena: la carta resta lì.');
+    if (n('newItem').length && out.length < 2) out.push('È comparso un nuovo <b>?</b>.');
+    if (n('gas').length) out.push('<span class="good">Lampione a gas: resta acceso fino all\'alba.</span>');
+    if (n('campana').length) out.push('<span class="good">La campana: tutti di corsa.</span>');
+    const grp = evs.find(e => e.type === 'spawnP' && e.size >= 2);
+    if (grp && out.length < 2) out.push(`Un gruppo di ${grp.size} esce dall'osteria al <b>${DN(grp.d)}</b>.`);
+    if (n('fly').length) out.push('<span class="bad">Il Conte ha volato sopra la luce.</span>');
+    if (n('douse').length) out.push('<span class="bad">La Sposa ha spento un lampione.</span>');
+    const nv = evs.find(e => e.type === 'spawnV' && e.vtype && e.vtype !== 'ombra');
+    if (nv && out.length < 2) out.push(nv.vtype === 'conte' ? 'È arrivato <b>il Conte</b>.' : 'È arrivata <b>la Sposa</b>.');
+    if (n('stun').length) out.push('<span class="bad">Al buio accanto a un vampiro: perdi un turno.</span>');
+    if (n('noOil').length) out.push('Niente olio: torna a una fermata.');
+    if (n('refill').length) out.push('Pieno d\'olio.');
+    if (n('phase').length) out.push(`La notte si sposta: ora tocca al <b>${DN(n('phase')[0].d)}</b>.`);
+    if (n('blocked').length && !out.length) out.push('La luce ha fermato un vampiro.');
+    return out.slice(0, 2).join(' ');
+  }
+
+  // ---------- prima notte guidata ----------
+  const I = UC.id;
+  const TUT = {
+    1: { only: I(3, 1), setup: () => UC.spawnAt(st, I(3, 0), 1),
+      hint: 'Questa persona deve arrivare alla <b>fermata del tram</b>. Le persone <b>vanno verso la luce</b>: <b>tocca l\'incrocio indicato</b>, ci andrai e accenderai il lampione accanto a lei.' },
+    2: { only: I(3, 1), hint: 'Ha visto la luce e si è incamminata. <b>Tocca te stesso</b> per aspettare un turno.' },
+    3: { only: I(2, 1), setup: () => { UC.spawnAt(st, I(2, 1), 2); UC.addVampire(st, I(2, 0)); },
+      hint: 'Salvata! Ora un vampiro: la <b>freccia rossa</b> mostra dove colpirà. I vampiri camminano solo al buio: <b>accendi quell\'incrocio</b>.' },
+    4: { only: I(3, 1), hint: 'La luce l\'ha fermato. Il <b>cerchietto</b> attorno a un lampione si svuota a ogni turno: passandoci sopra lo ricarichi. <b>Tocca il lampione qui sotto.</b>' },
+    5: { only: I(3, 2), setup: () => { UC.spawnAt(st, I(5, 4), 3); UC.addVampire(st, I(6, 0)); },
+      hint: 'Ogni lampione nuovo costa una <b>latta d\'olio</b> (in alto a sinistra). C\'è gente al Porto: prima <b>vai alla fermata</b>, dove fai il pieno.' },
+    6: { only: I(5, 2), hint: 'Da una fermata il <b>tram</b> ti porta a un\'altra in un solo turno. <b>Tocca la fermata del Porto.</b>' },
+    7: { only: I(5, 3), hint: '<b>Accendi la strada</b> tra il gruppo e la fermata.' },
+    8: { setup: () => { UC.spawnAt(st, I(0, 4), 2); st.items.push({ id: 'tq', node: I(4, 3), cat: 'up', kind: 'birra' }); },
+      hint: 'Ora sei da solo. Un quartiere <b>senza vittime vale il doppio</b>. Vedi il <b>?</b>? Passaci sopra: sul terreno trovi carte e potenziamenti. Resisti fino all\'alba.' },
+    9: { setup: () => UC.addVampire(st, I(0, 0)) },
+    10: { setup: () => UC.spawnAt(st, I(4, 4), 1) },
+  };
+  const tutStep = () => (st && st.tutorial ? TUT[st.turn] : null);
+  function tutSetup() {
+    const step = tutStep();
+    if (!step || step.ran) return;
+    step.ran = true;
+    if (step.setup) { step.setup(); UC.planVampires(st); }
+  }
+  function setMsg(html, isHint) {
+    $('msg').innerHTML = `<span>${html || '&nbsp;'}</span>`;
+    $('msg').classList.toggle('hint', !!isHint);
+  }
+
+  let armed = null;
+  function cardBtn(k) {
+    return `${icon(k)}${UC.CARDS[k].name.split(' ').pop()}`;
+  }
+  function renderTools() {
+    const hand = $('hand');
+    hand.innerHTML = '';
+    const locked = !st || st.over || (st.tutorial && st.turn < 8);
+    for (let i = 0; i < UC.HAND_MAX; i++) {
+      const k = st && st.hand[i];
+      const b = document.createElement('button');
+      b.className = 'card' + (k ? '' : ' empty') + (k && armed === k && st.hand.indexOf(k) === i ? ' armed' : '');
+      if (k) { b.innerHTML = cardBtn(k); b.disabled = locked; b.addEventListener('click', () => onCard(k)); }
+      else b.disabled = true;
+      hand.appendChild(b);
+    }
+  }
+  function onCard(k) {
+    if (!st || st.over) return;
+    const c = UC.CARDS[k];
+    if (c.kind === 'instant') {
+      UC.playInstant(st, k);
+      setMsg(k === 'tanica' ? '<span class="good">Tanica: +3 latte d\'olio.</span>' : '<span class="good">La croce mette in fuga il vampiro più vicino.</span>', false);
+      UC.planVampires(st);
+      armed = null; render(); renderTools();
+      return;
+    }
+    armed = armed === k ? null : k;
+    setMsg(armed ? `<b>${c.name}</b>: ${c.desc} Tocca dove andare.` : '&nbsp;', false);
+    render(); renderTools();
+  }
+  function onTap(n) {
+    if (!st || st.over) return;
+    const step = tutStep();
+    if (step && step.only != null && n !== step.only) {
+      $('msg').classList.remove('nudge'); void $('msg').offsetWidth; $('msg').classList.add('nudge');
+      return;
+    }
+    if (!UC.applyMove(st, n, armed)) { setMsg('Troppo lontano: al massimo 2 incroci, oppure il <b>tram</b> da una fermata a un\'altra.', false); return; }
+    armed = null;
+    tutSetup();
+    const next = tutStep();
+    if (next && next.hint && !st.over) setMsg(next.hint, true);
+    else {
+      let m = describe(st.events);
+      if (UC.isStop(st, st.pos) && !st.over && !m.includes('presi') && !m.includes('preso'))
+        m = (m ? m + ' ' : '') + 'Da qui il <b>tram</b> ti porta alle altre fermate.';
+      setMsg(m, st.events.some(e => e.type === 'item'));
+    }
+    render(); renderTools();
+    if (st.over) setTimeout(showEnd, 650);
+  }
+
+  // ---------- partita ----------
+  function dateLabel() { const d = new Date(); return `${d.getDate()}/${d.getMonth() + 1}`; }
+  function startTutorial() {
+    seed = 1; daily = false;
+    for (const k in TUT) delete TUT[k].ran;
+    st = UC.newGame(seed, null, { tutorial: true });
+    for (const [, g] of ents) g.remove(); ents.clear();
+    drawStatic();
+    tutSetup();
+    setMsg(TUT[1].hint, true);
+    armed = null; render(); renderTools();
+  }
+  let mode = 'daily', levelIdx = 0;
+  const prog = (() => { try { return JSON.parse(store.get('uc-season') || '{}'); } catch (e) { return {}; } })();
+  prog.stars = prog.stars || []; prog.best = prog.best || [];
+  const saveProg = () => store.set('uc-season', JSON.stringify(prog));
+  const unlocked = i => i === 0 || (prog.stars[i - 1] || 0) >= 1;
+  const SEASON_COL = ['#7cc47f', '#7cc47f', '#7cc47f', '#f4d35e', '#f4d35e', '#e9945a', '#e9945a', '#e9945a', '#7fb0d8', '#9fd4ff'];
+  const starStr = n => '★'.repeat(n) + `<span class="off">${'★'.repeat(3 - n)}</span>`;
+
+  function begin() {
+    for (const [, g] of ents) g.remove(); ents.clear();
+    drawStatic();
+    armed = null; render(); renderTools();
+  }
+  function start(newSeed, isDaily) {
+    mode = isDaily ? 'daily' : 'random';
+    seed = newSeed; daily = isDaily;
+    st = UC.newGame(seed);
+    const c = UC.CONDS.find(c => c.key === st.cond);
+    $('nightBox').innerHTML = `Stanotte: <b>${c.name}</b>. ${c.desc}`;
+    setMsg('La notte comincia dal <b>Colle</b>. Tocca un incrocio vicino.', false);
+    begin();
+  }
+  function startLevel(i) {
+    mode = 'level'; levelIdx = i; daily = false;
+    st = UC.newGame(0, null, { level: i });
+    seed = st.seed;
+    const L = UC.LEVELS[i], c = UC.CONDS.find(c => c.key === st.cond);
+    $('nightBox').innerHTML = `${L.date}, <b>${L.name}</b>. ${c.desc}`;
+    setMsg(L.news, true);
+    begin();
+  }
+  function openSeason() {
+    $('levelList').innerHTML = UC.LEVELS.map((L, i) => {
+      const open = unlocked(i), stars = prog.stars[i] || 0;
+      const isNext = open && !stars;
+      return `<button class="lv ${open ? '' : 'locked'} ${isNext ? 'next' : ''}" data-i="${i}" ${open ? '' : 'disabled'}>
+        <span class="dot" style="background:${SEASON_COL[i]}"></span>
+        <span><div class="dt">Capitolo ${i + 1} · ${L.date}</div><div class="nm">${L.name}</div></span>
+        ${open ? `<span class="st">${starStr(stars)}</span>` : `<span class="need">🔒 serve 1 ★ in<br>${UC.LEVELS[i - 1].name}</span>`}</button>`;
+    }).join('');
+    for (const b of $('levelList').querySelectorAll('.lv')) b.addEventListener('click', () => openIntro(+b.dataset.i));
+    let nxt = UC.LEVELS.findIndex((_, i) => unlocked(i) && !(prog.stars[i] > 0));
+    if (nxt < 0) nxt = UC.LEVELS.length - 1;
+    const NL = UC.LEVELS[nxt];
+    $('btnContinue').textContent = `${prog.stars.some(x => x > 0) ? 'Continua' : 'Inizia'}: capitolo ${nxt + 1}, ${NL.name}`;
+    $('btnContinue').onclick = () => openIntro(nxt);
+    $('seasonBanner').style.backgroundImage = `url(${SEASON_IMG(nxt)})`;
+    $('ovSeason').classList.remove('hidden');
+  }
+  function openIntro(i) {
+    const L = UC.LEVELS[i];
+    $('inDate').textContent = `Capitolo ${i + 1} · ${L.date}`;
+    $('inBanner').style.backgroundImage = `url(${SEASON_IMG(i)})`;
+    $('inName').textContent = L.name;
+    $('inStory').textContent = L.story;
+    $('inNews').innerHTML = L.news;
+    const T = UC.LOSS_STARS;
+    $('inGoal').innerHTML = `${L.turns} turni · <b>★</b> perdi al massimo ${T[0]} persone (apre il capitolo dopo) · <b>★★</b> al massimo ${T[1]} · <b>★★★</b> nessuna` +
+      (prog.lost && prog.lost[i] !== undefined ? ` · il tuo record: ${prog.lost[i]} perse` : '');
+    levelIdx = i;
+    $('ovSeason').classList.add('hidden');
+    $('ovIntro').classList.remove('hidden');
+  }
+
+  function showEnd() {
+    const sc = UC.score(st);
+    const c = UC.CONDS.find(c => c.key === st.cond);
+    const left = st.pass.filter(p => p.status === 'dawn').length;
+    $('endSub').textContent = `${c.name} · ${left ? left + ' ancora in strada all\'alba: salvi anche loro' : 'tutti al sicuro prima dell\'alba'}`;
+    $('endScore').textContent = sc.total;
+    $('endTable').innerHTML = sc.rows.map(r =>
+      `<tr><td>${r.name}</td><td>${r.saved} ${r.saved===1?'salvato':'salvati'} · ${r.taken} ${r.taken===1?'preso':'presi'}</td><td class="r">${r.mult === 2 ? '×2' : ''}</td><td class="r"><b>${r.pts}</b></td></tr>`).join('');
+    $('endStars').innerHTML = '';
+    $('btnNext').style.display = 'none';
+    $('btnRandom').textContent = mode === 'level' ? 'La stagione' : 'Notte casuale';
+    if (mode === 'level') {
+      const L = UC.LEVELS[levelIdx];
+      prog.stars[levelIdx] = Math.max(prog.stars[levelIdx] || 0, sc.stars);
+      prog.lost = prog.lost || [];
+      const prevLost = prog.lost[levelIdx];
+      prog.lost[levelIdx] = prevLost === undefined ? sc.lost : Math.min(prevLost, sc.lost);
+      saveProg();
+      const savedN = st.stats.reduce((a, x) => a + x.saved, 0);
+      $('endScore').innerHTML = `${savedN} <span style="font-size:20px;color:var(--muted);font-family:Inter">salvati · ${sc.lost} ${sc.lost === 1 ? 'persa' : 'perse'}</span>`;
+      $('endStars').innerHTML = starStr(sc.stars);
+      $('endSub').textContent = `${L.date} · ${L.name}`;
+      $('endTitle').textContent = sc.stars ? (levelIdx === UC.LEVELS.length - 1 ? 'La primavera tornerà' : 'L\'alba') : 'Non basta';
+      const T = UC.LOSS_STARS;
+      $('best').textContent = sc.stars === 3 ? 'Nessuna vittima: notte perfetta.'
+        : sc.stars ? `Per la prossima stella perdi al massimo ${T[sc.stars]} ${T[sc.stars] === 1 ? 'persona' : 'persone'}${T[sc.stars] === 0 ? ' (nessuna)' : ''}.`
+        : `Per aprire il capitolo ${levelIdx + 2} devi perdere al massimo ${T[0]} persone.`;
+      if (sc.stars && levelIdx < UC.LEVELS.length - 1) {
+        $('btnNext').style.display = '';
+        $('btnNext').textContent = `Capitolo ${levelIdx + 2}: ${UC.LEVELS[levelIdx + 1].name}`;
+      }
+      $('btnDaily').style.display = 'none';
+      $('btnCopy').style.display = 'none';
+      $('btnAgain').textContent = 'Riprova';
+      $('ovEnd').classList.remove('hidden');
+      return;
+    }
+    const key = 'uc-best-' + seed;
+    const prev = +(store.get(key) || 0);
+    if (sc.total > prev) store.set(key, sc.total);
+    $('best').textContent = sc.total > prev && prev > 0 ? `Nuovo record per questa notte (prima: ${prev})` :
+      prev ? `Record per questa notte: ${Math.max(prev, sc.total)}` : '';
+    $('btnDaily').style.display = st.tutorial ? '' : 'none';
+    $('btnCopy').style.display = st.tutorial ? 'none' : '';
+    $('btnAgain').textContent = st.tutorial ? 'Rifai la guida' : 'Rigioca la notte';
+    if (st.tutorial) {
+      store.set('uc-tut', '1');
+      $('endSub').textContent = 'Prima notte guidata';
+      $('endTitle').textContent = 'La tua prima alba';
+      $('best').textContent = 'Ora la stagione: dieci capitoli, dall\'equinozio al solstizio.';
+      $('ovEnd').classList.remove('hidden');
+      return;
+    }
+    $('endTitle').textContent = sc.total >= 25 ? 'Un\'alba gloriosa' : sc.total >= 15 ? 'L\'alba' : 'Un\'alba amara';
+    $('ovEnd').classList.remove('hidden');
+  }
+
+  $('btnCopy').addEventListener('click', async () => {
+    const sc = UC.score(st);
+    const c = UC.CONDS.find(c => c.key === st.cond);
+    const txt = `Ultima Corsa · ${daily ? dateLabel() : 'notte casuale'} · ${c.name}\n★ ${sc.total}\n` +
+      sc.rows.map(r => `${r.name} ${'🏮'.repeat(Math.min(r.saved, 8))}${r.taken ? ' 🦇' + r.taken : ' ×2'}`).join('\n');
+    try { await navigator.clipboard.writeText(txt); $('btnCopy').textContent = 'Copiato'; }
+    catch (e) { $('btnCopy').textContent = 'Copia non riuscita'; }
+    setTimeout(() => $('btnCopy').textContent = 'Copia il risultato', 1500);
+  });
+  const hide = id => $(id).classList.add('hidden');
+  const restart = () => st.tutorial ? startTutorial() : mode === 'level' ? startLevel(levelIdx) : start(seed, daily);
+  $('btnAgain').addEventListener('click', () => { hide('ovEnd'); restart(); });
+  $('btnDaily').addEventListener('click', () => { hide('ovEnd'); openIntro(0); });
+  $('btnNext').addEventListener('click', () => { hide('ovEnd'); openIntro(levelIdx + 1); });
+  $('btnTut').addEventListener('click', () => { hide('ovRules'); startTutorial(); });
+  $('btnTut2').addEventListener('click', () => { hide('ovSeason'); startTutorial(); });
+  $('btnDaily2').addEventListener('click', () => { hide('ovSeason'); start(UC.dailySeed(), true); });
+  $('btnSeason').addEventListener('click', () => { hide('ovRules'); openSeason(); });
+  $('btnGo').addEventListener('click', () => { hide('ovIntro'); startLevel(levelIdx); });
+  $('btnBack').addEventListener('click', () => { hide('ovIntro'); openSeason(); });
+  $('btnRandom').addEventListener('click', () => { hide('ovEnd'); mode === 'level' ? openSeason() : start((Date.now() % 1e9) | 0, false); });
+  $('btnRules').addEventListener('click', () => $('ovRules').classList.remove('hidden'));
+  let introFlow = false;
+  $('btnStart').addEventListener('click', () => {
+    hide('ovRules');
+    if (introFlow) { introFlow = false; $('btnStart').textContent = 'Torna alla notte'; $('btnSeason').style.display = ''; $('btnTut').style.display = ''; if (store.get('uc-tut')) openSeason(); }
+  });
+  $('btnRestart').addEventListener('click', restart);
+
+  if (store.get('uc-tut')) startLevel(0); else startTutorial();
+  $('btnSplash').addEventListener('click', () => {
+    hide('ovSplash'); introFlow = true;
+    $('btnStart').textContent = 'Avanti'; $('btnSeason').style.display = 'none'; $('btnTut').style.display = 'none';
+    $('ovRules').classList.remove('hidden');
+  });
+})();
+</script>
+</body>
+</html>

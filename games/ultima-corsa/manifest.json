@@ -1,0 +1,23 @@
+{
+  "slug": "ultima-corsa",
+  "title": { "it": "Ultima Corsa", "en": "Last Tram" },
+  "hook": { "it": "Accendi i lampioni e porta la gente al tram prima dei vampiri.", "en": "Light the lamps and get people to the tram before the vampires." },
+  "lead": { "it": "Sei il lampionaio. Stanotte la città è dei vampiri: accendi i lampioni, guida la gente alle fermate e portala a casa prima dell'alba.", "en": "You are the lamplighter. Tonight the city belongs to the vampires: light the lamps, guide people to the stops and get them home before dawn." },
+  "howto": {
+    "it": ["Muoviti di due incroci e accendi un lampione per turno.", "I vampiri si muovono solo al buio: le loro frecce ti dicono dove andranno.", "La gente cammina verso la luce: portala alle fermate del tram."],
+    "en": ["Move two crossings and light one lamp per turn.", "Vampires only move in the dark: their arrows show where they'll go.", "People walk towards light: lead them to the tram stops."]
+  },
+  "campaign": {
+    "it": "Dieci capitoli dall'equinozio di primavera al solstizio d'inverno, con nuovi vampiri e nuove carte.",
+    "en": "Ten chapters from the spring equinox to the winter solstice, with new vampires and new cards."
+  },
+  "minutes": [5, 10],
+  "difficulty": 3,
+  "accent": "#f3c76a",
+  "chapters": 10,
+  "free": "daily",
+  "price": { "eur": 1.99 },
+  "status": "live",
+  "lang": ["it"],
+  "order": 2
+}

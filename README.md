@@ -19,10 +19,18 @@ Small games for the small hours. Piccoli giochi per le ore piccole.
 - `assets/games/`: le copertine dei giochi.
 - `assets/brand/`: simbolo, icone, illustrazione della Home, anteprima di condivisione.
 
-## Vedere la vetrina
+## Il sito
 
-Apri `design-system/index.html` nel browser. Oppure attiva GitHub Pages dalla radice della repository e vai su `/design-system/`.
+```
+python3 tools/build.py        # genera dist/
+cd dist && python3 -m http.server 8000
+```
 
-## Prossimo passo
+- Pagine in `/it/` e `/en/`, giochi in `games/<slug>/` con il loro `manifest.json`.
+- Testi in `i18n/it.json` e `i18n/en.json`.
+- `site.config.json`: `"payments": false` tiene spenti prezzi e sblocchi (fase di prova, tutto aperto); `"feedbackEmail"` è l'indirizzo a cui arrivano i pareri (vuoto: il parere si copia e si manda a mano).
+- Ogni push su `main` pubblica il sito su GitHub Pages (`.github/workflows/pages.yml`). Per attivarlo: Settings → Pages → Source: **GitHub Actions**.
 
-Home e schede gioco statiche, in italiano e inglese, con i due giochi collegati al sito tramite il contratto `postMessage` descritto nella progettazione.
+## Vedere la vetrina del design system
+
+Apri `design-system/index.html` nel browser.

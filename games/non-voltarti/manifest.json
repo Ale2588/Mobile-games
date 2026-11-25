@@ -1,0 +1,24 @@
+{
+  "slug": "non-voltarti",
+  "title": { "it": "Non voltarti", "en": "Don't Look Back" },
+  "hook": { "it": "Riporta tutti a casa prima che il bosco se li prenda.", "en": "Get everyone home before the woods take them." },
+  "lead": { "it": "La macchina è nel fosso. Le luci di casa sono oltre il bosco. Riporta i tuoi tre amici al cancello, con una torcia e poco altro.", "en": "The car is in the ditch. The lights of home are beyond the woods. Get your three friends to the gate, with a torch and little else." },
+  "howto": {
+    "it": ["Una casella in silenzio, due correndo: ma correre fa rumore.", "Punta la torcia: chi illumini si fa coraggio, l'Uomo Alto si ferma.", "Arriva al cancello con più amici possibile."],
+    "en": ["One square in silence, two running: but running makes noise.", "Point the torch: whoever you light finds courage, the Tall Man stops.", "Reach the gate with as many friends as you can."]
+  },
+  "campaign": {
+    "it": "Ogni notte un bosco diverso. La campagna di dieci notti è in preparazione.",
+    "en": "A different wood every night. The ten-night campaign is in the works."
+  },
+  "minutes": [8, 15],
+  "difficulty": 4,
+  "accent": "#ff8a5c",
+  "chapters": 0,
+  "free": "daily",
+  "price": { "eur": 1.99 },
+  "status": "live",
+  "lang": ["it"],
+  "new": true,
+  "order": 1
+}
