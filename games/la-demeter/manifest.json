@@ -2,9 +2,9 @@
   "slug": "la-demeter",
   "title": { "it": "La Demeter", "en": "The Demeter" },
   "hook": { "it": "Luglio 1897, da Varna a Whitby. Nella stiva cinquanta casse di terra. Ogni notte manca un uomo.", "en": "July 1897, from Varna to Whitby. Fifty boxes of earth in the hold. Every night a man goes missing." },
-  "lead": { "it": "Sei il capitano. Di notte qualcosa esce dalle casse e caccia l'equipaggio. Tieni in rotta la nave, salva chi puoi e arriva a Whitby: l'ultima notte, nella tempesta, devi essere al timone.", "en": "You are the captain. At night something comes out of the boxes and hunts the crew. Keep the ship on course, save whom you can and reach Whitby: on the last night, in the storm, you must be at the helm." },
+  "lead": { "it": "Sei il capitano. Di notte qualcosa esce dalle casse e dà la caccia all'equipaggio. Tieni in rotta la nave, salva chi puoi e arriva a Whitby: l'ultima notte, nella tempesta, devi essere al timone.", "en": "You are the captain. At night something comes out of the boxes and hunts the crew. Keep the ship on course, save whom you can and reach Whitby: on the last night, in the storm, you must be at the helm." },
   "howto": {
-    "it": ["Di notte gira per la nave: ogni lavoro fatto la fa avanzare.", "Se senti un grido, corri: col crocifisso puoi strappargli un marinaio. Ma poi caccerà te.", "Di giorno scegli: gettare una cassa in mare, pregare, sbarrare un boccaporto."],
+    "it": ["Di notte gira per la nave: ogni lavoro fatto la fa avanzare.", "Se senti un grido, corri: col crocifisso puoi strappargli un marinaio. Ma poi darà la caccia a te.", "Di giorno scegli: gettare una cassa in mare, pregare, sbarrare un boccaporto."],
     "en": ["At night move around the ship: every job done moves her forward.", "If you hear a scream, run: with the crucifix you can snatch a sailor from him. But then he hunts you.", "By day choose: throw a box overboard, pray, bar a hatch."]
   },
   "campaign": { "it": "Ogni viaggio è diverso: chi fa la guardia, cosa si rompe, chi sceglie lui. La sfida di oggi è uguale per tutti.", "en": "Every voyage is different: who keeps watch, what breaks, whom he chooses. Today's challenge is the same for everyone." },
