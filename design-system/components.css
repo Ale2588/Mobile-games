@@ -3,7 +3,7 @@
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); overscroll-behavior-y: none; }
 body {
   margin: 0;
   background: var(--bg);
@@ -202,7 +202,7 @@ a { color: inherit; }
 .hero--art {
   margin: 0 calc(var(--gutter) * -1);
   padding: 0 var(--gutter) var(--sp-8);
-  min-height: 620px; align-content: end;
+  min-height: min(520px, 64dvh); align-content: end;
   background:
     linear-gradient(180deg, rgba(7,8,11,.45) 0%, rgba(7,8,11,0) 22%, rgba(7,8,11,0) 58%, rgba(7,8,11,.7) 82%, var(--bg) 100%),
     url("../assets/brand/hero.webp") 12% 85% / cover no-repeat;
