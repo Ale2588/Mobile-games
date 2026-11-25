@@ -27,7 +27,7 @@ body[data-page="game"] .topbar { display: none; }
 /* gioco a tutto schermo */
 body[data-page="play"] { overflow: hidden; }
 .play { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; }
-.play__bar { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-2); height: 44px; padding: env(safe-area-inset-top) var(--sp-2) 0; background: var(--ink-950); border-bottom: 1px solid var(--ink-800); }
+.play__bar { flex: 0 0 auto; box-sizing: content-box; display: flex; align-items: center; gap: var(--sp-2); height: 44px; padding: env(safe-area-inset-top) var(--sp-2) 0; background: var(--ink-950); border-bottom: 1px solid var(--ink-800); }
 .play__exit { appearance: none; border: 0; width: 44px; height: 44px; display: grid; place-items: center; background: none; color: var(--text-2); cursor: pointer; border-radius: 50%; }
 .play__title { flex: 1; font: 500 var(--fs-md)/1 var(--font-display); color: var(--text-2); }
 .play__fb { appearance: none; border: 0; background: none; color: var(--lamp-300); font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .04em; padding: 0 var(--sp-3); height: 44px; cursor: pointer; }
