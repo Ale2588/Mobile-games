@@ -98,7 +98,8 @@ a { color: inherit; }
 .game-card__title { font: 500 28px/1.05 var(--font-display); margin: 0; }
 .game-card__hook { color: var(--text-2); font-size: var(--fs-sm); margin: 0; }
 .game-card:active { transform: scale(.99); }
-.game-card--soon { filter: grayscale(.9) brightness(.7); }
+.game-card--soon { background: var(--card) url("../assets/brand/soon.webp") center / cover; }
+.game-card--soon .t-h2 { color: var(--text-2); }
 .game-card__glow { position: absolute; inset: auto -20% -40% -20%; height: 60%; z-index: 0; background: radial-gradient(closest-side, var(--game-accent), transparent); opacity: .18; }
 
 /* Carta compatta (liste, "continua") */
@@ -123,6 +124,7 @@ a { color: inherit; }
 }
 .logo { font: 500 20px/1 var(--font-display); letter-spacing: .02em; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
 .logo__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lamp-400); box-shadow: 0 0 12px 3px var(--lamp-glow); }
+.logo__mark { width: 28px; height: 28px; border-radius: 50%; box-shadow: 0 0 14px 2px var(--lamp-glow); }
 
 /* Selettore lingua */
 .lang { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: var(--card-raised); }
@@ -195,3 +197,14 @@ a { color: inherit; }
   content: ""; position: absolute; z-index: -1; width: 320px; height: 320px; top: -60px; right: -120px;
   background: radial-gradient(closest-side, var(--lamp-glow), transparent);
 }
+
+/* Copertina con illustrazione (Home) */
+.hero--art {
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 0 var(--gutter) var(--sp-8);
+  min-height: 620px; align-content: end;
+  background:
+    linear-gradient(180deg, rgba(7,8,11,.45) 0%, rgba(7,8,11,0) 22%, rgba(7,8,11,0) 58%, rgba(7,8,11,.7) 82%, var(--bg) 100%),
+    url("../assets/brand/hero.webp") 12% 85% / cover no-repeat;
+}
+.hero--art::before { display: none; }

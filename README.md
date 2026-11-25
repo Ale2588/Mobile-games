@@ -17,6 +17,7 @@ Small games for the small hours. Piccoli giochi per le ore piccole.
 - [`docs/design-system.md`](docs/design-system.md): le regole del design system.
 - [`design-system/`](design-system/): variabili, componenti e la vetrina dal vivo (`index.html`).
 - `assets/games/`: le copertine dei giochi.
+- `assets/brand/`: simbolo, icone, illustrazione della Home, anteprima di condivisione.
 
 ## Vedere la vetrina
 
