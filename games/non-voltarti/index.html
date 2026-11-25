@@ -491,4 +491,7 @@ document.getElementById('bAgain').addEventListener('click',()=>{document.getElem
 newGame();
 window._S=()=>S; window._act=act; window._moves=()=>moves(visible());
 </script>
+<script id="sh-skip">/* dal sito (?play): salta la copertina; le regole solo la prima volta */
+(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_non-voltarti';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bSplash');if(seen)c('bStart');},0);})();</script>
 </body></html>

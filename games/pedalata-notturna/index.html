@@ -446,5 +446,8 @@ document.getElementById('coverImg').style.backgroundImage='url(art/cover.webp)';
 newGame(true);document.getElementById('nightTxt').innerHTML=`Sfida n° ${todayN()} · stanotte: <b>${NIGHTS[S.night].n}</b>. ${NIGHTS[S.night].d}<br>Missione: <b>${MISSIONS[S.mission].n}</b>. ${MISSIONS[S.mission].d}`;
 window._S=()=>S;window._step=step;window._minor=takeMinor;window._choose=choose;window._use=useItem;window._new=newGame;
 </script>
+<script id="sh-skip">/* dal sito (?play): salta la copertina; le regole solo la prima volta */
+(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_pedalata-notturna';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bCover');if(seen)c('bRulesOk');},0);})();</script>
 </body>
 </html>

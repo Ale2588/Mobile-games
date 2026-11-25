@@ -235,7 +235,7 @@ def build_lang(L):
     <span class="play__title">{e(g['title'][L])}</span>
     <button type="button" class="play__fb" data-feedback>{t(L, 'trial.cta')}</button>
   </div>
-  <iframe class="play__frame" src="{R}games/{s}/index.html" title="{e(g['title'][L])}" allow="clipboard-write"></iframe>
+  <iframe class="play__frame" src="{R}games/{s}/index.html?play" title="{e(g['title'][L])}" allow="clipboard-write"></iframe>
 </div>
 <div class="sheet-backdrop" data-sheet="exit" hidden></div>
 <div class="sheet" data-sheet="exit" role="dialog" aria-modal="true" aria-labelledby="exT" hidden>

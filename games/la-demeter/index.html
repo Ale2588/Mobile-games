@@ -27,6 +27,9 @@ html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system
 #board svg{height:100%;width:100%;display:block}
 #board svg *{pointer-events:none}#board svg .room{pointer-events:all;cursor:pointer}
 #storm{margin:2px 10px 0;padding:8px 10px;border-radius:10px;background:#221d10;border:1.5px solid #f3c76a;color:#ffe2a0;font-size:14px;text-align:center}#storm.urg{background:#3a0f0b;border-color:#ff5a4e;color:#ffd0c8;animation:pulse 1s infinite alternate}#storm.ok{background:#0f2a1c;border-color:#7fd0a0;color:#cfeedd}@keyframes pulse{to{opacity:.65}}
+#tasks{display:flex;gap:6px;padding:2px 10px 4px;overflow-x:auto}#tasks .tk{display:flex;align-items:center;gap:4px;background:#1a1408;border:1.5px solid #f3c76a;border-radius:8px;padding:2px 7px 2px 3px;font-size:11px;color:#ffe2a0;white-space:nowrap}#tasks .tk img{width:22px;height:22px}#tasks .tk.done{border-color:#3a4a3a;color:#7fd0a0;opacity:.6;text-decoration:line-through}
+.evc{display:flex;gap:12px;align-items:center;margin-top:10px;padding:12px;border-radius:14px;background:#1a1f28;border:1px solid #353e4d}.evc img{width:54px;height:54px}.evc b{display:block;font:500 20px Georgia,serif;color:#e6e2d8}.evc span{font-size:14px;color:#9aa3b2;line-height:1.4}
+.tl{display:flex;gap:10px;align-items:center;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#1a1408;border:1.5px solid #f3c76a}.tl img{width:36px;height:36px}.tl b{display:block;color:#ffe2a0}.tl span{font-size:13px;color:#c9b892}
 #msg{min-height:40px;padding:4px 14px;text-align:center;font-size:13px;font-style:italic;line-height:1.35}
 #ctrl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
 button{font:600 14px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:50px;padding:6px}
@@ -55,6 +58,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
     <div id="route"><div class="line"></div><div class="done" id="rDone"></div><div class="ship" id="rShip">⛵</div><span class="start">Varna</span><span class="end">Whitby</span></div>
   </div>
   <div id="stats"><span>Equipaggio <b id="sCrew">6</b></span><span>Crocifisso <b id="sCross">2</b></span><span>Casse in mare <b id="sBox">0</b></span></div>
+  <div id="tasks"></div>
   <div id="storm" class="hide"></div>
   <div id="board"></div>
   <div id="msg"></div>
@@ -77,6 +81,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
     <li>Ogni notte vuole un uomo. Quando lo prende si nutre per tre turni, poi torna sazio nelle casse. Se glielo strappi col crocifisso, invece, è furioso e <b>cerca te</b> per il resto della notte. Se non c'è più nessun altro a bordo, cerca solo te. Ogni tanto si ferma ad annusare l'aria; quando è furioso sale la nebbia, e a volte è più veloce. Ma <b>meno equipaggio, nave più lenta</b>: più notti prima di Whitby.</li>
     <li><b>Ogni notte c'è da fare:</b> correggere la rotta al timone, ricucire una vela, riaccendere il fanale, pompare una falla in stiva. Vai nella stanza e tocca <b>Lavora</b>. Ogni lavoro fatto fa avanzare la nave: è l'unico modo per arrivare. Una falla lasciata aperta la rallenta. Chiuso in cabina, a Whitby non ci arrivi.</li>
     <li>Quando senti un grido, <b>corri</b>. Se hai un crocifisso, tocca la stanza dove si nutre: entri col crocifisso alzato e <b>salvi</b> il marinaio. Senza crocifisso, in una stanza con lui non entri.</li>
+    <li><b>Ogni notte ha un imprevisto</b>: nebbia, luna piena, il primo ufficiale impazzito, i topi, vento in poppa, il lupo. Te lo dico prima che scenda il buio.</li>
     <li><b>Di giorno</b> scegli due cose: gettare in mare una cassa (ogni tre si sveglia un turno più tardi), sbarrare un boccaporto, pregare per un crocifisso.</li>
     <li><b>L'ultima notte c'è la tempesta.</b> Niente lavori: all'alba devi essere al <b>timone</b>, in coperta a poppa, altrimenti la nave si schianta. Un avviso in alto ti conta i turni.</li>
     <li>Punti: marinai vivi ×3, marinai salvati ×2, casse in mare ×1, più un bonus se arrivi in poche notti.</li>
@@ -95,9 +100,18 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
   </div>
   <button class="main" id="bStormOk">Vado al timone</button>
 </div></div>
+<div class="ov hide" id="ovNight" style="z-index:10;background:linear-gradient(rgba(4,5,6,.7),rgba(4,5,6,.94)),#000 url(art/r_ponte.webp) center/cover"><div class="box">
+  <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9aa3b2" id="nN"></div>
+  <div class="evc"><img id="nEi" alt=""><div><b id="nEn"></b><span id="nEd"></span></div></div>
+  <h2 style="margin-top:18px">Stanotte c'è da fare</h2>
+  <p style="margin:0 0 8px;font-size:14px">Vai nella stanza e tocca <b>Lavora</b>. Ogni lavoro fatto spinge la nave verso Whitby. Sulla nave li trovi in un <b style="color:#f3c76a">riquadro dorato</b>.</p>
+  <div id="nT"></div>
+  <button class="main" id="bNightOk">Al lavoro</button>
+</div></div>
 <div class="ov hide" id="ovDay" style="background:linear-gradient(rgba(4,5,6,.55),rgba(4,5,6,.88)),#000 url(art/alba.webp) center/cover"><div class="box">
   <div class="log"><div class="d" id="logD"></div><div id="logT"></div></div>
   <p style="margin:16px 0 0"><b>Prima del buio</b> puoi fare due cose. <span id="dayLeft"></span></p>
+  <div id="dayMap" style="margin-top:10px"></div>
   <div class="choice" id="dayCh"></div>
   <button class="main" id="bNight">Scende la notte</button>
 </div></div>
@@ -119,6 +133,14 @@ const EDGES=[['prua','trinchetto'],['trinchetto','ponte'],['ponte','maestro'],['
 const HATCH={'alloggi|stiva1':'Il boccaporto degli alloggi','cambusa|casse1':'Il boccaporto della cambusa','casse2|corridoio':'Il boccaporto del corridoio','cabina|stiva2':'Il boccaporto della cabina'};
 const RIMG={prua:'prua',trinchetto:'trinchetto',ponte:'ponte',maestro:'maestro',timone:'timone',alloggi:'alloggi',cambusa:'cambusa',corridoio:'corridoio',veleria:'veleria',cabina:'cabina',stiva1:'stiva',stiva2:'stiva',casse1:'casse',casse2:'casse',casse3:'casse'};
 const TICON={vela:'vela',fanale:'fanale',rotta:'bussola',falla:'pompa',acqua:'barile',cime:'cime',trinchetto:'pennone'};
+const EVENTS={
+  calma:{n:'Mare calmo',i:'ancora',d:'Una notte come le altre. Per ora.'},
+  nebbia:{n:'Nebbia fitta',i:'fanale',d:'Vedi solo la stanza dove sei. Lui lo senti, ma non lo vedi arrivare.'},
+  luna:{n:'Luna piena',i:'bussola',d:'Il chiaro di luna entra dai boccaporti: vedi fino a due stanze di distanza.'},
+  ufficiale:{n:'Il primo ufficiale è impazzito',i:'cassa',d:'Uno degli uomini, cerchiato in giallo, scende verso le casse per aprirle. Se ci arriva, lui si sveglia subito. Raggiungilo per fermarlo.'},
+  topi:{n:'I topi',i:'cime',d:'Hanno rosicchiato mezza nave: stanotte c\'è un lavoro in più.'},
+  vento:{n:'Vento in poppa',i:'vela',d:'Ogni lavoro si fa in un turno solo, e la nave corre di più.'},
+  lupo:{n:'Il lupo',i:'crocifisso',d:'Stanotte ha la forma di un lupo: a volte fa due stanze in un turno. Ma il crocifisso lo tiene lontano più a lungo.'}};
 const ek=(a,b)=>[a,b].sort().join('|');
 const NAMES=['Olgaren','Petrof','Ivanescu','Mirko','Andrej','Stefan','Dimitri','Vasile'];
 const TURNS=12,GOAL=10;
@@ -157,13 +179,24 @@ function startNight(){
   {const pool=['vela','fanale','acqua','cime','trinchetto'].sort(()=>rnd()-.5);S.tasks=[{k:'rotta'},{k:pool[0]},{k:pool[1]}];if(rnd()<.7||S.night>=3)S.tasks.push({k:'falla',room:rnd()<.5?'stiva1':'stiva2'});else S.tasks.push({k:pool[2]});
    S.tasks.forEach(t=>{t.room=t.room||TASKS[t.k].room;t.prog=0;t.done=false;});}
   S.dr={room:['casse1','casse2','casse3'][Rn(3)],out:false,eat:0,stun:0,step:0,hunt:false};
-  if(S.storm){S.tasks=[];document.getElementById('ovStorm').classList.remove('hide');}
-  msgs=[S.storm?'La tempesta. All\'alba devi essere al TIMONE, in coperta a poppa.':'Scende la notte. Stanotte c\'è da fare: '+S.tasks.map(t=>TASKS[t.k].n.toLowerCase()+' ('+ROOMS[t.room].n.toLowerCase()+')').join(', ')+'.'];
+  {const pool=['nebbia','luna','ufficiale','topi','vento','lupo'].filter(e=>e!==S.lastEv);S.ev=S.night===1?'calma':pool[Rn(pool.length)];S.lastEv=S.ev;}
+  if(S.ev==='topi'){const ex=['vela','fanale','acqua','cime','trinchetto'].find(k=>!S.tasks.some(t=>t.k===k));if(ex)S.tasks.push({k:ex,room:TASKS[ex].room,prog:0,done:false});}
+  S.crew.forEach(c=>c.mad=false);
+  if(S.ev==='ufficiale'){const cand=S.crew.filter(c=>c.alive&&c.room!=='timone'&&ROOMS[c.room].d<2);if(cand.length){const m=cand[Rn(cand.length)];m.mad=true;}else S.ev='calma';}
+  if(S.storm){S.tasks=[];S.ev='calma';document.getElementById('ovStorm').classList.remove('hide');}
+  else showNight();
+  msgs=[S.storm?'La tempesta. All\'alba devi essere al TIMONE, in coperta a poppa.':'Scende la notte. '+EVENTS[S.ev].n+'.'];
   render();
 }
+function need(t){return S.ev==='vento'?1:TASKS[t.k].need;}
+function showNight(){
+  const E=EVENTS[S.ev];document.getElementById('nN').textContent=`Notte ${S.night} · ${S.night===1?'la prima':'l\'imprevisto di stanotte'}`;
+  document.getElementById('nEi').src=`art/i_${E.i}.png`;document.getElementById('nEn').textContent=E.n;document.getElementById('nEd').textContent=E.d;
+  document.getElementById('nT').innerHTML=S.tasks.map(t=>`<div class="tl"><img src="art/i_${TICON[t.k]}.png" alt=""><div><b>${TASKS[t.k].n}</b><span>${ROOMS[t.room].n}${need(t)>1?' · due turni':''}</span></div></div>`).join('');
+  document.getElementById('ovNight').classList.remove('hide');}
 function taskHere(){return (S.tasks||[]).find(t=>t.room===S.p&&!t.done);}
 function drVisible(){return S.dr&&S.dr.out&&!S.dr.sated;}
-function lit(r){return r===S.p||nb(S.p).includes(r);}
+function lit(r){if(S.ev==='nebbia'&&!S.storm)return r===S.p;if(S.ev==='luna')return (bfs(S.p)[r]??99)<=2;return r===S.p||nb(S.p).includes(r);}
 function act(kind,arg){
   if(S.over)return;msgs=[];S.crossOn=false;
   if(kind==='move'){if(!nb(S.p).includes(arg))return;
@@ -171,29 +204,35 @@ function act(kind,arg){
       if(S.cross<=0){msgs=['Lì dentro c\'è lui, e non hai più crocifissi. Non ci entri.'];return render();}
       if(D.victim)return act('rescue');
       S.cross--;S.p=arg;const back=nb(arg).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=1;msgs.push('Entri col crocifisso alzato. Arretra, sibila, e sparisce nel buio.');
-    }else S.p=arg;}
+    }else S.p=arg;
+    {const t=taskHere();if(t)msgs.push(`Qui c'è da fare: ${TASKS[t.k].n.toLowerCase()}. Tocca «Lavora».`);}}
   if(kind==='cross'){if(S.cross<=0)return;S.cross--;S.crossOn=true;msgs.push('Stringi il crocifisso e aspetti.');}
   if(kind==='bell'){if(ROOMS[S.p].d!==0)return;S.bell=2;msgs.push('Suoni la campana del ponte. Il rintocco scende fino alla stiva.');}
   if(kind==='wait')msgs.push('Resti fermo, in ascolto.');
-  if(kind==='work'){const t=taskHere();if(!t)return;t.prog++;if(t.prog>=TASKS[t.k].need){t.done=true;msgs.push(TASKS[t.k].done);}else msgs.push('Ci vuole ancora un turno. L\'acqua è alta.');}
+  if(kind==='work'){const t=taskHere();if(!t)return;t.prog++;if(t.prog>=need(t)){t.done=true;msgs.push(TASKS[t.k].done);}else msgs.push('Ci vuole ancora un turno. L\'acqua è alta.');}
   if(kind==='rescue'){const D=S.dr,v=D.victim;if(!v||S.cross<=0)return;S.cross--;S.p=D.room;v.dying=false;D.victim=null;D.eat=0;D.stun=2;const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.hunt=true;msgs.push(`Entri col crocifisso alzato. Lui si ritrae nel buio. ${v.n} è vivo, bianco come un lenzuolo. Ma adesso è furioso, e cerca te.`);S.saved=(S.saved||0)+1;}
   // se entri tu nella sua stanza
   if(S.dr.out&&!S.dr.sated&&S.dr.room===S.p&&!S.crossOn)return lose('Apri la porta. È lì, alto e magro, e ti stava aspettando.');
-  crewWander();
+  madTurn();crewWander();
   draculaTurn();
   if(S.over)return;
   S.turn++;
   if(S.turn>TURNS)return dawn();
   hints();render();
 }
-function crewWander(){for(const c of S.crew){if(!c.alive||c.dying||c.room==='timone'&&rnd()<.8)continue;if(rnd()<.25){const opts=nb(c.room).filter(n=>!(S.dr.out&&!S.dr.sated&&S.dr.room===n));if(opts.length)c.room=opts[Rn(opts.length)];}}}
+function madTurn(){const m=S.crew.find(c=>c.mad&&c.alive);if(!m)return;
+  if(m.room===S.p){m.mad=false;msgs.push(`Afferri ${m.n} per le spalle. Ti guarda come se si svegliasse adesso. Torna in branda.`);return;}
+  if(m.room.startsWith('casse')){m.mad=false;const D=S.dr;msgs.push(`Un colpo di martello, giù in stiva: ${m.n} ha aperto una cassa.`);if(!D.out){D.out=true;D.room=m.room;S.seen.wake=1;}D.prey=m;return;}
+  const d={};let best=null,bd=99;for(const c of ['casse1','casse2','casse3']){const dd=bfs(c);for(const n of nb(m.room)){if((dd[n]??99)<bd){bd=dd[n];best=n;}}}
+  if(best)m.room=best;if(best===S.p){m.mad=false;msgs.push(`${m.n} ti passa accanto, gli occhi vuoti. Lo fermi.`);}}
+function crewWander(){for(const c of S.crew){if(!c.alive||c.dying||c.mad||c.room==='timone'&&rnd()<.8)continue;if(rnd()<.25){const opts=nb(c.room).filter(n=>!(S.dr.out&&!S.dr.sated&&S.dr.room===n));if(opts.length)c.room=opts[Rn(opts.length)];}}}
 function draculaTurn(){
   const D=S.dr;
   if(!D.out){if(S.turn>=S.wake){D.out=true;msgs.push(S.seen.wake?'Un coperchio scricchiola nella stiva.':'Nella stiva, il coperchio di una cassa scivola via. Qualcosa è uscito.');S.seen.wake=1;}return;}
   if(D.sated)return;
   if(D.stun>0){D.stun--;return;}
   if(D.eat>0){D.eat--;if(D.eat===0&&D.victim){const v=D.victim;v.alive=false;v.dying=false;S.nightLost.push(v.n);D.victim=null;D.sated=true;msgs.push(lit(D.room)?`${v.n} non si muove più. Lui si rialza e scende verso le casse: per stanotte è sazio.`:`Il silenzio, ${where(D.room)}. ${v.n} non risponderà più. Poi un coperchio che si chiude, giù in stiva.`);}return;}
-  D.step++;if(D.step%4===0){if(lit(D.room))msgs.push('Si ferma. Annusa l\'aria.');return;}const steps=(D.hunt&&S.night>=2&&D.step%5===0)?2:1;if(steps===2&&!S.seen.fog){S.seen.fog=1;msgs.push('Dalla stiva sale una nebbia bassa. Si muove più in fretta.');}
+  D.step++;if(D.step%4===0){if(lit(D.room))msgs.push('Si ferma. Annusa l\'aria.');return;}const steps=(S.ev==='lupo'&&D.step%3===0)||(D.hunt&&S.night>=2&&D.step%5===0)?2:1;if(steps===2&&!S.seen.fog){S.seen.fog=1;msgs.push('Dalla stiva sale una nebbia bassa. Si muove più in fretta.');}
   for(let i=0;i<steps;i++){
     let target;
     if(S.bell>0)target='ponte';
@@ -204,7 +243,7 @@ function draculaTurn(){
         const dd=bfs(D.room);target=(dd[S.p]??99)<=1?S.p:D.prey.room;}}
     if(D.room!==target){const dt=bfs(target);let best=D.room,bd=dt[D.room]??99;for(const n of nb(D.room)){if((dt[n]??99)<bd){bd=dt[n];best=n;}}D.room=best;}
     // arrivato
-    if(D.room===S.p){if(S.crossOn){const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=1;msgs.push('Entra. Alzi il crocifisso: si ferma, sibila, e torna nel buio.');return;}
+    if(D.room===S.p){if(S.crossOn){const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=S.ev==='lupo'?2:1;msgs.push('Entra. Alzi il crocifisso: si ferma, sibila, e torna nel buio.');return;}
       return lose('La porta si apre senza rumore. È alto, magro, e ha gli occhi rossi. Il giornale di bordo si interrompe qui.');}
     const here=S.crew.filter(c=>c.alive&&!c.dying&&c.room===D.room);
     if(here.length){const v=here[Rn(here.length)];v.dying=true;D.victim=v;D.eat=3;
@@ -224,7 +263,7 @@ function dawn(){
   if(S.dr&&S.dr.victim){const v=S.dr.victim;v.alive=false;v.dying=false;S.nightLost.push(v.n);S.dr.victim=null;}
   const alive=S.crew.filter(c=>c.alive).length;
   const done=(S.tasks||[]).filter(t=>t.done&&t.k!=='falla').length,leak=(S.tasks||[]).some(t=>t.k==='falla'&&!t.done);
-  let sp=(alive>=4?1:0)+done-(leak?1:0);sp=Math.max(0,sp);
+  let sp=(alive>=4?1:0)+done-(leak?1:0)+(S.ev==='vento'?1:0);sp=Math.max(0,sp);
   if(S.storm){return win();}
   if(S.night>=9&&S.progress<GOAL-1){S.over=true;S.why='deriva';render();setTimeout(()=>end(false,'Nove notti in mare e Whitby è ancora lontana. La nave va alla deriva, e lui ha ancora fame.'),400);return;}
   S.progress=Math.min(GOAL,S.progress+sp);
@@ -241,13 +280,23 @@ function startDay(text,first){
   document.getElementById('logT').textContent=text;
   drawDay();document.getElementById('ovDay').classList.remove('hide');render();
 }
+const HN=Object.keys(HATCH);
+function miniMap(){const cw=88,ch=30,gx=26,gy=8,X=r=>6+ROOMS[r].d*(cw+gx),Y=r=>18+ROOMS[r].p*(ch+gy);const W=12+3*cw+2*gx,H=24+5*ch+4*gy;
+  let m=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;background:#120e09;border-radius:12px;border:1px solid #3a2e1e" xmlns="http://www.w3.org/2000/svg">`;
+  m+=['COPERTA','SOTTOCOPERTA','STIVA'].map((t,i)=>`<text x="${6+i*(cw+gx)+cw/2}" y="12" text-anchor="middle" font-size="8" fill="#7f899b" letter-spacing="1">${t}</text>`).join('');
+  for(const [a,b] of EDGES){const k=ek(a,b),hi=HN.indexOf(k);const x1=X(a)+cw/2,y1=Y(a)+ch/2,x2=X(b)+cw/2,y2=Y(b)+ch/2;
+    m+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hi<0?'#4a3a26':S.dayBar===k?'#ff5a4e':'#f3c76a'}" stroke-width="${hi<0?5:4}"/>`;}
+  for(const r in ROOMS)m+=`<rect x="${X(r)}" y="${Y(r)}" width="${cw}" height="${ch}" rx="5" fill="${r.startsWith('casse')?'#2a1a10':'#241d13'}" stroke="#5a4630"/><text x="${X(r)+cw/2}" y="${Y(r)+ch/2+3}" text-anchor="middle" font-size="9" fill="#ecdcb8">${ROOMS[r].n.replace('Albero di trinchetto','Trinchetto').replace('Cabina del capitano','Cabina').replace('Albero maestro','Maestro').replace('Deposito vele','Vele')}</text>`;
+  HN.forEach((k,i)=>{const [a,b]=k.split('|');const cx=(X(a)+X(b)+cw)/2,cy=(Y(a)+Y(b)+ch)/2;const bar=S.dayBar===k;m+=`<circle cx="${cx}" cy="${cy}" r="9" fill="${bar?'#ff5a4e':'#f3c76a'}"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="800" fill="#1a1408">${bar?'✕':i+1}</text>`;});
+  return m+`</svg><div style="font-size:12px;color:#9aa3b2;margin-top:6px;line-height:1.4">I numeri dorati sono i <b>boccaporti</b>: le botole tra sottocoperta e stiva, da cui lui sale. Sbarrarne uno gli chiude quella strada per una notte (ma anche a te).</div>`;}
 function drawDay(){
+  document.getElementById('dayMap').innerHTML=miniMap();
   const alive=S.crew.filter(c=>c.alive).length,left=2-S.picks.length;
   document.getElementById('dayLeft').textContent=left?`Ne restano ${left}.`:'Fatto.';
   const opts=[
     {id:'box',t:'Gettare in mare una cassa',d:`Servono due uomini. Ogni tre casse in mare si sveglia un turno più tardi (al massimo due). Vale 1 punto. (In mare: ${S.boxes})`,ok:alive>=2},
     {id:'cross',t:'Pregare nella cabina',d:`Un crocifisso in più, una volta al giorno. (Ne hai ${S.cross})`,ok:!S.picks.includes('cross')||true},
-    ...Object.entries(HATCH).map(([k,n])=>({id:'bar:'+k,t:'Sbarrare: '+n.toLowerCase(),d:'Stanotte da lì non si passa.',ok:!S.dayBar||S.dayBar===k}))];
+    ...Object.entries(HATCH).map(([k,n],i)=>({id:'bar:'+k,t:`Sbarrare il boccaporto ${i+1}`,d:`${k.split('|').map(r=>ROOMS[r].n).join(' ↔ ')}. Stanotte da lì non si passa.`,ok:!S.dayBar||S.dayBar===k}))];
   const box=document.getElementById('dayCh');box.innerHTML=opts.map(o=>`<button data-id="${o.id}" class="${S.picks.includes(o.id)?'on':''}" ${(!o.ok||(!left&&!S.picks.includes(o.id)))?'disabled':''}><b>${o.t}</b>${o.d}</button>`).join('');
   box.querySelectorAll('button').forEach(b=>b.onclick=()=>pickDay(b.dataset.id));
 }
@@ -279,7 +328,7 @@ const RX=r=>X0+ROOMS[r].d*(CW+14),RY=r=>Y0+ROOMS[r].p*(CH+12);
 function vis2(r){return !S.night||lit(r);}
 function render(){
   const alive=S.crew.filter(c=>c.alive).length;
-  document.getElementById('phase').textContent=S.storm?`Notte ${S.night} · la tempesta`:`Notte ${Math.max(1,S.night)}`;
+  document.getElementById('phase').textContent=S.storm?`Notte ${S.night} · la tempesta`:S.night?`Notte ${S.night} · ${EVENTS[S.ev].n}`:'In porto';
   document.getElementById('turn').textContent=S.night?`${Math.min(S.turn,TURNS)}/${TURNS}`:'';
   document.getElementById('room').textContent=ROOMS[S.p].n;
   const pct=S.progress/GOAL*100;document.getElementById('rDone').style.width=pct+'%';document.getElementById('rShip').style.left=Math.max(4,Math.min(96,pct))+'%';
@@ -292,18 +341,19 @@ function render(){
   ${['COPERTA','SOTTOCOPERTA','STIVA'].map((t,i)=>`<text x="${X0+i*(CW+14)+CW/2}" y="${Y0-8}" text-anchor="middle" font-size="9" fill="#7f899b" letter-spacing="1.5">${t}</text>`).join('')}`;
   // passaggi
   for(const [a,b] of EDGES){const x1=RX(a)+CW/2,y1=RY(a)+CH/2,x2=RX(b)+CW/2,y2=RY(b)+CH/2;const bar=S.barred.has(ek(a,b));s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${bar?'#ff5a4e':'#4a3a26'}" stroke-width="${bar?4:10}" ${bar?'stroke-dasharray="6 5"':''} stroke-linecap="round"/>`;}
-  const moves=S.over||!S.night?[]:nb(S.p);
+    const moves=S.over||!S.night?[]:nb(S.p);
   for(const r in ROOMS){const x=RX(r),y=RY(r),vis=lit(r),mv=moves.includes(r);
     s+=`<rect class="room" data-r="${r}" x="${x}" y="${y}" width="${CW}" height="${CH}" rx="10" fill="${ROOMS[r].d===2?'#15110b':ROOMS[r].d===1?'#1c1710':'#241d13'}" stroke="${r===S.p?'#8cc4ff':mv?'#ffe2a0':'#3a2e1e'}" stroke-width="${r===S.p||mv?2.5:1.5}"/>`;
     s+=`<image href="art/r_${RIMG[r]}.webp" x="${x}" y="${y}" width="${CW}" height="${CH}" preserveAspectRatio="xMidYMid slice" clip-path="url(#c_${r})"/><rect x="${x}" y="${y}" width="${CW}" height="${CH}" rx="10" fill="#0b0805" opacity="${!S.night?.35:vis?.22:.7}"/><rect x="${x}" y="${y}" width="${CW}" height="20" rx="10" fill="#0b0805" opacity=".55"/><rect x="${x}" y="${y}" width="${CW}" height="${CH}" rx="10" fill="none" stroke="${r===S.p?'#8cc4ff':mv?'#ffe2a0':'#3a2e1e'}" stroke-width="${r===S.p||mv?2.5:1.5}"/>`;
     if(S.storm&&r==='timone')s+=`<rect x="${x-3}" y="${y-3}" width="${CW+6}" height="${CH+6}" rx="12" fill="none" stroke="#f3c76a" stroke-width="4"/><image href="art/i_bussola.png" x="${x+CW/2-20}" y="${y+CH/2-16}" width="40" height="40"/>`;
     s+=`<text x="${x+7}" y="${y+14}" font-size="10" font-weight="600" fill="#ecdcb8">${ROOMS[r].n}</text>`;
     if(S.dr&&S.dr.victim&&S.dr.room===r&&(lit(r)||mv))s+=`<rect x="${x+2}" y="${y+2}" width="${CW-4}" height="${CH-4}" rx="9" fill="none" stroke="#ff3b2f" stroke-width="3" stroke-dasharray="6 4"/><text x="${x+CW/2}" y="${y+CH-8}" text-anchor="middle" font-size="10" fill="#ff8a7e">${S.cross>0?'tocca per salvarlo':'si nutre'}</text>`;
-    {const t=(S.tasks||[]).find(t=>t.room===r&&!t.done);if(t&&S.night&&!S.over)s+=`<g><circle cx="${x+CW-20}" cy="${y+CH-22}" r="17" fill="#1a1408" fill-opacity=".85" stroke="#f3c76a" stroke-width="2"/><image href="art/i_${TICON[t.k]}.png" x="${x+CW-34}" y="${y+CH-36}" width="28" height="28"/>${t.prog?`<text x="${x+CW-20}" y="${y+CH+1}" text-anchor="middle" font-size="9" fill="#ffe2a0">${t.prog}/${TASKS[t.k].need}</text>`:''}</g>`;}
+    {const t=(S.tasks||[]).find(t=>t.room===r&&!t.done);if(t&&S.night&&!S.over)s+=`<g><rect x="${x+CW-46}" y="${y+CH-34}" width="42" height="30" rx="6" fill="#f3c76a"/><image href="art/i_${TICON[t.k]}.png" x="${x+CW-46}" y="${y+CH-34}" width="26" height="26"/><text x="${x+CW-12}" y="${y+CH-13}" text-anchor="middle" font-size="15" font-weight="800" fill="#1a1408">!</text><rect x="${x+2}" y="${y+2}" width="${CW-4}" height="${CH-4}" rx="9" fill="none" stroke="#f3c76a" stroke-width="1.5" stroke-dasharray="3 3" opacity=".7"/></g>`;}
     if(r==='ponte')s+=`<image href="art/i_campana.png" x="${x+CW-22}" y="${y+20}" width="18" height="18"/>`;
   }
+  for(const k of S.barred){const [a,b]=k.split('|');const cx=(RX(a)+RX(b)+CW)/2,cy=(RY(a)+RY(b)+CH)/2;s+=`<circle cx="${cx}" cy="${cy}" r="11" fill="#ff5a4e" stroke="#1a1408" stroke-width="2"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" font-weight="800" fill="#1a1408">✕</text>`;}
   // marinai
-  for(const r in ROOMS){const here=S.crew.filter(c=>c.alive&&c.room===r);here.forEach((c,i)=>{const x=RX(r)+18+(i%3)*28,y=RY(r)+38+Math.floor(i/3)*28;s+=`<clipPath id="pc_${c.pi}"><circle cx="${x}" cy="${y}" r="12"/></clipPath><image href="art/p_${c.pi}.webp" x="${x-12}" y="${y-12}" width="24" height="24" clip-path="url(#pc_${c.pi})" ${vis2(r)?'':'opacity=".5"'}/><circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${c.dying?'#ff3b2f':'#c9b892'}" stroke-width="${c.dying?3:1.5}"/>`;});}
+  for(const r in ROOMS){const here=S.crew.filter(c=>c.alive&&c.room===r);here.forEach((c,i)=>{const x=RX(r)+18+(i%3)*28,y=RY(r)+38+Math.floor(i/3)*28;s+=`<clipPath id="pc_${c.pi}"><circle cx="${x}" cy="${y}" r="12"/></clipPath><image href="art/p_${c.pi}.webp" x="${x-12}" y="${y-12}" width="24" height="24" clip-path="url(#pc_${c.pi})" ${vis2(r)?'':'opacity=".5"'}/><circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${c.dying?'#ff3b2f':c.mad?'#ffd84a':'#c9b892'}" stroke-width="${c.dying||c.mad?3:1.5}" ${c.mad?'stroke-dasharray="4 3"':''}/>`;});}
   // Dracula
   const D=S.dr;if(D&&D.out&&!D.sated&&(lit(D.room)||S.over)){const x=RX(D.room)+CW-26,y=RY(D.room)+CH/2+4;s+=`<circle cx="${x}" cy="${y}" r="34" fill="url(#red)"/><image href="art/s_dracula.png" x="${x-24}" y="${y-40}" width="48" height="72"/>`;}
   // tu
@@ -311,18 +361,20 @@ function render(){
   s+='</svg>';
   const b=document.getElementById('board');b.innerHTML=s;
   b.querySelectorAll('.room').forEach(el=>el.addEventListener('click',()=>act('move',el.dataset.r)));
+  document.getElementById('tasks').innerHTML=(S.night&&!S.over&&!S.storm?S.tasks:[]).map(t=>`<span class="tk ${t.done?'done':''}"><img src="art/i_${TICON[t.k]}.png" alt="">${(x=>x[0].toUpperCase()+x.slice(1))(TASKS[t.k].n.replace(/^(Una |Il |La |L'|Le )/,''))}${!t.done&&t.prog?` ${t.prog}/${need(t)}`:''}</span>`).join('');
   document.getElementById('msg').textContent=msgs.join(' ');
   {const bn=document.getElementById('storm');if(S.storm&&!S.over){const left=TURNS-S.turn+1,ok=S.p==='timone';bn.className=ok?'ok':(left<=3?'urg':'');bn.innerHTML=ok?`🧭 Sei al timone. Resisti fino all'alba: ${left} ${left===1?'turno':'turni'}.`:`🧭 All'alba devi essere al <b>TIMONE</b>. Mancano ${left} ${left===1?'turno':'turni'}.`;bn.classList.remove('hide');}else bn.classList.add('hide');}
   const night=S.night&&!S.over;
   document.getElementById('bCross').disabled=!night||S.cross<=0;
   const bb=document.getElementById('bBell');bb.disabled=!night||ROOMS[S.p].d!==0;
-  const tw=taskHere(),bw=document.getElementById('bWait');bw.disabled=!night;bw.textContent=tw?'🔧 '+(tw.k==='falla'?'Pompa':'Lavora'):'Resta';bw.classList.toggle('ready',!!tw);
+  const tw=taskHere(),bw=document.getElementById('bWait');bw.disabled=!night;bw.textContent=tw?'🔧 '+(tw.k==='falla'?'Pompa':'Lavora')+(need(tw)>1?` ${tw.prog}/${need(tw)}`:''):'Resta';bw.classList.toggle('ready',!!tw);
   const D2=S.dr,bc=document.getElementById('bCross');if(night&&D2&&D2.victim&&S.cross>0&&nb(S.p).includes(D2.room)){bc.textContent='✝ Salva '+D2.victim.n;bc.classList.add('ready');bc.disabled=false;}else{bc.textContent='✝ Crocifisso';bc.classList.remove('ready');}
 }
 document.getElementById('bCross').onclick=()=>{const D=S.dr;if(D&&D.victim&&nb(S.p).includes(D.room))act('rescue');else act('cross');};
 document.getElementById('bBell').onclick=()=>act('bell');
 document.getElementById('bWait').onclick=()=>act(taskHere()?'work':'wait');
 document.getElementById('bNight').onclick=startNight;
+document.getElementById('bNightOk').onclick=()=>document.getElementById('ovNight').classList.add('hide');
 document.getElementById('bStormOk').onclick=()=>document.getElementById('ovStorm').classList.add('hide');
 const start=d=>{document.getElementById('ovCover').classList.add('hide');newGame(d);document.getElementById('ovRules').classList.remove('hide');};
 document.getElementById('bDaily').onclick=()=>start(true);
@@ -333,5 +385,8 @@ document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').c
 document.getElementById('cvTxt').innerHTML=`Sfida n° ${todayN()}. Arriva a Whitby. Salva chi puoi.`;
 window._nb=nb;window._S=()=>S;window._act=act;window._night=startNight;window._pick=pickDay;window._new=newGame;
 </script>
+<script id="sh-skip">/* dal sito (?play): salta la copertina; le regole solo la prima volta */
+(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_la-demeter';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
 </body>
 </html>

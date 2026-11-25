@@ -1317,5 +1317,8 @@
   });
 })();
 </script>
+<script id="sh-skip">/* dal sito (?play): salta la copertina; le regole solo la prima volta */
+(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_ultima-corsa';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('btnSplash');},0);})();</script>
 </body>
 </html>
