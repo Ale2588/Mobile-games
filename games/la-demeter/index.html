@@ -76,7 +76,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
   <ul>
     <li>Sei il <b>capitano</b>. La nave è vista in sezione: la prua in alto, a sinistra la coperta, al centro sottocoperta, a destra la stiva.</li>
     <li><b>Di notte</b>, dodici turni. Tocca una stanza vicina per spostarti. Qualcosa esce dalle casse e caccia chi è più vicino. Lo vedi solo quando è nella tua stanza o in una accanto; altrimenti lo senti.</li>
-    <li>Se entra dove sei tu, è finita. Il <b>crocifisso</b> lo respinge e lo ferma per un turno, ma ne hai pochissimi.</li>
+    <li>Se vi trovate nella stessa stanza, il <b>crocifisso</b> si usa da solo: lo respinge e lo ferma per un turno. Ne hai pochissimi, e senza crocifissi è finita.</li>
     <li>La <b>campana</b>, dalla coperta, lo attira al ponte per due turni. Chi si trova lì...</li>
     <li>Ogni notte vuole un uomo. Quando lo prende si nutre per tre turni, poi torna sazio nelle casse. Se glielo strappi col crocifisso, invece, è furioso e <b>cerca te</b> per il resto della notte. Se non c'è più nessun altro a bordo, cerca solo te. Ogni tanto si ferma ad annusare l'aria; quando è furioso sale la nebbia, e a volte è più veloce. Ma <b>meno equipaggio, nave più lenta</b>: più notti prima di Whitby.</li>
     <li><b>Ogni notte c'è da fare:</b> correggere la rotta al timone, ricucire una vela, riaccendere il fanale, pompare una falla in stiva. Vai nella stanza e tocca <b>Lavora</b>. Ogni lavoro fatto fa avanzare la nave: è l'unico modo per arrivare. Una falla lasciata aperta la rallenta. Chiuso in cabina, a Whitby non ci arrivi.</li>
@@ -200,10 +200,11 @@ function lit(r){if(S.ev==='nebbia'&&!S.storm)return r===S.p;if(S.ev==='luna')ret
 function act(kind,arg){
   if(S.over)return;msgs=[];S.crossOn=false;
   if(kind==='move'){if(!nb(S.p).includes(arg))return;
-    const D=S.dr;if(D.out&&!D.sated&&D.room===arg&&lit(arg)){
-      if(S.cross<=0){msgs=['Lì dentro c\'è lui, e non hai più crocifissi. Non ci entri.'];return render();}
+    const D=S.dr;if(D.out&&!D.sated&&D.room===arg){
+      if(S.cross<=0&&lit(arg)){msgs=['Lì dentro c\'è lui, e non hai più crocifissi. Non ci entri.'];return render();}
+      if(S.cross<=0)return lose('Apri la porta al buio. È lì, alto e magro. E non hai più un crocifisso.');
       if(D.victim)return act('rescue');
-      S.cross--;S.p=arg;const back=nb(arg).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=1;msgs.push('Entri col crocifisso alzato. Arretra, sibila, e sparisce nel buio.');
+      S.cross--;S.p=arg;const back=nb(arg).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=S.ev==='lupo'?2:1;msgs.push(lit(arg)?'Entri col crocifisso alzato. Arretra, sibila, e sparisce nel buio.':'Apri la porta e te lo trovi davanti. Il crocifisso è già nella tua mano: arretra, sibila, e sparisce nel buio.');
     }else S.p=arg;
     {const t=taskHere();if(t)msgs.push(`Qui c'è da fare: ${TASKS[t.k].n.toLowerCase()}. Tocca «Lavora».`);}}
   if(kind==='cross'){if(S.cross<=0)return;S.cross--;S.crossOn=true;msgs.push('Stringi il crocifisso e aspetti.');}
@@ -212,7 +213,7 @@ function act(kind,arg){
   if(kind==='work'){const t=taskHere();if(!t)return;t.prog++;if(t.prog>=need(t)){t.done=true;msgs.push(TASKS[t.k].done);}else msgs.push('Ci vuole ancora un turno. L\'acqua è alta.');}
   if(kind==='rescue'){const D=S.dr,v=D.victim;if(!v||S.cross<=0)return;S.cross--;S.p=D.room;v.dying=false;D.victim=null;D.eat=0;D.stun=2;const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.hunt=true;msgs.push(`Entri col crocifisso alzato. Lui si ritrae nel buio. ${v.n} è vivo, bianco come un lenzuolo. Ma adesso è furioso, e cerca te.`);S.saved=(S.saved||0)+1;}
   // se entri tu nella sua stanza
-  if(S.dr.out&&!S.dr.sated&&S.dr.room===S.p&&!S.crossOn)return lose('Apri la porta. È lì, alto e magro, e ti stava aspettando.');
+  if(S.dr.out&&!S.dr.sated&&S.dr.room===S.p&&!S.crossOn)return lose('È lì, alto e magro, e non hai più un crocifisso.');
   madTurn();crewWander();
   draculaTurn();
   if(S.over)return;
@@ -243,7 +244,7 @@ function draculaTurn(){
         const dd=bfs(D.room);target=(dd[S.p]??99)<=1?S.p:D.prey.room;}}
     if(D.room!==target){const dt=bfs(target);let best=D.room,bd=dt[D.room]??99;for(const n of nb(D.room)){if((dt[n]??99)<bd){bd=dt[n];best=n;}}D.room=best;}
     // arrivato
-    if(D.room===S.p){if(S.crossOn){const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=S.ev==='lupo'?2:1;msgs.push('Entra. Alzi il crocifisso: si ferma, sibila, e torna nel buio.');return;}
+    if(D.room===S.p){if(S.crossOn||S.cross>0){if(!S.crossOn)S.cross--;const back=nb(D.room).filter(n=>n!==S.p);D.room=back.length?back[Rn(back.length)]:D.room;D.stun=S.ev==='lupo'?2:1;msgs.push(`Entra. Alzi il crocifisso: si ferma, sibila, e torna nel buio. ${S.cross?`Ti resta${S.cross>1?'no':''} ${S.cross} crocifiss${S.cross>1?'i':'o'}.`:'Era l\'ultimo crocifisso.'}`);return;}
       return lose('La porta si apre senza rumore. È alto, magro, e ha gli occhi rossi. Il giornale di bordo si interrompe qui.');}
     const here=S.crew.filter(c=>c.alive&&!c.dying&&c.room===D.room);
     if(here.length){const v=here[Rn(here.length)];v.dying=true;D.victim=v;D.eat=3;
@@ -368,7 +369,7 @@ function render(){
   document.getElementById('bCross').disabled=!night||S.cross<=0;
   const bb=document.getElementById('bBell');bb.disabled=!night||ROOMS[S.p].d!==0;
   const tw=taskHere(),bw=document.getElementById('bWait');bw.disabled=!night;bw.textContent=tw?'🔧 '+(tw.k==='falla'?'Pompa':'Lavora')+(need(tw)>1?` ${tw.prog}/${need(tw)}`:''):'Resta';bw.classList.toggle('ready',!!tw);
-  const D2=S.dr,bc=document.getElementById('bCross');if(night&&D2&&D2.victim&&S.cross>0&&nb(S.p).includes(D2.room)){bc.textContent='✝ Salva '+D2.victim.n;bc.classList.add('ready');bc.disabled=false;}else{bc.textContent='✝ Crocifisso';bc.classList.remove('ready');}
+  const D2=S.dr,bc=document.getElementById('bCross');if(night&&D2&&D2.victim&&S.cross>0&&nb(S.p).includes(D2.room)){bc.textContent='✝ Salva '+D2.victim.n;bc.classList.add('ready');bc.disabled=false;}else{bc.textContent=`✝ ×${S.cross}`;bc.classList.remove('ready');bc.disabled=true;}
 }
 document.getElementById('bCross').onclick=()=>{const D=S.dr;if(D&&D.victim&&nb(S.p).includes(D.room))act('rescue');else act('cross');};
 document.getElementById('bBell').onclick=()=>act('bell');
@@ -385,8 +386,7 @@ document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').c
 document.getElementById('cvTxt').innerHTML=`Sfida n° ${todayN()}. Arriva a Whitby. Salva chi puoi.`;
 window._nb=nb;window._S=()=>S;window._act=act;window._night=startNight;window._pick=pickDay;window._new=newGame;
 </script>
-<script id="sh-skip">/* dal sito (?play): salta la copertina; le regole solo la prima volta */
-(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_la-demeter';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+<script id="sh-skip">(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_la-demeter';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
 const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
 </body>
 </html>
