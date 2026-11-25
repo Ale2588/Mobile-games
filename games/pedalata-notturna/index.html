@@ -191,7 +191,7 @@ function move(tg){
     const f=hazAt(r,l,'fatuo');
     if(f){S.dark=2;S.haz.splice(S.haz.indexOf(f),1);msgs.push('Passi dentro un fuoco fatuo. La dinamo si spegne.');}
     const c=S.haz.find(h=>h.t==='cane'&&!h.fed&&h.r===r&&h.l===l);
-    if(c){S.falls++;S.stun=1;S.speed=0;msgs.push('Il cane ti salta addosso. Cadi.');break;}
+    if(c){S.falls++;S.stun=1;S.speed=0;S.haz.splice(S.haz.indexOf(c),1);msgs.push('Il cane ti salta addosso. Cadi, poi scappa nei campi.');break;}
     if(r>=S.rows.length-1)break;
   }
   if(!S.stun)S.speed=tg.v;
@@ -217,7 +217,8 @@ function endTurn(stood){
     const dr=S.p.r-h.r;if(Math.abs(dr)>4)continue;
     // davanti: si sposta sulla tua corsia per sbarrarti la strada; dietro: ti insegue
     if(h.l!==S.p.l)h.l+=Math.sign(S.p.l-h.l); else if(dr>0)h.r+=Math.min(2,dr);
-    if(h.r===S.p.r&&h.l===S.p.l){S.falls++;S.stun=1;S.speed=0;msgs.push('Un cane ti raggiunge e ti morde la caviglia. Cadi.');h.r=S.p.r-2;}}
+    if(h.r===S.p.r&&h.l===S.p.l&&!S.stun){S.falls++;S.stun=1;S.speed=0;msgs.push('Un cane ti raggiunge e ti morde la caviglia. Cadi, e lui torna alla sua cascina.');h.gone=true;}}
+  S.haz=S.haz.filter(h=>!h.gone);
   // fuochi fatui alla deriva
   for(const h of S.haz)if(h.t==='fatuo'&&rnd()<.5){h.l=Math.max(0,Math.min(LANES-1,h.l+(R(3)-1)));}
   // masca
