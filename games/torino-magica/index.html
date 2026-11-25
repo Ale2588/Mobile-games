@@ -61,7 +61,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
     <li>Per strada trovi <b>gianduiotti</b> (1 punto).</li>
     <li>Sui <b>tombini</b> puoi <b>scendere</b>. Sotto ci sono tesori che valgono molto, e i mostri ci sono già.</li>
     <li><b>Ogni tombino che apri resta aperto</b> (puoi richiuderlo, costa un turno). Alle 18:30 fa buio, e da ognuno risale un mostro. Ma i tombini sono anche la tua via di fuga: i mostri di sopra non ti seguono sotto.</li>
-    <li><b>Torino magica:</b> di notte i mostri non entrano nella luce dei lampioni, né in piazza Castello. Ma i lampioni si spengono, uno ogni pochi minuti.</li>
+    <li><b>Torino magica:</b> di notte i mostri non entrano nella luce dei lampioni, né in piazza Castello, né sul sagrato della Gran Madre. Ma i lampioni si spengono, uno ogni pochi minuti.</li>
     <li>I tesori pesano: con due in borsa, ogni tanto ti fermi.</li>
     <li><b>Fiammiferi</b> (ne hai 2, altri li trovi per strada): accendine uno e per qualche turno, intorno a te, i mostri non entrano. Sotto un lampione spento, lo <b>riaccendi</b> per sempre.</li>
     <li><b>Libri</b>: quando un mostro è a due passi, tiragli un libro in testa (il pulsante diventa «📕 Lancia»). Lo stordisci e lo respingi per qualche turno. Ne prendi uno in più in ogni libreria, edicola o casa editrice dove passi.</li>
@@ -104,7 +104,7 @@ const ROWS=[
 "#.###..#..##pp#",
 "#...#.##.#.#pp#",
 "###.#....#..pp#",
-"#...#.##.##.pp#",
+"#...#.##.##.pp.",
 "#.#...#....#pp#",
 "#.#.#.#.##..pp#",
 "#...........pp#",
@@ -119,7 +119,11 @@ const PLACES={
   libreria:{c:12,r:16,im:'libreria',n:'La libreria',s:'Sotto i portici di via Po',i:'📚'},
   castello:{c:7,r:12,n:'Piazza Castello',s:'Il cuore bianco della città',i:''},
   egizio:{c:4,r:13,im:'egizio',n:'Il Museo Egizio',s:'Via Accademia delle Scienze',i:'🏺'},
-  mole:{c:13,r:10,im:'mole',n:'La Mole',s:'Via Montebello',i:'🗼'}};
+  mole:{c:13,r:10,im:'mole',n:'La Mole',s:'Via Montebello',i:'🗼'},
+  portanuova:{c:6,r:20,im:'portanuova',n:'Porta Nuova',s:'La stazione',i:'🚉'},
+  mercato:{c:8,r:17,im:'mercato',n:'Il mercato',s:'Piazza Madama Cristina',i:'🍎'},
+  granmadre:{c:14,r:17,im:'granmadre',n:'La Gran Madre',s:'Oltre il Po',i:'⛪'},
+  superga:{c:13,r:0,im:'superga',n:'Superga',s:'In cima alla collina',i:'⛰'}};
 const TOMB_ALL=[[2,7],[9,1],[13,5],[12,9],[7,16],[1,13],[5,3],[10,19],[3,20],[6,7],[2,17]];let TOMB=TOMB_ALL.slice(0,6);
 const LAMPS_ALL=[[4,1],[11,3],[5,5],[13,7],[2,9],[10,9],[1,11],[13,13],[3,16],[8,15],[12,18],[5,20],[13,20],[8,2],[1,3],[7,9],[12,15],[9,18]];let LAMPS=LAMPS_ALL.slice(0,13);
 const TREAS={manoscritto:{n:'il manoscritto perduto',p:8,i:'📜'},amuleto:{n:'un amuleto egizio',p:6,i:'🪬'},oro:{n:'il gianduiotto d\'oro',p:7,i:'🏅'},pergamena:{n:'una pergamena alchemica',p:5,i:'🧾'}};
@@ -153,18 +157,25 @@ const MPOOL={
   {t:'luogo',p:'balon',pts:3,txt:'Cerca una prima edizione di Pavese tra i banchi del Balôn.'},
   {t:'luogo',p:'libreria',pts:4,fav:'libraio',txt:'Firma le copie alla libreria sotto i portici di via Po.'},
   {t:'luogo',p:'egizio',pts:3,txt:'Restituisci al Museo Egizio il libro sui papiri che ti hanno prestato.'},
-  {t:'luogo',p:'mole',pts:3,txt:'Un caffè con un vecchio amico, ai piedi della Mole.'}],
+  {t:'luogo',p:'mole',pts:3,txt:'Un caffè con un vecchio amico, ai piedi della Mole.'},
+  {t:'luogo',p:'superga',pts:7,txt:'Sali a Superga: il rettore della basilica ha un diario del Settecento per te. È lontanissima.'},
+  {t:'luogo',p:'granmadre',pts:3,txt:'Alla Gran Madre, oltre il Po: le guide esoteriche dicono che la statua della Fede indica il Graal. Vai a vedere.'},
+  {t:'luogo',p:'mercato',pts:2,txt:'Compra le castagne al mercato di piazza Madama Cristina.'}],
  consegna:[{t:'consegna',a:'editore',b:'caffe',pts:4,fav:'barista',txt:'Ritira le bozze dall\'editore e portale alla tua agente, al caffè della Consolata.',txt2:'Hai le bozze. Ora al caffè della Consolata.'},
   {t:'consegna',a:'balon',b:'egizio',pts:4,txt:'Al Balôn vendono un papiro che il Museo Egizio vuole vedere. Compralo e portalo al museo.',txt2:'Hai il papiro. Ora al Museo Egizio.'},
   {t:'consegna',a:'edicola',b:'libreria',pts:4,fav:'libraio',txt:'Prendi in edicola dieci copie della Stampa con la tua recensione e portale al libraio di via Po.',txt2:'Hai i giornali. Ora alla libreria di via Po.'},
   {t:'consegna',a:'libreria',b:'mole',pts:4,txt:'Il libraio ha una copia firmata per il giornalista della radio. Portagliela, alla Mole.',txt2:'Hai il libro. Ora alla Mole.'},
+  {t:'consegna',a:'mercato',b:'caffe',pts:4,fav:'barista',txt:'Fai la spesa al mercato di piazza Madama Cristina e portala a tua madre, che ti aspetta al caffè della Consolata.',txt2:'Hai la spesa. Ora al caffè della Consolata.'},
+  {t:'consegna',a:'portanuova',b:'editore',pts:4,txt:'Il corriere ha lasciato le copie staffetta al deposito bagagli di Porta Nuova. Portale all\'editore.',txt2:'Hai le copie. Ora dall\'editore, nel Quadrilatero.'},
   {t:'consegna',a:'egizio',b:'editore',pts:4,txt:'All\'Egizio ti hanno preparato le foto dei papiri per la copertina. Portale all\'editore.',txt2:'Hai le foto. Ora dall\'editore.'}],
- orario:[{t:'orario',p:'mole',pts:5,txt:'Intervista in radio ai piedi della Mole, alle {T}. Non prima, non dopo.'},
+ orario:[{t:'orario',p:'portanuova',pts:5,txt:'Tua sorella arriva da Milano col treno delle {T}, a Porta Nuova. Se non ci sei, non te lo perdona.'},
+  {t:'orario',p:'mole',pts:5,txt:'Intervista in radio ai piedi della Mole, alle {T}. Non prima, non dopo.'},
   {t:'orario',p:'libreria',pts:5,fav:'libraio',txt:'Presentazione del libro alla libreria di via Po, alle {T}. Il pubblico non aspetta.'},
   {t:'orario',p:'caffe',pts:4,fav:'barista',txt:'Appuntamento con la tua agente al caffè della Consolata, alle {T}. È una che se ne va.'},
   {t:'orario',p:'edicola',pts:4,fav:'giornalaio',txt:'Il giornalaio riceve una sola copia di Tuttolibri alle {T}: passa a quell\'ora, poi la vende.'}],
  scelta:[{t:'scelta',o:[{p:'balon',pts:3},{p:'libreria',pts:5,fav:'libraio'}],txt:'Un regalo per tua madre: un vaso al Balôn (+3) o la strenna illustrata in libreria (+5).'},
   {t:'scelta',o:[{p:'edicola',pts:2,fav:'giornalaio'},{p:'egizio',pts:4}],txt:'Documentati per il nuovo romanzo: i giornali vecchi in edicola (+2) o la sala delle mummie all\'Egizio (+4).'},
+  {t:'scelta',o:[{p:'granmadre',pts:4},{p:'superga',pts:7}],txt:'Ti serve una scena per il finale del romanzo: la Gran Madre (+4) o Superga (+7, ma è lontanissima).'},
   {t:'scelta',o:[{p:'caffe',pts:3,fav:'barista'},{p:'mole',pts:4}],txt:'Ti serve ispirazione: un bicerin al caffè (+3) o il panorama dalla Mole (+4).'}],
  col:[{t:'col',pts:4,txt:'Il Collezionista ti ha sfilato una lettera dalla borsa. Raggiungilo e riprenditela, prima che faccia buio.'},
   {t:'col',pts:4,txt:'Il tuo editore vuole sapere chi è il signore col cappello. Raggiungilo, prima che faccia buio.'}]};
@@ -197,7 +208,7 @@ function checkMission(){let m=curM(),g=0;const here=S.L==='su'?placeAt(S.p.c,S.p
     if(m.t==='luogo')ok=S.visited.has(m.p);
     if(m.t==='tesoro')ok=S.bag.some(x=>x.k===m.k);
     if(m.t==='consegna'){if(!m.st&&here===m.a){m.st=1;msgs.push(m.txt2);}if(m.st&&here===m.b)ok=true;}
-    if(m.t==='orario'){if(S.turn>m.at+2)fail='Troppo tardi: '+(m.p==='mole'?'l\'intervista è andata in onda senza di te.':m.p==='libreria'?'la presentazione è finita.':m.p==='caffe'?'la tua agente se n\'è andata.':'la copia l\'hanno venduta.');
+    if(m.t==='orario'){if(S.turn>m.at+2)fail='Troppo tardi: '+(m.p==='mole'?'l\'intervista è andata in onda senza di te.':m.p==='libreria'?'la presentazione è finita.':m.p==='caffe'?'la tua agente se n\'è andata.':m.p==='portanuova'?'tua sorella ha preso un taxi, ed è offesa.':'la copia l\'hanno venduta.');
       else if(here===m.p){if(S.turn>=m.at)ok=true;else if(!m.warn){m.warn=1;msgs.push(`Sei in anticipo: è alle ${clock(m.at)}. Aspetta qui.`);}}}
     if(m.t==='scelta'&&here){const o=m.o.find(x=>x.p===here);if(o){ok=true;pts=o.pts;fav=o.fav;}}
     if(m.t==='col'){if((S.caughtN||0)>m.base)ok=true;else if(S.col.gone)fail='Il Collezionista è sparito con il buio. Commissione persa.';}
@@ -290,7 +301,7 @@ function newGame(daily,seed){
 function clock(t){const m=START_T+t*MIN;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
 function phase(){return S.turn<DUSK?'giorno':S.turn<NIGHT?'tramonto':'notte';}
 function vis(){if(S.L==='giu')return S.fav.libraio?2:1;if(phase()==='giorno')return 3;return S.fav.libraio?2:1;}
-const castle=(c,r)=>tile(c,r)==='P'&&r>=11&&r<=13;
+const castle=(c,r)=>tile(c,r)==='P'&&r>=11&&r<=13||(c===14&&r===17);
 function lightNow(c,r){if(S.myLight>0&&dist(c,r,S.myLc,S.myLr)<=1&&S.L===S.myLL)return true;if(S.L!=='su'||!S.night)return false;if(castle(c,r))return true;for(const k of S.lamps){const [a,b]=k.split(',').map(Number);if(dist(a,b,c,r)<=1)return true;}return false;}
 function litCell(c,r){if(S.L!=='su')return false;if(phase()==='tramonto')return castle(c,r)||[...S.lamps].some(k=>{const [a,b]=k.split(',').map(Number);return dist(a,b,c,r)<=1;});return lightNow(c,r);}
 function seeNow(c,r){return cheb(c,r,S.p.c,S.p.r)<=vis()||(phase()!=='giorno'&&litCell(c,r)&&cheb(c,r,S.p.c,S.p.r)<=6)||(phase()==='giorno'&&S.L==='su');}
