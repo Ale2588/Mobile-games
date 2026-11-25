@@ -1,4 +1,4 @@
-# Design system · Nottambuli
+# Design system · Small Hours
 
 La vetrina dal vivo è in [`design-system/index.html`](../design-system/index.html). Questo file spiega le regole.
 

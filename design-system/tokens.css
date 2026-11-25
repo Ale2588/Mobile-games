@@ -1,8 +1,8 @@
-/* Nottambuli · design tokens
+/* Small Hours · design tokens
    Un solo tema: notte. Ogni gioco porta il suo accento (--game-accent). */
 
 :root {
-  --brand-name: "Nottambuli";
+  --brand-name: "Small Hours";
 
   /* ---------- Colori: base notte ---------- */
   --ink-950: #07080b;   /* fondo pagina */

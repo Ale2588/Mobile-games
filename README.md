@@ -1,8 +1,8 @@
-# Nottambuli
+# Small Hours
 
 Piccoli giochi per la notte: da giocare con una mano sul telefono, in 5–15 minuti.
 
-Nome di lavoro, da confermare.
+Small games for the small hours. Piccoli giochi per le ore piccole.
 
 ## Giochi
 

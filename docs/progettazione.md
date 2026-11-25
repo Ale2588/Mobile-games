@@ -10,13 +10,11 @@ Una collezione di piccoli giochi notturni da giocare con una mano sul telefono, 
 
 **Concetto: la luce nel buio.** Tutti i giochi della collezione girano attorno alla luce: il lampionaio di *Ultima Corsa*, la torcia di *Non voltarti*. Il sito è una notte, ogni gioco è una luce accesa.
 
-**Nome di lavoro: Nottambuli**, con il sottotitolo "Piccoli giochi per la notte" / "Small games for sleepless nights". Funziona anche per chi parla inglese, è facile da ricordare e descrive chi gioca: chi è sveglio a tarda notte, sul tram o a letto.
+**Nome: Small Hours.** "The small hours" sono le ore piccole della notte, più o meno dall'una alle quattro; e i giochi sono piccoli. Il nome è in inglese e resta uguale in tutte le lingue. Sottotitolo: "Small games for the small hours" / "Piccoli giochi per le ore piccole".
 
-Alternative:
-- **Ultima Luce** / *Last Light*: più evocativo, ma richiama troppo *Ultima Corsa*.
-- **Lanterna**: semplice e internazionale, ma generico.
+Scartati: *Nocturnal Animals* (troppo legato al film di Tom Ford e al thriller), *Last Light* (troppo vicino a *Ultima Corsa*), *Lamplight* e *Night Owls* (generici).
 
-Da fare prima del lancio: verificare dominio e marchio registrato. Il nome è in un solo punto (`--brand-name` e il file delle traduzioni), quindi cambiarlo costa poco.
+Da fare prima del lancio: verificare dominio e marchio registrato. Il nome è in un solo punto (`--brand-name` e il file delle traduzioni).
 
 **Tono di voce:** frasi brevi, seconda persona, un po' di inquietudine e niente gergo da videogioco. "La notte è lunga. Scegli una luce." Mai "Epic!", mai punti esclamativi a raffica.
 
@@ -121,7 +119,7 @@ Così ogni gioco resta un unico file HTML, come i prototipi attuali, e si può p
 
 - Ogni pagina esiste in `/it/` e `/en/`. La prima visita sceglie la lingua dal browser e poi la ricorda.
 - I testi del sito stanno in `i18n/it.json` e `i18n/en.json`. I testi dei giochi stanno nei giochi, che ricevono `lang` da `nt:init`.
-- I titoli dei giochi si traducono, il marchio no.
+- I titoli dei giochi si traducono, il marchio Small Hours no.
 
 ## 10. Vincoli tecnici e qualità
 
