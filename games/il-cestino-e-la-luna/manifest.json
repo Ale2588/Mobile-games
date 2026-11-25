@@ -1,24 +1,48 @@
 {
-  "slug": "il-cestino-e-la-luna",
-  "title": { "it": "Il cestino e la luna", "en": "The Basket and the Moon" },
-  "hook": { "it": "Funghi nei boschi sopra Torre Mondovì. Torna in paese prima che sorga la luna.", "en": "Mushrooms in the woods above Torre Mondovì. Get back to the village before the moon rises." },
-  "lead": { "it": "Partite in quattro dalla piazza, ognuno per i suoi posti segreti. Più ti allontani, più il cestino si riempie. Ma alle sette sorge la luna, ed escono i lupi mannari.", "en": "Four of you set off from the square, each to their secret spots. The farther you go, the fuller the basket. But at seven the moon rises, and the werewolves come out." },
-  "howto": {
-    "it": ["Il bosco si scopre camminando: sul sentiero sei silenzioso, fuori sentiero ci sono più funghi.", "Il fungo dubbio è un ovolo o un'amanita: lo scopri solo in paese.", "Dopo il tramonto riporta a casa gli amici persi, e rifugiati nelle cappelle."],
-    "en": ["The woods reveal themselves as you walk: on the path you're silent, off it there are more mushrooms.", "The doubtful mushroom is either a Caesar's or a death cap: you find out only in the village.", "After sunset bring your lost friends home, and shelter in the chapels."]
-  },
-  "campaign": {
-    "it": "Ogni giornata ha il suo tempo e i suoi funghi. La sfida di oggi è uguale per tutti.",
-    "en": "Every day has its own weather and its own mushrooms. Today's challenge is the same for everyone."
-  },
-  "minutes": [8, 15],
-  "difficulty": 3,
-  "accent": "#7fd0a0",
-  "chapters": 0,
-  "free": "daily",
-  "price": { "eur": 1.99 },
-  "status": "live",
-  "lang": ["it"],
-  "new": true,
-  "order": 0
+ "slug": "il-cestino-e-la-luna",
+ "title": {
+  "it": "Il cestino e la luna",
+  "en": "The Basket and the Moon"
+ },
+ "hook": {
+  "it": "Funghi nei boschi sopra Torre Mondovì. Torna in paese prima che sorga la luna.",
+  "en": "Mushrooms in the woods above Torre Mondovì. Get back to the village before the moon rises."
+ },
+ "lead": {
+  "it": "Partite in quattro dalla piazza, ognuno per i suoi posti segreti. Più ti allontani, più il cestino si riempie. Ma alle sette sorge la luna, ed escono i lupi mannari.",
+  "en": "Four of you set off from the square, each to their secret spots. The farther you go, the fuller the basket. But at seven the moon rises, and the werewolves come out."
+ },
+ "howto": {
+  "it": [
+   "Il bosco si scopre camminando: sul sentiero sei silenzioso, fuori sentiero ci sono più funghi.",
+   "Il fungo dubbio è un ovolo o un'amanita: lo scopri solo in paese.",
+   "Dopo il tramonto riporta a casa gli amici persi, e rifugiati nelle cappelle."
+  ],
+  "en": [
+   "The woods reveal themselves as you walk: on the path you're silent, off it there are more mushrooms.",
+   "The doubtful mushroom is either a Caesar's or a death cap: you find out only in the village.",
+   "After sunset bring your lost friends home, and shelter in the chapels."
+  ]
+ },
+ "campaign": {
+  "it": "Ogni giornata ha il suo tempo e i suoi funghi. La sfida di oggi è uguale per tutti.",
+  "en": "Every day has its own weather and its own mushrooms. Today's challenge is the same for everyone."
+ },
+ "minutes": [
+  8,
+  15
+ ],
+ "difficulty": 3,
+ "accent": "#7fd0a0",
+ "chapters": 0,
+ "free": "daily",
+ "price": {
+  "eur": 1.99
+ },
+ "status": "live",
+ "lang": [
+  "it"
+ ],
+ "new": true,
+ "order": 1
 }
