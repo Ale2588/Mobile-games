@@ -37,6 +37,8 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
 .sheet h3{margin:0 0 4px;font:500 20px Georgia,serif}.sheet p{margin:0 0 10px;color:var(--t2);font-size:14px;line-height:1.4}
 .sheet .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .score{font:500 44px Georgia,serif;color:var(--lamp)}
+.fr{display:flex;gap:10px;align-items:center;padding:6px 10px;margin-bottom:6px;border-radius:10px;background:#1a1f28}.fr img{width:44px;height:44px}.fr b{display:block}.fr span{font-size:13px;color:#9aa3b2}
+.ch2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.ch2>div{padding:10px;border-radius:12px;border:1.5px solid #353e4d;font-size:13px;color:#c9c4b8;line-height:1.4}.ch2 b{display:block;color:#e6e2d8;font-size:14px;margin-bottom:3px}
 .hide{display:none!important}
 </style>
 </head>
@@ -76,6 +78,15 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
 </div></div>
 
 <div class="ov hide" id="ovMap" style="padding:14px"><div class="box" style="text-align:center"><h2 style="margin-bottom:4px">La mappa</h2><p style="margin:0 0 8px;font-size:13px">Quello che hai visto finora. Il paese è in alto.</p><div id="mapBox"></div><button class="main" id="bMapOk">Torna nel bosco</button></div></div>
+<div class="ov hide" id="ovMoon" style="z-index:10;background:linear-gradient(rgba(4,5,6,.6),rgba(4,5,6,.94)),#000 url(art/cover.webp) center/cover"><div class="box">
+  <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#ff8a7e">Sono le 19:00</div>
+  <h2 style="margin-top:6px">Sorge la luna</h2>
+  <p>Escono i lupi. E i tuoi amici sono ancora là fuori:</p>
+  <div id="mnT"></div>
+  <div class="ch2"><div><b>Andarli a prendere</b>Passa accanto a uno di loro e ti segue. Ognuno che riporti in paese vale <strong style="color:#ffe2a0">5 punti</strong>, ma i lupi fiutano anche loro.</div><div><b>Tornare in paese</b>Più sicuro. Chi resta nel bosco, resta nel bosco.</div></div>
+  <p style="font-size:13px">Quando chiamano, una freccia sul bordo del bosco ti dice da che parte sono.</p>
+  <button class="main" id="bMoonOk">Decido io</button>
+</div></div>
 <div class="ov hide" id="ovEnd"><div class="box">
   <h2 id="eT"></h2><div class="score" id="eS"></div><p id="eP"></p>
   <button class="main" id="bAgain">Un'altra giornata</button><button class="sec" id="bSame" style="min-height:50px">Riprova la stessa</button>
@@ -133,13 +144,13 @@ function newGame(daily,seed){
   S={friends:[],lm:{...FIXED_LM},turn:0,pan:{c:0,r:0},p:{c:9,r:4},trail:MAP.trail,known:new Set(),mush:{},ani:[],wolves:[],bait:null,basket:[],photos:[],noise:false,over:false,left:false,seenHint:{},wx,daily:!!daily};
   for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const k=key(c,r);if(isV(c,r)||S.lm[k]||!open(c,r))continue;const tr=S.trail.has(k),h=fromHome(c,r),f=wx==='pioggia'?1.45:1;
     if(h<=1)continue;
-    if(!tr){if(rnd()<(h>=11?.24:h>=6?.12:.04)*f){S.mush[k]={k:'porcino'};continue;}
+    if(!tr){if(rnd()<(h>=11?.11:h>=6?.05:.015)*f){S.mush[k]={k:'porcino'};continue;}
             if(rnd()<(wx==='pioggia'?.07:.045)){S.mush[k]={k:'dubbio',real:rnd()<.5?'ovolo':'amanita'};continue;}}
     const nearT=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>S.trail.has(key(c+a,r+b)));
     if(nearT&&rnd()<(tr?.05:.09)*f)S.mush[k]={k:'chiodino'};
   }
   const spots=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&!S.trail.has(key(c,r))&&!S.mush[key(c,r)]&&!S.lm[key(c,r)]&&fromHome(c,r)>=3)spots.push([c,r]);
-  for(const k of ['capriolo','capriolo','capriolo','cinghiale','cinghiale','cinghiale']){const i=R(spots.length);const [c,r]=spots.splice(i,1)[0];S.ani.push({k,c,r});}
+  for(const k of ['capriolo','capriolo','capriolo','capriolo','capriolo','cinghiale','cinghiale','cinghiale','cinghiale','cinghiale']){if(!spots.length)break;const i=R(spots.length);const [c,r]=spots.splice(i,1)[0];S.ani.push({k,c,r});}
   {const used=[];FR.forEach((f,i)=>{let c,r,t=0;do{c=R(GW);r=R(GH);t++;}while(t<300&&(!open(c,r)||fromHome(c,r)<6||S.lm[key(c,r)]||used.some(([a,b])=>dist(a,b,c,r)<6)));used.push([c,r]);S.friends.push({i,c,r,st:'lost'});});}
   for(const k of Object.keys(VIL)){const [vc,vr]=k.split(',').map(Number);for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++)if(inG(vc+dc,vr+dr))S.known.add(key(vc+dc,vr+dr));}
   reveal();
@@ -203,16 +214,17 @@ function endTurn(){
   // animali
   for(const a of [...S.ani]){
     const d=dist(a.c,a.r,S.p.c,S.p.r);
-    if(S.noise&&d<=2||d===0){const dc=Math.sign(a.c-S.p.c)||(rnd()<.5?-1:1),dr=Math.sign(a.r-S.p.r)||-1;a.c=Math.max(0,Math.min(GW-1,a.c+dc*2));a.r=Math.max(0,Math.min(GH-1,a.r+dr*2));if(isV(a.c,a.r)||!open(a.c,a.r)){a.gone=true;}if(d<=2&&!S.seenHint.flee){S.seenHint.flee=1;msgs.push('Hai fatto rumore: l\'animale scappa.');}}
+    if(S.noise&&d<=1||d===0){const dc=Math.sign(a.c-S.p.c)||(rnd()<.5?-1:1),dr=Math.sign(a.r-S.p.r)||-1;a.c=Math.max(0,Math.min(GW-1,a.c+dc*2));a.r=Math.max(0,Math.min(GH-1,a.r+dr*2));if(isV(a.c,a.r)||!open(a.c,a.r)){a.gone=true;}if(d<=2&&!S.seenHint.flee){S.seenHint.flee=1;msgs.push('Hai fatto rumore: l\'animale scappa.');}}
     else if(rnd()<.35){const nc=a.c+R(3)-1,nr=a.r+R(3)-1;if(open(nc,nr)&&!isV(nc,nr))Object.assign(a,{c:nc,r:nr});}
   }
   S.ani=S.ani.filter(a=>!a.gone);
   if(S.turn===TURN_SUNSET){msgs.push('Il sole è sceso dietro il monte. Ora vedi solo intorno a te.');S.ani=S.ani.filter(a=>a.k!=='capriolo');
-    const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>2&&dist(c,r,S.p.c,S.p.r)<8&&!isV(c,r)&&!S.lm[key(c,r)])sp.push([c,r]);const [gc,gr]=sp[R(sp.length)];S.ani.push({k:'gufo',c:gc,r:gr});}
+    const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>2&&dist(c,r,S.p.c,S.p.r)<8&&!isV(c,r)&&!S.lm[key(c,r)])sp.push([c,r]);const [gc,gr]=sp[R(sp.length)];S.ani.push({k:'gufo',c:gc,r:gr});{const [g2c,g2r]=sp[R(sp.length)];S.ani.push({k:'gufo',c:g2c,r:g2r});}}
   if(S.turn===moonTurn()){S.ani=S.ani.filter(a=>a.k==='gufo');const n=S.wx==='luna'?4:3;
     const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>=6&&fromHome(c,r)>=4&&!isV(c,r)&&!LM[S.lm[key(c,r)]]?.chap)sp.push([c,r]);
     for(let i=0;i<n&&sp.length;i++){const [c,r]=sp.splice(R(sp.length),1)[0];S.wolves.push({c,r,eat:0});}
-    msgs.push('Sorge la luna. Un ululato '+howl()+'.');}
+    msgs.push('Sorge la luna. Un ululato '+howl()+'.');
+    {const lost=S.friends.filter(f=>f.st==='lost');if(lost.length)showMoon(lost);}}
   else if(S.wolves.length&&S.turn%4===0)msgs.push('Un ululato '+howl()+'.');
   // lupi
   if(S.bait){S.bait.t--;}
@@ -245,7 +257,7 @@ function endTurn(){
     if(f.st!=='gone'&&f.st!=='safe'){const w=S.wolves.find(w=>w.c===f.c&&w.r===f.r);if(w){f.st='gone';w.eat=3;msgs.push('Un urlo nel buio. Era la voce di '+FR[f.i].n+'.');}}
   }
   {const fl=S.friends.filter(f=>f.st==='follow').sort((a,b)=>a.ord-b.ord);fl.forEach((f,i)=>f.ord=i);}
-  if(phase()==='notte'&&S.turn%2===0){const lost=S.friends.filter(f=>f.st==='lost');if(lost.length){const f=lost[R(lost.length)];msgs.push(FR[f.i].n+' chiama '+dirTo(f.c,f.r)+': '+CALL[R(3)]);}}
+  if(phase()==='notte'&&S.turn%2===0){const lost=S.friends.filter(f=>f.st==='lost');if(lost.length){const f=lost[R(lost.length)];f.heard=S.turn;msgs.push(FR[f.i].n+' chiama '+dirTo(f.c,f.r)+': '+CALL[R(3)]);}}
   if(S.wolves.some(w=>dist(w.c,w.r,S.p.c,S.p.r)<=2)&&!S.seenHint.eyes){S.seenHint.eyes=1;msgs.push('Due occhi gialli tra gli alberi. Vicino.');}
   // la notte avanza: ogni 6 turni esce un altro lupo (massimo 5)
   if(S.wolves.length&&S.turn>moonTurn()&&(S.turn-moonTurn())%8===0&&S.wolves.length<6){
@@ -255,6 +267,9 @@ function endTurn(){
   render();
 }
 function dirTo(c,r){const ns=r<S.p.r-1?'nord':r>S.p.r+1?'sud':'',eo=c<S.p.c-1?'ovest':c>S.p.c+1?'est':'';const d=(ns&&eo)?ns+'-'+eo:(ns||eo);return d?'da '+d:'qui vicino';}
+function showMoon(lost){
+  document.getElementById('mnT').innerHTML=lost.map(f=>`<div class="fr"><img src="art/s_${FR[f.i].n.toLowerCase()}.png" alt=""><div><b>${FR[f.i].n}</b><span>è ancora nel bosco, ${dirTo(f.c,f.r).replace('da ','verso ')}</span></div></div>`).join('');
+  document.getElementById('ovMoon').classList.remove('hide');}
 function howl(){if(!S.wolves.length)return'';let w=S.wolves.slice().sort((a,b)=>dist(a.c,a.r,S.p.c,S.p.r)-dist(b.c,b.r,S.p.c,S.p.r))[0];
   const ns=w.r<S.p.r-1?'nord':w.r>S.p.r+1?'sud':'',eo=w.c<S.p.c-1?'ovest':w.c>S.p.c+1?'est':'';const d=(ns&&eo)?ns+'-'+eo:(ns||eo||'qui vicino');
   const far=dist(w.c,w.r,S.p.c,S.p.r);return (d==='qui vicino'?'':'da ')+d+(far>=5?', lontano':far<=2?', vicinissimo':'');}
@@ -310,6 +325,9 @@ function render(){
     {let a=0;if(!isV(c,r)&&!seeNow(c,r)){a=night?(ph==='notte'?.66:.45):0;}if(a)s+=`<rect x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="#000" opacity="${a}"/>`;}
   }
   if(night){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="${CS*1.6}" fill="url(#lt)"/>`;}
+  if(phase()==='notte')for(const f of S.friends){if(f.st!=='lost'||inV(f.c,f.r))continue;const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2,tx=X(f.c)+CS/2,ty=Y(f.r)+CS/2;let dx=tx-px,dy=ty-py;const k=Math.min((W/2-20)/Math.abs(dx||1e-6),(H/2-20)/Math.abs(dy||1e-6));
+    const ex=W/2+dx*k,ey=H/2+dy*k,ang=Math.atan2(dy,dx)*180/Math.PI,fresh=S.turn-(f.heard??-9)<=2;
+    s+=`<g opacity="${fresh?1:.55}"><g transform="translate(${ex} ${ey}) rotate(${ang})"><path d="M14 0 L2 -9 L2 9 Z" fill="${FR[f.i].c}"/></g><circle cx="${ex-Math.cos(ang*Math.PI/180)*8}" cy="${ey-Math.sin(ang*Math.PI/180)*8}" r="13" fill="#0b0d10" stroke="${FR[f.i].c}" stroke-width="2.5"/><text x="${ex-Math.cos(ang*Math.PI/180)*8}" y="${ey-Math.sin(ang*Math.PI/180)*8+5}" text-anchor="middle" font-size="13" font-weight="700" fill="${FR[f.i].c}">${FR[f.i].n[0]}</text></g>`;}
   if(S.bait&&inV(S.bait.c,S.bait.r))s+=`<text x="${X(S.bait.c)+CS/2}" y="${Y(S.bait.r)+14}" text-anchor="middle" font-size="12">🍄</text>`;
   for(const a of S.ani){if(!inV(a.c,a.r))continue;if(!S.known.has(key(a.c,a.r))||!seeNow(a.c,a.r))continue;s+=`<image href="art/a_${a.k}.png" x="${X(a.c)+2}" y="${Y(a.r)+2}" width="${CS-4}" height="${CS-4}"/>`;}
   for(const f of S.friends){if(f.st==='gone'||f.st==='safe'||!inV(f.c,f.r))continue;const d=dist(f.c,f.r,S.p.c,S.p.r);if(f.st==='lost'&&d>Math.max(2,vis()))continue;const cx=X(f.c)+CS/2,cy=Y(f.r)+CS/2,fo=f.st==='follow';
@@ -331,6 +349,7 @@ function render(){
   const bb=document.getElementById('bBait');bb.disabled=!S.basket.length||S.over;bb.classList.toggle('ready',S.wolves.length>0&&S.basket.length>0);
 }
 document.getElementById('bShot').onclick=shoot;
+document.getElementById('bMoonOk').onclick=()=>document.getElementById('ovMoon').classList.add('hide');
 window.addEventListener('resize',()=>{if(S)render();});
 const DRAG={on:false,moved:false,x:0,y:0,pc:0,pr:0};
 {const bd=document.getElementById('board');

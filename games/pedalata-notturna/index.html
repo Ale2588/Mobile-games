@@ -136,7 +136,7 @@ const FIELD={paese:'#1a1712',campagna:'#10140f',crocevia:'#13150f',cascina:'#141
 const LANES=3, RH=54, LW=78, W0=LANES*LW+80;
 const K=4; // righe per i vecchi "tratti": ogni riga ora è ~25 m
 /* tempo: 1 secondo di gioco = 0,45 minuti; 100 s = 45 minuti */
-const MIN_PER_S=.45;
+const MIN_PER_S=.38;
 /* fisica */
 const VC=1.35, VP=3.3, ACC=2.2, BRK=1.6, LANE_SPD=10;
 let SEED=1;function rnd(){SEED|=0;SEED=SEED+0x6D2B79F5|0;let t=Math.imul(SEED^SEED>>>15,1|SEED);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
@@ -154,8 +154,8 @@ const MISSIONS={
   sale:{n:'Tieni il sale',d:'Arriva con almeno un sacchetto di sale.',ok:()=>S.items.sale>0},
   guado:{n:'Il guado',d:'Prendi la scorciatoia del guado nel fosso.',ok:()=>S.took.guado}};
 const MINOR=[
-  {id:'guado',at:20*K,skip:5*K,t:'Il guado del fosso',d:'Tagli attraverso il fosso: un bel pezzo di strada in meno, ma l\'acqua gelata ti toglie metà del fiato.'},
-  {id:'vigna',at:37*K,skip:3*K,t:'Il taglio nella vigna',d:'Passi tra i filari: un pezzo di strada in meno, ma il cane della cascina ti sente di sicuro.'}];
+  {id:'guado',at:20*K,skip:5*K,t:'Il guado del fosso',d:'Tagli attraverso il fosso: un bel pezzo di strada in meno, ma il fondo è pieno di buche. Se vai forte, cadi.'},
+  {id:'vigna',at:37*K,skip:3*K,t:'Il taglio nella vigna',d:'Passi tra i filari: un pezzo di strada in meno, ma è sterrato pieno di buche, e il cane della cascina ti sente.'}];
 function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
 
 /* ---------- immagini ---------- */
@@ -239,12 +239,12 @@ function step(dt,pedal){
   // edicola
   if(!S.shrine&&zone(S.y)==='crocevia'){S.shrine=true;S.items.sale++;say('All\'edicola qualcuno ha lasciato un sacchetto di sale. Lo prendi.');if(S.masca)S.masca.r=Math.max(0,S.masca.r-14);}
   // masca
-  if(!S.masca&&S.y>=14*K&&!ZONES[zone(S.y)].lit){S.masca={r:S.y-9,stop:0};say('Dietro di te, nel buio, qualcosa si mette a correre. È la masca: pedala, o col sale la fermi.',4.5);}
+  if(!S.masca&&S.y>=14*K&&!ZONES[zone(S.y)].lit){S.masca={r:S.y-7,stop:0};say('Dietro di te, nel buio, qualcosa si mette a correre. È la masca: pedala, o col sale la fermi.',4.5);}
   if(S.masca){
     if(zone(S.y)==='centro'){S.masca=null;say('Le luci del paese. La masca si ferma alle prime case.');}
     else if(S.masca.stop>0)S.masca.stop-=dt;
-    else{let ms=(S.night==='luna'?2.15:1.9);if(ZONES[zone(S.y)].up)ms*=.75;S.masca.r+=ms*dt;
-      if(S.masca.stop<=0)S.masca.r=Math.max(S.masca.r,S.y-11);
+    else{let ms=(S.night==='luna'?2.45:2.2);if(ZONES[zone(S.y)].up)ms*=.75;S.masca.r+=ms*dt;
+      if(S.masca.stop<=0)S.masca.r=Math.max(S.masca.r,S.y-7);
       if(S.masca.r>=S.y-.3)return lose('La masca ti ha preso.');}
   }
   // scorciatoie e bivio
@@ -284,7 +284,8 @@ function takeMinor(yes){
     S.pick=S.pick.filter(q=>q.r<from||q.r>=to).map(q=>{if(q.r>=to)q.r-=m.skip;return q;});
     if(S.masca)S.masca.r=Math.min(S.masca.r,S.y-6);
     S.took[m.id]=true;
-    if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-3);say('Sei nel fosso fino alle caviglie. Esci gelato, senza fiato.');}
+    {const a=from,b=Math.min(S.rows.length-6,from+10);S.haz=S.haz.filter(h=>h.r<a||h.r>=b);for(let r=a;r<b;r++){if(rnd()<.55){const l=R(LANES);S.haz.push({t:'buca',r,l});if(rnd()<.3)S.haz.push({t:'buca',r,l:(l+1+R(2))%LANES});}}S.short={a,b};}
+    if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-1);say('Il guado: sassi e buche per un bel tratto. Vai piano, o cadi.',4);}
     if(m.id==='vigna'){const r=Math.floor(S.y)+6;S.haz=S.haz.filter(h=>Math.abs(h.r-r)>1);S.haz.push({t:'cane',r,l:lane(),x:lane(),fed:false});say('Tra i filari un cane abbaia: ti ha sentito.');}
   } else say('Resti sulla strada.');
   resume();
@@ -304,7 +305,7 @@ function useItem(k){
   if(k==='pane'&&S.night==='fame'&&S.masca&&!dogsNear().length){S.items.pane--;S.masca.stop=5;S.masca.r=S.y-16;say('Getti il pane alla masca. Si ferma a mangiarlo.');return hud(true);}
   if(k==='sale'){
     if(!S.masca){say('Non c\'è niente da fermare, per ora.');return;}
-    S.items.sale--;S.masca.stop=5;S.masca.r=S.y-16;say('Getti il sale dietro di te. La masca resta indietro a contarlo.');return hud(true);
+    S.items.sale--;S.masca.stop=5;S.masca.r=S.y-12;say('Getti il sale dietro di te. La masca resta indietro a contarlo.');return hud(true);
   }
   const d=dogsNear()[0];
   if(!d){say('Nessun cane a tiro.');return;}
@@ -391,7 +392,8 @@ function draw(){
   if(!ZONES[zone(S.y)].lit){const g=ctx.createLinearGradient(0,py,0,py-L*RH);g.addColorStop(0,`rgba(243,199,106,${S.dark>0?.05:.16})`);g.addColorStop(1,'rgba(243,199,106,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(bx-10,py-12);ctx.lineTo(bx-LW*.95,py-L*RH);ctx.lineTo(bx+LW*.95,py-L*RH);ctx.lineTo(bx+10,py-12);ctx.closePath();ctx.fill();}
   // masca
-  if(S.masca){const yy=py+(S.y-S.masca.r)*RH;if(yy<H+RH){const g=ctx.createRadialGradient(W0/2,yy,0,W0/2,yy,W0*.55);g.addColorStop(0,'rgba(255,59,47,.6)');g.addColorStop(1,'rgba(255,59,47,0)');
+  if(S.masca){const yy=py+(S.y-S.masca.r)*RH;if(yy>=H-10){const dist=Math.round((S.y-S.masca.r)*25),a=Math.max(.15,Math.min(.7,1-(yy-H)/(6*RH)));const g=ctx.createLinearGradient(0,H,0,H-70);g.addColorStop(0,`rgba(255,59,47,${a})`);g.addColorStop(1,'rgba(255,59,47,0)');ctx.fillStyle=g;ctx.fillRect(0,H-70,W0,70);ctx.fillStyle='#ffd0c8';ctx.font='700 12px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(`▼ LA MASCA · ${dist} m dietro${S.masca.stop>0?' · ferma':''}`,W0/2,H-10);}
+    if(yy<H+RH){const g=ctx.createRadialGradient(W0/2,yy,0,W0/2,yy,W0*.55);g.addColorStop(0,'rgba(255,59,47,.6)');g.addColorStop(1,'rgba(255,59,47,0)');
     ctx.fillStyle=g;ctx.fillRect(0,yy-RH*1.2,W0,RH*2.4);if(IMG.s_masca.complete)ctx.drawImage(IMG.s_masca,W0/2-26,yy-26,52,52);
     ctx.fillStyle='#ffb4a8';ctx.font='600 11px Inter,sans-serif';ctx.textAlign='left';ctx.fillText('LA MASCA'+(S.masca.stop>0?' · ferma':''),W0/2+34,yy+4);}}
   // tu
