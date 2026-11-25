@@ -161,14 +161,14 @@ function mTarget(){const m=curM();if(!m)return null;
 function mText(){const m=curM();if(!m)return'';if(m.night&&phase()==='giorno')return 'Aspetta il tramonto: poi ci sarà da fotografare un gufo.';const t=mTarget();return m.txt.replace('${dir}',t?dirTo(t.c,t.r).replace('da ','verso '):'qui intorno').replace('{dir}',t?dirTo(t.c,t.r).replace('da ','verso '):'qui intorno');}
 function checkMission(){let m=curM();let guard=0;
   while(m&&guard++<6){
-    if(m.t==='foto'&&!S.ani.some(a=>a.k===m.k)&&!(m.k==='gufo'&&phase()==='giorno')&&!S.photos.some(p=>p.k===m.k&&p.after>=S.mstart)){msgs.push('Gli animali da fotografare sono spariti. Missione saltata.');nextM();m=curM();continue;}
+    if(m.t==='foto'&&!S.ani.some(a=>a.k===m.k)&&!(m.k==='gufo'&&phase()==='giorno')&&!S.photos.some(p=>p.k===m.k)){msgs.push('Gli animali da fotografare sono spariti. Missione saltata.');nextM();m=curM();continue;}
     let ok=false;
-    if(m.t==='funghi')ok=S.basket.length>=m.base+m.n;
-    if(m.t==='foto')ok=S.photos.some(p=>p.k===m.k&&p.after>=S.mstart);
+    if(m.t==='funghi')ok=S.basket.length>=m.n;
+    if(m.t==='foto')ok=S.photos.some(p=>p.k===m.k);
     if(m.t==='luogo'){const q=lmPos(m.lm);ok=S.p.c===q.c&&S.p.r===q.r;}
     if(m.t==='consegna'){const q=lmPos(m.lm);if(S.p.c===q.c&&S.p.r===q.r){const i=S.basket.findIndex(x=>x.k==='porcino');if(i>=0){S.basket.splice(i,1);ok=true;}else if(!S.seenHint['np'+S.mi]){S.seenHint['np'+S.mi]=1;msgs.push('Il parroco ti guarda il cestino: «Senza porcino non se ne parla.»');}}}
     if(!ok)break;
-    S.mpts+=m.pts;S.mdone++;msgs.push(`✓ Missione compiuta: +${m.pts}.`);nextM();m=curM();}
+    S.mpts+=m.pts;S.mdone++;msgs.push(S.mstart===S.turn&&S.mi>0?`✓ Già fatto! Missione compiuta: +${m.pts}.`:`✓ Missione compiuta: +${m.pts}.`);nextM();m=curM();}
   }
 function nextM(){S.mi++;S.mstart=S.turn;const m=curM();if(m){if(m.t==='funghi')m.base=S.basket.length;msgs.push('Nuova missione: '+mText());}}
 function newGame(daily,seed){
