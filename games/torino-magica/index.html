@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<title>Torino Magica</title>
+<link rel="icon" href="art/icon.webp"><link rel="apple-touch-icon" href="art/icon.webp">
+<style>
+:root{--bg:#07080b;--tx:#e6e2d8;--t2:#9aa3b2;--lamp:#f3c76a;--lamp3:#ffe2a0;--red:#ff5a4e;--ok:#7fd0a0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;height:100%;overflow:hidden;overscroll-behavior:none}
+#app{max-width:440px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+#top{padding:10px 14px 6px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #1a1f28;background:linear-gradient(180deg,rgba(7,8,11,.35),#07080b),#000 url(art/sc_po.webp) center 40%/cover;min-height:84px}
+#top b{font:500 21px/1.1 Georgia,serif;display:block}
+#phase{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);display:block;margin-bottom:3px}
+#clock{font:700 20px Inter,sans-serif}#clock.late{color:var(--red)}
+#mis{margin:6px 10px 0;padding:7px 10px;border-radius:10px;background:#221d10;border:1.5px solid #f3c76a;color:#ffe2a0;font-size:13px;line-height:1.35}#mis b{color:#f3c76a}
+#stats{display:flex;flex-wrap:wrap;gap:4px 12px;padding:5px 14px;font-size:12.5px;color:var(--t2)}#stats b{color:var(--tx)}
+#fav{display:flex;gap:5px;padding:0 10px 3px;flex-wrap:wrap}#fav span{font-size:11px;padding:2px 7px;border-radius:99px;background:#0f2a1c;border:1px solid #7fd0a0;color:#cfeedd}
+#board{flex:1;min-height:0;display:flex;justify-content:center;padding:2px 8px;touch-action:none}
+#board svg{height:100%;width:100%;display:block}
+#board svg *{pointer-events:none}#board svg .mv,#board svg .cell{pointer-events:all;cursor:pointer}
+#msg{min-height:38px;padding:4px 14px;text-align:center;font-size:13px;font-style:italic;line-height:1.35}
+#ctrl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
+button{font:600 13px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:50px;padding:6px}
+button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lamp3);box-shadow:0 0 12px rgba(243,199,106,.25)}
+.ov{position:fixed;inset:0;background:rgba(4,5,6,.97);z-index:9;overflow-y:auto;display:flex;padding:20px}
+.ov .box{margin:auto;max-width:400px;width:100%}
+.ov h1{font:500 34px/1.05 Georgia,serif;margin:0 0 8px}.ov h2{font:500 26px/1.1 Georgia,serif;margin:0 0 8px}
+.ov p{line-height:1.45;color:var(--t2)}.ov ul{padding-left:18px;color:#c9c4b8;font-size:14px;line-height:1.5}.ov li{margin-bottom:6px}.ov b{color:var(--tx)}
+.main{width:100%;background:var(--lamp);color:#1a1408;border:0;font-size:17px;min-height:54px;border-radius:999px;margin-top:10px}
+.sec{width:100%;background:none;border:1.5px solid #353e4d;border-radius:999px;margin-top:8px;min-height:50px}
+.cover{height:58vh;border-radius:18px;background:#000 url(art/cover.webp) center/cover;box-shadow:inset 0 -140px 90px -30px #040506;display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+.score{font:500 44px Georgia,serif;color:var(--lamp)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top"><div><span id="phase"></span><b id="place">Torino</b></div><div style="text-align:right;position:relative;padding-left:38px"><button id="bRules" style="position:absolute;left:0;top:2px;min-height:30px;width:30px;padding:0;border-radius:99px;font-size:13px">?</button><div id="clock">15:00</div><div style="font-size:12px;color:var(--t2)" id="layer">in superficie</div></div></div>
+  <div id="mis"></div>
+  <div id="stats"><span>Punti <b id="sPts">0</b></span><span>Gianduiotti <b id="sG">0</b></span><span>Tesori <b id="sT">0</b></span><span>Fiammiferi <b id="sM">2</b></span><span>Tombini aperti <b id="sO">0</b></span><span id="lampS" class="hide">Lampioni <b id="sL">0</b></span></div>
+  <div id="fav"></div>
+  <div id="board"></div>
+  <div id="msg"></div>
+  <div id="ctrl" style="grid-template-columns:1fr 1fr 1fr 1fr"><button id="bHole">Scendi</button><button id="bMatch">🔥</button><button id="bClose">🔒 Chiudi</button><button id="bWait">Aspetta</button></div>
+</div>
+
+<div class="ov" id="ovCover"><div class="box">
+  <div class="cover"><h1>Torino Magica</h1><p style="margin:0;color:#d8d2c4">Ottobre 1998. Una scrittrice, una giornata di commissioni in centro, e una città che sotto i portici nasconde altre gallerie.</p></div>
+  <p id="cvTxt"></p>
+  <button class="main" id="bDaily">Sfida di oggi</button><button class="sec" id="bRand">Una giornata a caso</button>
+</div></div>
+
+<div class="ov hide" id="ovRules"><div class="box">
+  <h2>Come si gioca</h2>
+  <ul>
+    <li>Sono le 14:00 e sei da qualche parte in centro. Casa è in fondo a via Po. Hai delle commissioni in centro: arrivano una alla volta, in alto, e la <b>stella</b> ti dice dove andare.</li>
+    <li>Tocca una casella vicina per camminare (anche in diagonale), o una lontana per fare un passo verso di lei.</li>
+    <li>Per strada trovi <b>gianduiotti</b> (1 punto).</li>
+    <li>Sui <b>tombini</b> puoi <b>scendere</b>. Sotto ci sono tesori che valgono molto, e i mostri ci sono già.</li>
+    <li><b>Ogni tombino che apri resta aperto</b> (puoi richiuderlo, costa un turno). Alle 18:30 fa buio, e da ognuno risale un mostro. Ma i tombini sono anche la tua via di fuga: i mostri di sopra non ti seguono sotto.</li>
+    <li><b>Torino magica:</b> di notte i mostri non entrano nella luce dei lampioni, né in piazza Castello. Ma i lampioni si spengono, uno ogni pochi minuti.</li>
+    <li>I tesori pesano: con due in borsa, ogni tanto ti fermi.</li>
+    <li><b>Fiammiferi</b> (ne hai 2, altri li trovi per strada): accendine uno e per qualche turno, intorno a te, i mostri non entrano. Sotto un lampione spento, lo <b>riaccendi</b> per sempre.</li>
+    <li>Ogni giornata parti da un posto diverso della città, e tombini e lampioni cambiano.</li>
+    <li>Le persone che aiuti ti restituiscono il favore di notte: il caffè ti lascia la serranda aperta, il giornalaio ti avvisa, il libraio ti presta una torcia.</li>
+    <li>Torna a casa. Conta solo quello che riporti: se un mostro ti prende, la giornata è persa. Rientro prima del buio: +3.</li>
+  </ul>
+  <button class="main" id="bRulesOk">In giro</button>
+</div></div>
+
+<div class="ov hide" id="ovEnd"><div class="box">
+  <h2 id="eT"></h2><div class="score" id="eS"></div><p id="eP"></p>
+  <button class="main" id="bAgain">Un'altra giornata</button><button class="sec" id="bSame">Riprova la stessa</button>
+</div></div>
+
+<script>
+/* ---------- la città (nord in alto) ---------- */
+const ROWS=[
+"###...........#",
+"#...PPPPPP....#",
+"#.#.PPPPPP.##.#",
+"#.#.......#...#",
+"#.###.#.#.#.#.#",
+"#.....#.#...#.#",
+"#.##.##.###.#.#",
+"#..#..........#",
+"##.#.##.#.###.#",
+"#.............#",
+"#.#.##.##.##..#",
+"#.#..PPPPP.#..#",
+"#.##.PPPPP.#.##",
+"#....PPPPP.pp.#",
+"#.###..#..##pp#",
+"#...#.##.#.#pp#",
+"###.#....#..pp#",
+"#...#.##.##.pp#",
+"#.#...#....#pp#",
+"#.#.#.#.##..pp#",
+"#...........pp#",
+"############ppH"];
+const GW=15,GH=ROWS.length,CS=50,VW=7;let VH=11;
+const PLACES={
+  casa:{c:14,r:21,im:'casa',n:'Casa',s:'La mansarda in fondo a via Po',i:'🏠'},
+  balon:{c:6,r:1,im:'balon',n:'Il Balôn',s:'Porta Palazzo',i:'🧺'},
+  edicola:{c:7,r:9,im:'edicola',n:'L\'edicola',s:'Via Garibaldi',i:'🗞'},
+  editore:{c:1,r:5,im:'editore',n:'L\'editore',s:'Il Quadrilatero',i:'🏢'},
+  caffe:{c:3,r:3,im:'caffe',n:'Il caffè',s:'Dietro la Consolata',i:'☕'},
+  libreria:{c:12,r:16,im:'libreria',n:'La libreria',s:'Sotto i portici di via Po',i:'📚'},
+  castello:{c:7,r:12,n:'Piazza Castello',s:'Il cuore bianco della città',i:''},
+  egizio:{c:4,r:13,im:'egizio',n:'Il Museo Egizio',s:'Via Accademia delle Scienze',i:'🏺'},
+  mole:{c:13,r:10,im:'mole',n:'La Mole',s:'Via Montebello',i:'🗼'}};
+const TOMB_ALL=[[2,7],[9,1],[13,5],[12,9],[7,16],[1,13],[5,3],[10,19],[3,20],[6,7],[2,17]];let TOMB=TOMB_ALL.slice(0,6);
+const LAMPS_ALL=[[4,1],[11,3],[5,5],[13,7],[2,9],[10,9],[1,11],[13,13],[3,16],[8,15],[12,18],[5,20],[13,20],[8,2],[1,3],[7,9],[12,15],[9,18]];let LAMPS=LAMPS_ALL.slice(0,13);
+const TREAS={manoscritto:{n:'il manoscritto perduto',p:8,i:'📜'},amuleto:{n:'un amuleto egizio',p:6,i:'🪬'},oro:{n:'il gianduiotto d\'oro',p:7,i:'🏅'},pergamena:{n:'una pergamena alchemica',p:5,i:'🧾'}};
+const START_T=14*60,MIN=5,DUSK=48,NIGHT=54;
+let SEED=1;function rnd(){SEED|=0;SEED=SEED+0x6D2B79F5|0;let t=Math.imul(SEED^SEED>>>15,1|SEED);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+const R=n=>Math.floor(rnd()*n);
+function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
+const key=(c,r)=>c+','+r,inG=(c,r)=>c>=0&&c<GW&&r>=0&&r<GH,dist=(a,b,c,d)=>Math.abs(a-c)+Math.abs(b-d);
+const tile=(c,r)=>inG(c,r)?ROWS[r][c]:'#';
+const isTomb=(c,r)=>TOMB.some(([a,b])=>a===c&&b===r);
+const placeAt=(c,r)=>Object.keys(PLACES).find(k=>PLACES[k].c===c&&PLACES[k].r===r);
+let UNDER=null;
+function buildUnder(seed){const keep=SEED;SEED=seed;const u=new Set();
+  const line=(a,b)=>{let [c,r]=a;u.add(key(c,r));while(c!==b[0]){c+=Math.sign(b[0]-c);u.add(key(c,r));}while(r!==b[1]){r+=Math.sign(b[1]-r);u.add(key(c,r));}};
+  const T=TOMB.slice().sort((a,b)=>Math.atan2(a[1]-11,a[0]-7)-Math.atan2(b[1]-11,b[0]-7));for(let i=0;i<T.length;i++)line(T[i],T[(i+1)%T.length]);line(T[0],T[3]);
+  const cells=[...u].map(k=>k.split(',').map(Number));const ch=[];
+  for(let n=0;n<5;n++){const [c,r]=cells[R(cells.length)];for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++)if(inG(c+dc,r+dr)&&c+dc>0&&c+dc<GW-1)u.add(key(c+dc,r+dr));ch.push([c,r]);}
+  SEED=keep;return{u,ch};}
+const openAt=(c,r,L)=>L==='su'?tile(c,r)!=='#':UNDER.u.has(key(c,r));
+const nb4=(c,r)=>[[c+1,r],[c-1,r],[c,r+1],[c,r-1]];
+const nbL=(c,r,L)=>{const o=[];for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){if(!dc&&!dr)continue;const nc=c+dc,nr=r+dr;if(!inG(nc,nr)||!openAt(nc,nr,L))continue;if(dc&&dr&&!(openAt(c+dc,r,L)&&openAt(c,r+dr,L)))continue;o.push([nc,nr]);}return o;};
+const cheb=(a,b,c,d)=>Math.max(Math.abs(a-c),Math.abs(b-d));
+function bfs(tc,tr,L,block){const d={};const q=[[tc,tr]];d[key(tc,tr)]=0;while(q.length){const [c,r]=q.shift();for(const [nc,nr] of nbL(c,r,L)){const k=key(nc,nr);if(k in d||(block&&block(nc,nr)))continue;d[k]=d[key(c,r)]+1;q.push([nc,nr]);}}return d;}
+
+/* ---------- missioni ---------- */
+function buildMissions(){
+  const pool=[{t:'luogo',p:'editore',pts:3,txt:'Ritira le bozze dall\'editore, nel Quadrilatero.'},
+    {t:'luogo',p:'caffe',pts:3,fav:'barista',txt:'Un bicerin con la tua agente, al caffè dietro la Consolata.'},
+    {t:'luogo',p:'edicola',pts:2,fav:'giornalaio',txt:'All\'edicola di via Garibaldi: c\'è la recensione del tuo libro.'},
+    {t:'luogo',p:'balon',pts:3,txt:'Cerca una prima edizione di Pavese tra i banchi del Balôn.'},
+    {t:'luogo',p:'libreria',pts:4,fav:'libraio',txt:'Firma le copie alla libreria sotto i portici di via Po.'},
+    {t:'luogo',p:'egizio',pts:3,txt:'Restituisci al Museo Egizio il libro sui papiri che ti hanno prestato.'},
+    {t:'luogo',p:'mole',pts:3,txt:'Un\'intervista per la radio, ai piedi della Mole.'}].sort(()=>rnd()-.5);
+  const favs=pool.filter(m=>m.fav),pick=[favs[0],...pool.filter(m=>m!==favs[0]).slice(0,2)].sort(()=>rnd()-.5);
+  const under=rnd()<.5?{t:'tesoro',k:'manoscritto',pts:4,txt:'Si dice che sotto Porta Palazzo ci sia un manoscritto perduto. Scendi a cercarlo.'}:{t:'tesoro',k:'amuleto',pts:4,txt:'Il tuo editore giura che nelle gallerie c\'è un amuleto egizio. Trovalo: farà un romanzo.'};
+  return [...pick,under];}
+const FAV={barista:'☕ Il caffè ti lascia la serranda aperta',giornalaio:'🗞 Il giornalaio ti avvisa',libraio:'🔦 Hai la torcia del libraio'};
+function curM(){return S.mq[S.mi];}
+function mTarget(){const m=curM();if(!m)return S.night?{c:PLACES.casa.c,r:PLACES.casa.r,L:'su'}:null;if(m.t==='luogo')return{c:PLACES[m.p].c,r:PLACES[m.p].r,L:'su'};
+  const t=S.treas.find(x=>x.k===m.k&&!x.got);return t?{c:t.c,r:t.r,L:'giu'}:null;}
+function checkMission(){let m=curM(),g=0;while(m&&g++<8){let ok=false;
+    if(m.t==='luogo')ok=S.visited.has(m.p);if(m.t==='tesoro')ok=S.bag.some(x=>x.k===m.k);
+    if(!ok)break;S.mpts+=m.pts;if(m.fav){S.fav[m.fav]=true;msgs.push(FAV[m.fav]+(m.fav==='barista'?' stanotte: lì dentro i mostri non entrano.':m.fav==='giornalaio'?' se di notte un mostro ti si avvicina.':': di notte vedi più lontano.'));}
+    msgs.push(`✓ Fatto: +${m.pts}.`);S.mi++;m=curM();if(m)msgs.push('Ora: '+m.txt);}
+}
+
+/* ---------- partita ---------- */
+let S,msgs=[],LAST=0;
+function newGame(daily,seed){
+  SEED=seed!=null?seed:(daily?todayN()*48611+7:(Date.now()%1e9));LAST=SEED;
+  TOMB=TOMB_ALL.slice().sort(()=>rnd()-.5).slice(0,6);UNDER=buildUnder(SEED^0x5bd1e995);
+  const ST=[[1,20,'Esci dallo studio di un\'amica, in borgo San Paolo'],[13,3,'Esci dal dentista, in corso Regina'],[1,9,'Esci dalla piscina, vicino a piazza Statuto'],[10,20,'Esci dalla redazione, verso il Po'],[5,3,'Esci dalla casa di tua madre, alla Consolata'],[7,12,'Scendi dal tram in piazza Castello']];const st=ST[R(ST.length)];
+  S={daily:!!daily,turn:0,p:{c:st[0],r:st[1]},L:'su',left:true,opened:new Set(),mons:[],gian:[],treas:[],bag:[],gpts:0,mpts:0,fav:{},visited:new Set(),night:false,over:false,pan:{c:0,r:0},seen:{},known:new Set()};
+  S.mq=buildMissions();S.mi=0;S.match=2;S.myLight=0;S.boxes=[];
+  const streets=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(tile(c,r)!=='#'&&!placeAt(c,r)&&!isTomb(c,r)&&dist(c,r,14,21)>3&&dist(c,r,st[0],st[1])>1)streets.push([c,r]);
+  for(let i=0;i<14;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.gian.push({c,r});}
+  for(let i=0;i<3;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.boxes.push({c,r});}
+  const ucells=[...UNDER.u].map(k=>k.split(',').map(Number)).filter(([c,r])=>!isTomb(c,r));
+  const near2=[6,1];let mc=ucells.filter(([c,r])=>dist(c,r,near2[0],near2[1])<=7);if(!mc.length)mc=ucells;const [mx,my]=mc[R(mc.length)];S.treas.push({k:'manoscritto',c:mx,r:my});
+  for(const k of ['amuleto','oro','pergamena']){const far=ucells.filter(([c,r])=>TOMB.every(([a,b])=>dist(a,b,c,r)>=3)&&!S.treas.some(t=>t.c===c&&t.r===r));const [c,r]=far[R(far.length)];S.treas.push({k,c,r});}
+  for(let i=0;i<3;i++){const far=ucells.filter(([c,r])=>TOMB.every(([a,b])=>dist(a,b,c,r)>=3));const [c,r]=far[R(far.length)];S.mons.push({c,r,L:'giu',rest:0});}
+  LAMPS=LAMPS_ALL.slice().sort(()=>rnd()-.5).slice(0,12);S.lamps=new Set(LAMPS.map(([c,r])=>key(c,r)));S.lampTimer=0;
+  msgs=[st[2]+'. Casa è in fondo a via Po. Prima commissione: '+S.mq[0].txt];
+  render();
+}
+function clock(t){const m=START_T+t*MIN;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function phase(){return S.turn<DUSK?'giorno':S.turn<NIGHT?'tramonto':'notte';}
+function vis(){if(S.L==='giu')return S.fav.libraio?2:1;if(phase()==='giorno')return 3;return S.fav.libraio?2:1;}
+const castle=(c,r)=>tile(c,r)==='P'&&r>=11&&r<=13;
+function lightNow(c,r){if(S.myLight>0&&dist(c,r,S.myLc,S.myLr)<=1&&S.L===S.myLL)return true;if(S.L!=='su'||!S.night)return false;if(castle(c,r))return true;for(const k of S.lamps){const [a,b]=k.split(',').map(Number);if(dist(a,b,c,r)<=1)return true;}return false;}
+function litCell(c,r){if(S.L!=='su')return false;if(phase()==='tramonto')return castle(c,r)||[...S.lamps].some(k=>{const [a,b]=k.split(',').map(Number);return dist(a,b,c,r)<=1;});return lightNow(c,r);}
+function seeNow(c,r){return cheb(c,r,S.p.c,S.p.r)<=vis()||(phase()!=='giorno'&&litCell(c,r)&&cheb(c,r,S.p.c,S.p.r)<=6)||(phase()==='giorno'&&S.L==='su');}
+function reveal(){if(S.L!=='giu')return;const v=vis();for(let dr=-v;dr<=v;dr++)for(let dc=-v;dc<=v;dc++)if(Math.abs(dc)+Math.abs(dr)<=v)S.known.add(key(S.p.c+dc,S.p.r+dr));}
+function dirTo(c,r){const ns=r<S.p.r-1?'nord':r>S.p.r+1?'sud':'',eo=c<S.p.c-1?'ovest':c>S.p.c+1?'est':'';const d=(ns&&eo)?ns+'-'+eo:(ns||eo);return d?'da '+d:'qui vicino';}
+
+function move(c,r){
+  if(S.over||!nbL(S.p.c,S.p.r,S.L).some(([a,b])=>a===c&&b===r))return;msgs=[];S.pan={c:0,r:0};
+  if(S.bag.length>=2&&S.turn%4===3&&!S.seen['peso'+S.turn]){S.seen['peso'+S.turn]=1;msgs.push('Il sacco pesa: ti fermi a riprendere fiato.');return endTurn();}
+  S.p={c,r};if(!(c===14&&r===21))S.left=true;
+  if(S.mons.some(m=>m.L===S.L&&m.c===c&&m.r===r))return caught();
+  arrive();endTurn();
+}
+function arrive(){const {c,r}=S.p;reveal();
+  if(S.L==='su'){const bi=S.boxes.findIndex(b=>b.c===c&&b.r===r);if(bi>=0){S.boxes.splice(bi,1);S.match++;msgs.push('Una scatola di fiammiferi su un davanzale. Ora ne hai '+S.match+'.');}
+    const gi=S.gian.findIndex(g=>g.c===c&&g.r===r);if(gi>=0){S.gian.splice(gi,1);S.gpts++;msgs.push('Un gianduiotto, ancora nella carta dorata.');}
+    const pl=placeAt(c,r);if(pl&&!S.visited.has(pl)){S.visited.add(pl);if(PLACES[pl].i&&pl!=='casa'&&curM()?.p!==pl)msgs.push(PLACES[pl].n+'.');}
+    if(isTomb(c,r)&&!S.seen.tomb){S.seen.tomb=1;msgs.push('Un tombino. Lo puoi aprire e scendere: sotto c\'è da guadagnare, ma resterà aperto.');}}
+  else{const t=S.treas.find(t=>!t.got&&t.c===c&&t.r===r);if(t){t.got=true;S.bag.push(t);msgs.push('Trovi '+TREAS[t.k].n+'. +'+TREAS[t.k].p+' se lo porti a casa.');}}
+  checkMission();
+}
+function stepToward(tc,tr){if(S.over)return;if(tc===S.p.c&&tr===S.p.r)return;
+  const d=bfs(tc,tr,S.L,S.L==='giu'?((c,r)=>!S.known.has(key(c,r))&&!(c===tc&&r===tr)):null);let best=null,bd=1e9;
+  for(const [c,r] of nbL(S.p.c,S.p.r,S.L)){const v=d[key(c,r)]??(1e6+cheb(c,r,tc,tr));if(v<bd){bd=v;best=[c,r];}}if(best)move(best[0],best[1]);}
+function hole(){
+  if(S.over||!isTomb(S.p.c,S.p.r))return;msgs=[];
+  if(S.L==='su'){const k=key(S.p.c,S.p.r);const first=!S.opened.has(k);S.opened.add(k);S.L='giu';msgs.push(first?'Sollevi il tombino. Scendi nel buio umido: questo resterà aperto.':'Riscendi dal tombino che avevi aperto.');}
+  else{S.opened.add(key(S.p.c,S.p.r));S.L='su';msgs.push('Risali in strada.');}
+  if(S.mons.some(m=>m.L===S.L&&m.c===S.p.c&&m.r===S.p.r))return caught();
+  reveal();endTurn();
+}
+function strike(){if(S.over||S.match<=0)return;msgs=[];S.match--;
+  const lk=key(S.p.c,S.p.r);if(S.L==='su'&&LAMPS.some(([a,b])=>a===S.p.c&&b===S.p.r)&&!S.lamps.has(lk)&&S.night){S.lamps.add(lk);msgs.push('Sali sul basamento e riaccendi il lampione col fiammifero. Torna la luce.');}
+  else{S.myLight=4;S.myLc=S.p.c;S.myLr=S.p.r;S.myLL=S.L;msgs.push('Accendi un fiammifero, poi un altro. Per poco, qui intorno, non entra niente.');}
+  endTurn();}
+function closeT(){if(S.over||S.L!=='su')return;const k=key(S.p.c,S.p.r);if(!S.opened.has(k))return;S.opened.delete(k);msgs=['Rimetti a posto il tombino. Pesa, ma ora è chiuso.'];endTurn();}
+function wait(){if(S.over)return;msgs=['Aspetti, in ascolto.'];endTurn();}
+function endTurn(){
+  S.turn++;if(S.myLight>0){S.myLight--;if(!S.myLight)msgs.push('Il fiammifero si spegne.');}
+  if(S.turn===DUSK)msgs.push('Il sole scende dietro la Mole. Tra mezz\'ora è buio.');
+  if(S.turn===NIGHT){S.night=true;let n=0;
+    for(const k of S.opened){const [c,r]=k.split(',').map(Number);if(c===S.p.c&&r===S.p.r&&S.L==='su')continue;S.mons.push({c,r,L:'su',rest:1});n++;}
+    S.mons.push({c:1,r:9,L:'su',rest:1});
+    msgs.push((n?`È buio. Dai ${n} tombini che hai aperto sale qualcosa. E un'ombra arriva da piazza Statuto.`:'È buio. Un\'ombra arriva da piazza Statuto, a ovest.')+' Nella luce dei lampioni non entrano. Ma i lampioni, stanotte, si spengono.');
+    if(S.L==='giu'){S.mons.push(...[0,1].map(()=>{const cs=[...UNDER.u].map(k=>k.split(',').map(Number)).filter(([c,r])=>dist(c,r,S.p.c,S.p.r)>=5);const [c,r]=cs[R(cs.length)];return{c,r,L:'giu',rest:0};}));msgs.push('Sotto, i passi si moltiplicano.');}}
+  if(S.night&&S.lamps.size){S.lampTimer++;if(S.lampTimer%3===0){const arr=[...S.lamps];const near=arr.filter(k=>{const [a,b]=k.split(',').map(Number);return cheb(a,b,S.p.c,S.p.r)<=8;});const pickk=(near.length&&rnd()<.6?near:arr)[R((near.length&&rnd()<.6?near:arr).length)];if(pickk){S.lamps.delete(pickk);const [a,b]=pickk.split(',').map(Number);msgs.push(`Un lampione si spegne, ${dirTo(a,b)==='qui vicino'?'proprio qui':dirTo(a,b).replace('da ','verso ')}. Ne restano ${S.lamps.size}.`);}}}
+  // mostri
+  for(const m of S.mons){
+    if(m.rest>0){m.rest--;continue;}
+    const sameL=m.L===S.L,d=sameL?dist(m.c,m.r,S.p.c,S.p.r):99;
+    const hunt=sameL&&(m.L==='su'?S.night:d<=4);
+    if((m.L==='giu'?S.turn%3===0:S.turn%4===0)&&!(hunt&&d<=1))continue;
+    const block=(c,r)=>(S.myLight>0&&m.L===S.myLL&&dist(c,r,S.myLc,S.myLr)<=1)||m.L==='su'&&(lightNow(c,r)||S.fav.barista&&c===PLACES.caffe.c&&r===PLACES.caffe.r)||S.mons.some(o=>o!==m&&o.L===m.L&&o.c===c&&o.r===r);
+    let opts=nbL(m.c,m.r,m.L).filter(([c,r])=>!block(c,r));if(!opts.length)continue;
+    let nx;if(hunt){const dd=bfs(S.p.c,S.p.r,m.L,(c,r)=>block(c,r)&&!(c===S.p.c&&r===S.p.r));opts.sort((a,b)=>(dd[key(...a)]??999)-(dd[key(...b)]??999));nx=opts[0];}
+    else{if(m.L==='su'&&!S.night)continue;nx=opts[R(opts.length)];}
+    m.c=nx[0];m.r=nx[1];
+    if(sameL&&m.c===S.p.c&&m.r===S.p.r)return caught();
+  }
+  if(S.fav.giornalaio&&S.night&&S.L==='su'){const near=S.mons.filter(m=>m.L==='su'&&dist(m.c,m.r,S.p.c,S.p.r)<=4&&!seeNow(m.c,m.r));if(near.length&&S.turn%2===0)msgs.push('Ti torna in mente il giornalaio: «Occhio '+dirTo(near[0].c,near[0].r).replace('da ','a ')+'.»');}
+  if(S.L==='giu'&&S.mons.some(m=>m.L==='giu'&&dist(m.c,m.r,S.p.c,S.p.r)<=2)&&!S.seen.mon){S.seen.mon=1;msgs.push('Qualcosa si muove nel buio della galleria. Vicino.');}
+  if(S.left&&S.L==='su'&&S.p.c===14&&S.p.r===21){S.over=true;render();return end(true);}
+  render();
+}
+function caught(){S.over=true;S.reveal=true;render();
+  const why=S.L==='giu'?'Nel buio della galleria qualcosa ti afferra la caviglia.':S.opened.size?'Ti raggiunge sotto i portici. Forse era salito da uno dei tombini che hai aperto tu.':'Ti raggiunge sotto i portici.';
+  msgs=[why];render();document.getElementById('ctrl').classList.add('hide');document.getElementById('ctrlEnd').classList.remove('hide');S.why=why;}
+function end(ok){
+  const tp=S.bag.reduce((a,t)=>a+TREAS[t.k].p,0),bonus=ok&&S.turn<NIGHT?3:0;
+  const tot=ok?S.mpts+S.gpts+tp+bonus:0;
+  let best=0;try{best=+localStorage.getItem('to_best')||0;if(tot>best)localStorage.setItem('to_best',tot);}catch(_){}
+  document.getElementById('eT').textContent=ok?'A casa, alle '+clock(S.turn):'Torino ti ha presa';
+  document.getElementById('eS').textContent=tot+' punti';
+  document.getElementById('eP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+(ok?`Commissioni: ${S.mi}/${S.mq.length} (+${S.mpts}). Gianduiotti: ${S.gpts}. Dal sottosuolo: ${S.bag.length?S.bag.map(t=>TREAS[t.k].n).join(', ')+` (+${tp})`:'niente'}. Tombini lasciati aperti: ${S.opened.size}.`+(bonus?` Rientro prima del buio: +3.`:''):`${S.why} Commissioni fatte: ${S.mi}. Tombini aperti: ${S.opened.size}.`)+` Record: ${Math.max(best,tot)}.`;
+  setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),ok?400:0);
+}
+
+/* ---------- disegno ---------- */
+const FILL={'#':'#2a211b','.':'#4b4740','p':'#5a4f3e','P':'#615a4c','H':'#6b5232'};
+function render(){
+  const ph=phase(),here=placeAt(S.p.c,S.p.r);
+  document.getElementById('phase').textContent=S.L==='giu'?'Sottosuolo':{giorno:'Pomeriggio',tramonto:'Tramonto',notte:'Notte'}[ph];
+  document.getElementById('place').textContent=S.L==='giu'?'Le gallerie':here?PLACES[here].n:tile(S.p.c,S.p.r)==='p'?'Sotto i portici':tile(S.p.c,S.p.r)==='P'?'In piazza':'Per i vicoli';
+  const ck=document.getElementById('clock');ck.textContent=clock(S.turn);ck.classList.toggle('late',S.turn>=DUSK);
+  document.getElementById('layer').textContent=S.L==='giu'?'sotto la città':'in superficie';
+  const m=curM();document.getElementById('mis').innerHTML=m?`<b>Commissione ${S.mi+1}/${S.mq.length}</b> · ${m.txt} <span style="color:#c9b892">(+${m.pts})</span>`:`<b>Tutto fatto</b> · Ora torna a casa, in fondo a via Po.`;
+  document.getElementById('sPts').textContent=S.mpts+S.gpts+S.bag.reduce((a,t)=>a+TREAS[t.k].p,0);document.getElementById('sG').textContent=S.gpts;document.getElementById('sM').textContent=S.match;document.getElementById('sT').textContent=S.bag.length;document.getElementById('sO').textContent=S.opened.size;document.getElementById('lampS').classList.toggle('hide',!S.night);document.getElementById('sL').textContent=S.lamps.size;
+  document.getElementById('fav').innerHTML=Object.keys(S.fav).map(k=>`<span>${FAV[k]}</span>`).join('');
+  {const bd=document.getElementById('board');const w=bd.clientWidth-16,h=bd.clientHeight-4;if(w>50&&h>50)VH=Math.max(7,Math.min(GH,Math.floor(h/(w/VW))));}
+  const c0=Math.max(0,Math.min(GW-VW,S.p.c-3+S.pan.c)),r0=Math.max(0,Math.min(GH-VH,S.p.r-Math.floor(VH/2)+S.pan.r));
+  const W=VW*CS,H=VH*CS,X=c=>(c-c0)*CS,Y=r=>(r-r0)*CS,inV=(c,r)=>c>=c0&&c<c0+VW&&r>=r0&&r<r0+VH;
+  const night=ph!=='giorno'||S.L==='giu';
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="tse" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_selciato.webp" width="100" height="100"/></pattern><pattern id="tpo" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_portici.webp" width="100" height="100"/></pattern><pattern id="tpi" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_piazza.webp" width="100" height="100"/></pattern><pattern id="tt" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_tetti.webp" width="100" height="100"/></pattern><pattern id="tga" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_galleria.webp" width="100" height="100"/></pattern><pattern id="tro" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_roccia.webp" width="100" height="100"/></pattern><radialGradient id="lt"><stop offset="0" stop-color="#f3c76a" stop-opacity=".28"/><stop offset="1" stop-color="#f3c76a" stop-opacity="0"/></radialGradient><radialGradient id="rd"><stop offset="0" stop-color="#ff3b2f" stop-opacity=".5"/><stop offset="1" stop-color="#ff3b2f" stop-opacity="0"/></radialGradient></defs>`;
+  for(let r=r0;r<r0+VH;r++)for(let c=c0;c<c0+VW;c++){const x=X(c),y=Y(r);
+    s+=`<rect class="cell" data-c="${c}" data-r="${r}" x="${x}" y="${y}" width="${CS}" height="${CS}" fill="transparent"/>`;
+    if(S.L==='su'){const t=tile(c,r);s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="${t==='#'?'url(#tt)':t==='p'?'url(#tpo)':t==='P'||t==='H'?'url(#tpi)':'url(#tse)'}"/>`;
+      if(t==='#'){s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="#000" opacity="${night?.35:.12}"/>`;if(night&&(c*7+r*3)%4===0)s+=`<rect x="${x+20}" y="${y+18}" width="9" height="11" fill="#f3c76a" opacity=".85"/>`;}
+      if(t==='p')s+=`<rect x="${x}" y="${y}" width="${CS}" height="6" fill="#1d1611" opacity=".45"/>`;
+      if(LAMPS.some(([a,b])=>a===c&&b===r)){const on=S.lamps.has(key(c,r))||!S.night;s+=`<image href="art/i_lampione${on?'':'_spento'}.png" x="${x+CS-30}" y="${y-4}" width="30" height="30"/>`;}
+      if(isTomb(c,r)){const op=S.opened.has(key(c,r));s+=`<image href="art/i_tombino${op?'_aperto':''}.png" x="${x+7}" y="${y+7}" width="${CS-14}" height="${CS-14}"/>`+(op?`<circle cx="${x+CS/2}" cy="${y+CS/2}" r="${CS/2-5}" fill="none" stroke="#ff5a4e" stroke-width="2"/>`:'');}
+      const pl=placeAt(c,r);if(pl&&PLACES[pl].im)s+=`<rect x="${x+2}" y="${y+2}" width="${CS-4}" height="${CS-4}" rx="8" fill="#120e09" stroke="#f3c76a" stroke-width="1.5"/><image href="art/p_${PLACES[pl].im}.png" x="${x+3}" y="${y+3}" width="${CS-6}" height="${CS-6}"/>`;
+      if(S.boxes.some(b=>b.c===c&&b.r===r)&&seeNow(c,r))s+=`<rect x="${x+15}" y="${y+18}" width="20" height="14" rx="2" fill="#b8322a" stroke="#f3c76a" stroke-width="1.5"/><text x="${x+CS/2}" y="${y+30}" text-anchor="middle" font-size="10">🔥</text>`;
+      if(S.gian.some(g=>g.c===c&&g.r===r)&&(seeNow(c,r)))s+=`<image href="art/i_gianduiotto.png" x="${x+11}" y="${y+11}" width="28" height="28"/>`;
+      if(night&&!seeNow(c,r))s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="#000" opacity="${ph==='notte'?.72:.4}"/>`;
+      if(night&&litCell(c,r))s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="#f3c76a" opacity="${castle(c,r)?.10:.14}"/>`;
+      if(night&&S.lamps.has(key(c,r)))s+=`<circle cx="${x+CS-10}" cy="${y+8}" r="${CS*.9}" fill="url(#lt)"/>`;}
+    else{const o=UNDER.u.has(key(c,r)),kn=S.known.has(key(c,r));
+      s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="${!kn?'#050506':o?'url(#tga)':'url(#tro)'}"/>`;if(kn&&!o)s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="#000" opacity=".45"/>`;
+      if(kn&&o&&isTomb(c,r))s+=`<rect x="${x+12}" y="${y+12}" width="${CS-24}" height="${CS-24}" fill="none" stroke="#f3c76a" stroke-width="2"/><text x="${x+CS/2}" y="${y+CS/2+5}" text-anchor="middle" font-size="12" fill="#ffe2a0">↑</text>`;
+      const t=S.treas.find(t=>!t.got&&t.c===c&&t.r===r);if(t&&kn)s+=`<circle cx="${x+CS/2}" cy="${y+CS/2}" r="19" fill="#3a2e10" fill-opacity=".7" stroke="#f3c76a" stroke-width="2"/><image href="art/i_${t.k}.png" x="${x+8}" y="${y+8}" width="${CS-16}" height="${CS-16}"/>`;
+      if(kn&&!seeNow(c,r))s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="#000" opacity=".3"/>`;}
+  }
+  if(night){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="${CS*(vis()+.6)}" fill="url(#lt)"/>`;}
+  if(S.myLight>0&&S.myLL===S.L&&inV(S.myLc,S.myLr)){for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++)if(Math.abs(dc)+Math.abs(dr)<=1)s+=`<rect x="${X(S.myLc+dc)}" y="${Y(S.myLr+dr)}" width="${CS}" height="${CS}" fill="#ff9a3c" opacity=".22"/>`;s+=`<text x="${X(S.myLc)+CS-12}" y="${Y(S.myLr)+16}" font-size="14">🔥</text>`;}
+  // mostri
+  for(const mo of S.mons){if(mo.L!==S.L||!inV(mo.c,mo.r))continue;if(!(seeNow(mo.c,mo.r)||S.reveal))continue;if(S.L==='su'&&!S.night&&!S.reveal)continue;const cx=X(mo.c)+CS/2,cy=Y(mo.r)+CS/2;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${CS*.7}" fill="url(#rd)"/><image href="art/s_mostro_${mo.L}.png" x="${cx-26}" y="${cy-26}" width="52" height="52"/>`;
+    if(S.reveal&&mo.c===S.p.c&&mo.r===S.p.r)s+=`<circle cx="${cx}" cy="${cy}" r="${CS*.62}" fill="none" stroke="#ff3b2f" stroke-width="4"/>`;}
+  // obiettivo
+  {const t=mTarget();if(t&&t.L===S.L){if(inV(t.c,t.r))s+=`<rect x="${X(t.c)+2}" y="${Y(t.r)+2}" width="${CS-4}" height="${CS-4}" rx="9" fill="none" stroke="#f3c76a" stroke-width="3"/>`;
+    else{const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2;let dx=X(t.c)+CS/2-px,dy=Y(t.r)+CS/2-py;const k=Math.min((W/2-18)/Math.abs(dx||1e-6),(H/2-18)/Math.abs(dy||1e-6));const ex=W/2+dx*k,ey=H/2+dy*k,ang=Math.atan2(dy,dx)*180/Math.PI;
+      s+=`<g transform="translate(${ex} ${ey}) rotate(${ang})"><path d="M16 0 L0 -11 L0 11 Z" fill="#f3c76a" stroke="#1a1408" stroke-width="1.5"/></g><text x="${ex-Math.cos(ang*Math.PI/180)*14}" y="${ey-Math.sin(ang*Math.PI/180)*14+5}" text-anchor="middle" font-size="15" font-weight="800" fill="#f3c76a" stroke="#1a1408" stroke-width="3" paint-order="stroke">★</text>`;}}
+   else if(t&&t.L!==S.L&&S.L==='su'){/* tesoro sotto: indica il tombino più vicino */}}
+  // mosse
+  if(!S.over)for(const [c,r] of nbL(S.p.c,S.p.r,S.L)){s+=`<rect class="mv" data-c="${c}" data-r="${r}" x="${X(c)+4}" y="${Y(r)+4}" width="${CS-8}" height="${CS-8}" rx="8" fill="#fff" fill-opacity=".04" stroke="#ffe2a0" stroke-opacity=".75" stroke-width="2"/>`;}
+  // tu
+  if(!(S.reveal&&S.mons.some(mo=>mo.L===S.L&&mo.c===S.p.c&&mo.r===S.p.r))){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="21" fill="#2a1420" fill-opacity=".55" stroke="#f0b8d8" stroke-width="2.5"/><image href="art/s_lei.png" x="${cx-24}" y="${cy-24}" width="48" height="48"/>`;}
+  s+='</svg>';
+  const b=document.getElementById('board');b.innerHTML=s;
+  b.querySelectorAll('.mv').forEach(el=>el.addEventListener('click',()=>{if(!DRAG.moved)move(+el.dataset.c,+el.dataset.r);}));
+  b.querySelectorAll('.cell').forEach(el=>el.addEventListener('click',()=>{if(!DRAG.moved)stepToward(+el.dataset.c,+el.dataset.r);}));
+  document.getElementById('msg').textContent=msgs.join(' ');
+  const bh=document.getElementById('bHole'),tb=isTomb(S.p.c,S.p.r)&&!S.over;bh.disabled=!tb;bh.textContent=S.L==='giu'?'⬆ Risali':'⬇ Scendi';bh.classList.toggle('ready',tb);
+  document.getElementById('bWait').disabled=S.over;
+  {const bm=document.getElementById('bMatch'),relight=S.night&&S.L==='su'&&LAMPS.some(([a,b])=>a===S.p.c&&b===S.p.r)&&!S.lamps.has(key(S.p.c,S.p.r));bm.textContent=`🔥 ${relight?'Riaccendi':'Luce'} ×${S.match}`;bm.disabled=S.over||S.match<=0;bm.classList.toggle('ready',S.match>0&&(relight||S.mons.some(m=>m.L===S.L&&cheb(m.c,m.r,S.p.c,S.p.r)<=2&&(S.L==='giu'||S.night))));}
+  {const bc=document.getElementById('bClose'),can=!S.over&&S.L==='su'&&S.opened.has(key(S.p.c,S.p.r));bc.disabled=!can;bc.classList.toggle('ready',can);}
+}
+const DRAG={on:false,moved:false,x:0,y:0,pc:0,pr:0};
+{const bd=document.getElementById('board');
+ bd.addEventListener('pointerdown',e=>{if(!S)return;DRAG.on=true;DRAG.moved=false;DRAG.x=e.clientX;DRAG.y=e.clientY;DRAG.pc=S.pan.c;DRAG.pr=S.pan.r;});
+ bd.addEventListener('pointermove',e=>{if(!DRAG.on)return;const sv=bd.querySelector('svg');if(!sv)return;const cell=sv.getBoundingClientRect().width/VW;const dx=e.clientX-DRAG.x,dy=e.clientY-DRAG.y;
+   if(Math.abs(dx)+Math.abs(dy)>12)DRAG.moved=true;if(!DRAG.moved)return;const nc=DRAG.pc-Math.round(dx/cell),nr=DRAG.pr-Math.round(dy/cell);if(nc!==S.pan.c||nr!==S.pan.r){S.pan={c:nc,r:nr};render();}});
+ const up=()=>{DRAG.on=false;setTimeout(()=>DRAG.moved=false,0);};bd.addEventListener('pointerup',up);bd.addEventListener('pointercancel',up);bd.addEventListener('pointerleave',up);}
+window.addEventListener('resize',()=>{if(S)render();});
+document.getElementById('app').insertAdjacentHTML('beforeend','<div id="ctrlEnd" class="hide" style="padding:0 10px max(10px,env(safe-area-inset-bottom))"><button class="main" id="bSeeEnd" style="margin-top:0">Com\'è andata →</button></div>');
+document.getElementById('bSeeEnd').onclick=()=>end(false);
+function resetCtrl(){document.getElementById('ctrl').classList.remove('hide');document.getElementById('ctrlEnd').classList.add('hide');}
+document.getElementById('bHole').onclick=hole;
+document.getElementById('bWait').onclick=wait;
+document.getElementById('bClose').onclick=closeT;
+document.getElementById('bMatch').onclick=strike;
+document.getElementById('bRules').onclick=()=>{document.getElementById('bRulesOk').textContent='Torna in strada';document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bRulesOk').onclick=()=>document.getElementById('ovRules').classList.add('hide');
+const start=d=>{document.getElementById('ovCover').classList.add('hide');newGame(d);document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bDaily').onclick=()=>start(true);
+document.getElementById('bRand').onclick=()=>start(false);
+document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');resetCtrl();newGame(false);};
+document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');resetCtrl();newGame(S.daily,LAST);};
+document.getElementById('cvTxt').innerHTML=`Sfida n° ${todayN()}. Fai le tue commissioni. Torna a casa prima che la città si svegli.`;
+newGame(true);
+window._T=()=>TOMB;window._strike=strike;window._S=()=>S;window._move=move;window._hole=hole;window._wait=wait;window._new=newGame;window._step=stepToward;window._bfs=bfs;window._open=openAt;window._isTomb=isTomb;
+</script>
+<script id="sh-skip">(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_torino-magica';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
+</body>
+</html>

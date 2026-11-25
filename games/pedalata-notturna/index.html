@@ -239,12 +239,12 @@ function step(dt,pedal){
   // edicola
   if(!S.shrine&&zone(S.y)==='crocevia'){S.shrine=true;S.items.sale++;say('All\'edicola qualcuno ha lasciato un sacchetto di sale. Lo prendi.');if(S.masca)S.masca.r=Math.max(0,S.masca.r-14);}
   // masca
-  if(!S.masca&&S.y>=14*K&&!ZONES[zone(S.y)].lit){S.masca={r:S.y-7,stop:0};say('Dietro di te, nel buio, qualcosa si mette a correre. È la masca: pedala, o col sale la fermi.',4.5);}
+  if(!S.masca&&S.y>=14*K&&!ZONES[zone(S.y)].lit){S.masca={r:S.y-9,stop:0};say('Dietro di te, nel buio, qualcosa si mette a correre. È la masca: pedala, o col sale la fermi.',4.5);}
   if(S.masca){
     if(zone(S.y)==='centro'){S.masca=null;say('Le luci del paese. La masca si ferma alle prime case.');}
     else if(S.masca.stop>0)S.masca.stop-=dt;
-    else{let ms=(S.night==='luna'?2.45:2.2);if(ZONES[zone(S.y)].up)ms*=.75;S.masca.r+=ms*dt;
-      if(S.masca.stop<=0)S.masca.r=Math.max(S.masca.r,S.y-7);
+    else{let ms=(S.night==='luna'?2.15:1.95);if(ZONES[zone(S.y)].up)ms*=.75;S.masca.r+=ms*dt;
+      if(S.masca.stop<=0)S.masca.r=Math.max(S.masca.r,S.y-9);
       if(S.masca.r>=S.y-.3)return lose('La masca ti ha preso.');}
   }
   // scorciatoie e bivio
@@ -284,7 +284,7 @@ function takeMinor(yes){
     S.pick=S.pick.filter(q=>q.r<from||q.r>=to).map(q=>{if(q.r>=to)q.r-=m.skip;return q;});
     if(S.masca)S.masca.r=Math.min(S.masca.r,S.y-6);
     S.took[m.id]=true;
-    {const a=from,b=Math.min(S.rows.length-6,from+10);S.haz=S.haz.filter(h=>h.r<a||h.r>=b);for(let r=a;r<b;r++){if(rnd()<.55){const l=R(LANES);S.haz.push({t:'buca',r,l});if(rnd()<.3)S.haz.push({t:'buca',r,l:(l+1+R(2))%LANES});}}S.short={a,b};}
+    {const a=from,b=Math.min(S.rows.length-6,from+10);S.haz=S.haz.filter(h=>h.r<a||h.r>=b);for(let r=a;r<b;r++){if(rnd()<.4){const l=R(LANES);S.haz.push({t:'buca',r,l});if(rnd()<.3)S.haz.push({t:'buca',r,l:(l+1+R(2))%LANES});}}S.short={a,b};}
     if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-1);say('Il guado: sassi e buche per un bel tratto. Vai piano, o cadi.',4);}
     if(m.id==='vigna'){const r=Math.floor(S.y)+6;S.haz=S.haz.filter(h=>Math.abs(h.r-r)>1);S.haz.push({t:'cane',r,l:lane(),x:lane(),fed:false});say('Tra i filari un cane abbaia: ti ha sentito.');}
   } else say('Resti sulla strada.');
@@ -305,7 +305,7 @@ function useItem(k){
   if(k==='pane'&&S.night==='fame'&&S.masca&&!dogsNear().length){S.items.pane--;S.masca.stop=5;S.masca.r=S.y-16;say('Getti il pane alla masca. Si ferma a mangiarlo.');return hud(true);}
   if(k==='sale'){
     if(!S.masca){say('Non c\'è niente da fermare, per ora.');return;}
-    S.items.sale--;S.masca.stop=5;S.masca.r=S.y-12;say('Getti il sale dietro di te. La masca resta indietro a contarlo.');return hud(true);
+    S.items.sale--;S.masca.stop=6;S.masca.r=S.y-14;say('Getti il sale dietro di te. La masca resta indietro a contarlo.');return hud(true);
   }
   const d=dogsNear()[0];
   if(!d){say('Nessun cane a tiro.');return;}

@@ -1,0 +1,48 @@
+{
+ "slug": "torino-magica",
+ "title": {
+  "it": "Torino Magica",
+  "en": "Magic Turin"
+ },
+ "hook": {
+  "it": "Ottobre 1998. Una scrittrice, una giornata di commissioni in centro, e una città che sotto i portici nasconde altre gallerie.",
+  "en": "October 1998. A writer, a day of errands in the city centre, and a city that hides other tunnels beneath its arcades."
+ },
+ "lead": {
+  "it": "Fai le tue commissioni tra Quadrilatero, Balôn e via Po. Sotto i tombini ci sono tesori, e mostri. Ma ogni tombino che apri resta aperto, e quando fa buio da lì risalgono. Torna a casa saltando da un lampione all'altro, mentre si spengono.",
+  "en": "Run your errands between the Quadrilatero, the Balôn and via Po. Under the manholes there are treasures, and monsters. But every manhole you open stays open, and after dark they climb out. Get home leaping from streetlight to streetlight, as they go out."
+ },
+ "howto": {
+  "it": [
+   "Scendi nei tombini per i tesori: ogni tombino aperto, di notte, libera un mostro.",
+   "Nella luce dei lampioni i mostri non entrano. I fiammiferi ti salvano o riaccendono un lampione.",
+   "Ogni giornata parti da un posto diverso, e la città sotterranea cambia."
+  ],
+  "en": [
+   "Go down the manholes for treasure: at night, every open manhole releases a monster.",
+   "Monsters can't enter streetlight. Matches save you or relight a lamp.",
+   "Every day you start somewhere else, and the city below changes."
+  ]
+ },
+ "campaign": {
+  "it": "Ogni giornata ha commissioni, partenza e sottosuolo diversi. La sfida di oggi è uguale per tutti.",
+  "en": "Every day has different errands, starting point and underground. Today's challenge is the same for everyone."
+ },
+ "minutes": [
+  8,
+  15
+ ],
+ "difficulty": 4,
+ "accent": "#f0b8d8",
+ "chapters": 0,
+ "free": "daily",
+ "price": {
+  "eur": 1.99
+ },
+ "status": "live",
+ "lang": [
+  "it"
+ ],
+ "new": true,
+ "order": 0
+}
