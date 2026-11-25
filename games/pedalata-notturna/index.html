@@ -25,16 +25,23 @@ html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system
 #board{flex:1;min-height:0;display:flex;justify-content:center}
 #board svg{height:100%;width:100%;display:block;touch-action:manipulation}
 #board svg *{pointer-events:none}
-#board svg .mv{pointer-events:all;cursor:pointer}
+
 #msg{min-height:38px;padding:4px 12px;text-align:center;font-size:14px;font-style:italic;color:var(--tx);line-height:1.35}
 #bar{display:flex;gap:6px;padding:0 10px 4px}
 #bar button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-#meter{position:fixed;left:0;right:0;bottom:0;z-index:8;max-width:440px;margin:0 auto;background:#0c0f14;border-top:1px solid #262d39;padding:14px 16px max(18px,env(safe-area-inset-bottom));text-align:center;touch-action:manipulation;cursor:pointer}
-#mlbl{font:500 18px Georgia,serif;margin-bottom:10px}
-#mbar{position:relative;height:44px;border-radius:12px;background:#1a1f28;overflow:hidden}
-#mzone{position:absolute;top:0;bottom:0;background:rgba(127,208,160,.45);box-shadow:inset 0 0 0 2px #7fd0a0;border-radius:8px}
-#mneedle{position:absolute;top:-2px;bottom:-2px;width:5px;margin-left:-2px;background:#ffe2a0;box-shadow:0 0 10px #f3c76a;border-radius:2px}
-.mhint{font-size:12px;color:#7f899b;margin-top:8px}
+#pad{position:relative;height:clamp(120px,19vh,170px);margin:0 10px 6px;border-radius:14px;overflow:hidden;border:1px solid #262d39;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#pad.off{opacity:.35}
+#pbands{position:absolute;inset:0}
+#pbands>div{position:absolute;left:0;right:0}
+#pbands .lb{position:absolute;right:8px;font:600 10px Inter,sans-serif;letter-spacing:.12em;color:rgba(230,226,216,.55);text-transform:uppercase}
+#pline{position:absolute;left:0;right:0;height:4px;margin-bottom:-2px;background:#ffe2a0;box-shadow:0 0 12px #f3c76a,0 0 3px #fff;pointer-events:none}
+#pcols{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr}
+#pcols div{border-left:1px dashed rgba(230,226,216,.16);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font:600 11px Inter,sans-serif;color:rgba(230,226,216,.7);cursor:pointer}
+#plab{display:grid;grid-template-columns:1fr 1fr 1fr;margin:0 10px 3px;text-align:center;font:600 11px Inter,sans-serif;color:rgba(230,226,216,.7)}
+#plab span.no{color:rgba(230,226,216,.18)}
+#pcols div:first-child{border-left:0}
+#pcols div.no{color:rgba(230,226,216,.15)}
+#pcols div.flash{background:rgba(255,226,160,.18)}
 #ctrl{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
 button{font:600 14px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:46px;padding:6px}
 button:disabled{opacity:.3}
@@ -66,7 +73,8 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
   <div id="board"></div>
   <div id="msg"></div>
   <div id="bar"></div>
-  <div id="meter" class="hide"><div id="mlbl"></div><div id="mbar"><div id="mzone"></div><div id="mneedle"></div></div><div class="mhint">Tocca quando la lancetta è nel verde</div></div>
+  <div id="plab"><span data-d="-1">◀ sinistra</span><span data-d="0">▲ dritto</span><span data-d="1">destra ▶</span></div>
+  <div id="pad"><div id="pbands"></div><div id="pline"></div><div id="pcols"><div data-d="-1"></div><div data-d="0"></div><div data-d="1"></div></div></div>
   <div id="ctrl"><button id="bStop">Fermati</button><button id="bRules">Regole</button></div>
 </div>
 
@@ -82,8 +90,9 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
   <p>Sei in bici, è tardi, e devi arrivare in fondo a via Marconi, davanti al monumento.</p>
   <ul>
     <li><b>L'obiettivo:</b> arrivare in fondo a via Marconi, al monumento, <b>entro le 23:45</b>. Ogni mossa è un minuto.</li>
-    <li><b>Tocca una casella</b> davanti a te: puoi avanzare di 1, 2 o 3 tratti e spostarti di una corsia.</li>
-    <li><b>Poi pedala a tempo:</b> una lancetta corre sulla barra; tocca quando è nel verde. Pedalata perfetta: risparmi fiato. Storta: perdi fiato e la dinamo tremola. Più vai veloce, più il verde è stretto.</li>
+    <li><b>Un solo tocco: il pedale.</b> In basso una linea di luce sale e scende. Tocca quando è all'altezza giusta: in basso fai 1 tratto, a metà 2, in alto 3.</li>
+    <li><b>Dove tocchi è dove vai:</b> sinistra, dritto o destra. Ma <b>sterzi solo se prendi il verde</b>; fuori dal verde tiri dritto.</li>
+    <li><b>Verde:</b> pedalata perfetta, risparmi fiato. <b>Rosso</b> (tra una fascia e l'altra): sbandi, perdi fiato e la dinamo tremola. Più in alto, più il verde è stretto; più vai forte, più la linea corre.</li>
     <li><b>Il fiato:</b> 2 o 3 tratti lo consumano, 1 tratto lo recupera, fermarti lo recupera di più. Senza fiato vai solo piano. In salita si fatica anche piano.</li>
     <li><b>La luce è la dinamo:</b> più pedali veloce, più lontano vedi. Piano, vedi solo il tratto davanti. Nella nebbia vedi meno.</li>
     <li><b>Le buche</b> prese veloce ti fanno cadere: perdi un turno.</li>
@@ -203,31 +212,50 @@ function targets(){
 }
 const hazAt=(r,l,t)=>S.haz.find(h=>h.r===r&&h.l===l&&(!t||h.t===t));
 
-let MET=null;
-function move(tg){
-  if(S.over||MET)return;
-  const up=ZONES[zone(S.p.r)].up;
-  const w=({1:.30,2:.22,3:.15})[tg.v]-(up?.06:0);
-  const c=.2+Math.random()*(.6-w);
-  MET={tg,z0:c,z1:c+w,sp:({1:.75,2:1,3:1.3})[tg.v]*(up?1.2:1),t0:performance.now()};
-  const m=document.getElementById('meter');m.classList.remove('hide');
-  document.getElementById('mzone').style.left=(c*100)+'%';document.getElementById('mzone').style.width=(w*100)+'%';
-  document.getElementById('mlbl').textContent=['','Un colpo di pedale','Due pedalate','Tre pedalate a tutta'][tg.v]+(up?' · in salita':'');
-  const loop=(now)=>{if(!MET)return;const t=(now-MET.t0)/1000*MET.sp;const x=1-Math.abs((t%2)-1);MET.x=x;
-    document.getElementById('mneedle').style.left=(x*100)+'%';
-    if(now-MET.t0>3000)return hitMeter(true);requestAnimationFrame(loop);};
-  requestAnimationFrame(loop);
+/* ---------- il pedale: un solo controllo ---------- */
+const BAND=[0,1/3,2/3,1];
+function greenW(v){const up=S&&ZONES[zone(S.p.r)].up;return ({1:.15,2:.11,3:.075})[v]-(up?.03:0);}
+function padZones(){ // per fascia: centro, verde, rosso ai bordi
+  const o=[];for(let v=1;v<=3;v++){const lo=BAND[v-1],hi=BAND[v],c=(lo+hi)/2,w=greenW(v);o.push({v,lo,hi,g0:c-w/2,g1:c+w/2});}return o;}
+const RED=.035;
+function readPad(y){const z=padZones().find(z=>y>=z.lo&&y<=z.hi)||padZones()[2];
+  if(y-z.lo<RED&&z.v>1||z.hi-y<RED&&z.v<3)return{v:z.v,q:'miss'};
+  return{v:z.v,q:(y>=z.g0&&y<=z.g1)?'perfect':'ok'};}
+function drawPad(){
+  const ms=maxSpeed();const el=document.getElementById('pbands');let h='';
+  const col={1:['#14202e','#1c2a3a'],2:['#2a2616','#3a3218'],3:['#3a2410','#4a2c0c']};
+  for(const z of padZones()){const dis=z.v>ms;
+    h+=`<div style="bottom:${z.lo*100}%;height:${(z.hi-z.lo)*100}%;background:linear-gradient(0deg,${col[z.v][0]},${col[z.v][1]});${dis?'filter:grayscale(1) brightness(.45)':''}"><span class="lb" style="top:4px">${['','piano · 1','svelto · 2','a tutta · 3'][z.v]}${dis?' · senza fiato':''}</span></div>`;
+    if(!dis)h+=`<div style="bottom:${z.g0*100}%;height:${(z.g1-z.g0)*100}%;background:rgba(127,208,160,.5);box-shadow:inset 0 0 0 1.5px #7fd0a0"></div>`;
+    if(z.v<3)h+=`<div style="bottom:${(z.hi-RED)*100}%;height:${RED*2*100}%;background:rgba(255,90,78,.55)"></div>`;}
+  el.innerHTML=h;
+  const cols=document.querySelectorAll('#pcols div');
+  document.querySelectorAll('#plab span').forEach(c=>{const l=S.p.l+(+c.dataset.d);c.classList.toggle('no',l<0||l>=LANES);});
+  document.getElementById('pad').classList.toggle('off',!!(S.over||S.stun));
 }
-function hitMeter(timeout){
-  if(!MET)return;const {tg,z0,z1,x}=MET;MET=null;
-  document.getElementById('meter').classList.add('hide');
-  const q=timeout?'miss':(x>=z0&&x<=z1?'perfect':(x>=z0-.08&&x<=z1+.08?'ok':'miss'));
-  doMove(tg,q);
+let PH=0,PT=0,PY=0;
+function padLoop(now){
+  const dt=PT?Math.min(.05,(now-PT)/1000):0;PT=now;
+  if(S&&!S.over&&!S.stun){const sp=.55+.22*(S.speed||0)+(ZONES[zone(S.p.r)].up?.15:0);PH+=dt*sp;PY=1-Math.abs((PH%2)-1);
+    document.getElementById('pline').style.bottom=(PY*100)+'%';
+    const v=readPad(PY).v;document.querySelectorAll('#board .mv').forEach(e=>e.setAttribute('stroke-opacity',+e.dataset.v===Math.min(v,maxSpeed())?'1':'.12'));}
+  requestAnimationFrame(padLoop);
 }
-function doMove(tg,q){
+requestAnimationFrame(padLoop);
+function pedal(d){
+  if(!S||S.over||S.stun)return;
+  let {v,q}=readPad(PY);const ms=maxSpeed();
+  if(v>ms){v=ms;if(q==='perfect')q='ok';}
+  let l=S.p.l+d;const pre=[];
+  if(d!==0&&q!=='perfect'){l=S.p.l;pre.push('Fuori dal verde: non riesci a sterzare, tiri dritto.');}
+  if(l<0||l>=LANES)l=S.p.l;
+  const r=Math.min(S.p.r+v,S.rows.length-1);if(r<=S.p.r)return;
+  doMove({r,l,v:r-S.p.r},q,pre);
+}
+function doMove(tg,q,pre){
   q=q||'ok';
   if(S.over)return;
-  msgs=[];
+  msgs=pre||[];
   if(q==='perfect')msgs.push('Pedalata perfetta: risparmi fiato.');
   if(q==='miss'){msgs.push('Pedalata storta: la bici sbanda e la dinamo tremola.');S.dark=Math.max(S.dark,1);}
   const from=S.p.r;
@@ -413,7 +441,7 @@ function render(){
   if(S.branch){const ai=S.rows.length-1;if(ai<=top)s+=`<rect x="${W/2-14}" y="${Y(ai)+8}" width="28" height="${RH-14}" fill="#8a8170"/><text x="${W/2}" y="${Y(ai)+RH/2+30}" text-anchor="middle" font-size="11" fill="#ffe2a0" letter-spacing="2">MONUMENTO</text>`;}
   s+='</svg>';
   const b=document.getElementById('board');b.innerHTML=s;
-  b.querySelectorAll('.mv').forEach(el=>el.addEventListener('click',()=>move({r:+el.dataset.r,l:+el.dataset.l,v:+el.dataset.v})));
+  drawPad();
   document.getElementById('msg').textContent=msgs.join(' ');
   const bar=document.getElementById('bar');
   bar.innerHTML=[['sasso','Sasso'],['pane','Pane'],['sale','Sale']].map(([k,n])=>`<button data-k="${k}" ${!S.items[k]||S.over?'disabled':''}><img src="art/i_${k}.png" alt="" style="width:26px;height:26px"> ${n} ×${S.items[k]}</button>`).join('');
@@ -422,7 +450,7 @@ function render(){
 }
 
 document.getElementById('bStop').onclick=wait;
-document.getElementById('meter').addEventListener('pointerdown',(e)=>{e.preventDefault();hitMeter(false);});
+document.querySelectorAll('#pcols div').forEach(c=>c.addEventListener('pointerdown',(e)=>{e.preventDefault();c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),180);pedal(+c.dataset.d);}));
 document.getElementById('bRules').onclick=()=>{document.getElementById('bRulesOk').textContent='Torna in sella';document.getElementById('ovRules').classList.remove('hide');};
 const startFrom=(d)=>{newGame(d);document.getElementById('ovCover').classList.add('hide');document.getElementById('ovRules').classList.remove('hide');};
 document.getElementById('bCover').onclick=()=>startFrom(true);
@@ -435,7 +463,7 @@ document.getElementById('bShort').onclick=()=>choose('short');
 document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');newGame(false);};
 document.getElementById('coverImg').style.backgroundImage='url(art/cover.webp)';
 newGame(true);document.getElementById('nightTxt').innerHTML=`Sfida n° ${todayN()} · stanotte: <b>${NIGHTS[S.night].n}</b>. ${NIGHTS[S.night].d}<br>Missione: <b>${MISSIONS[S.mission].n}</b>. ${MISSIONS[S.mission].d}`;
-window._S=()=>S;window._minor=takeMinor;window._move=(t)=>doMove(t,'ok');window._targets=targets;window._choose=choose;window._wait=wait;window._use=useItem;
+window._S=()=>S;window._minor=takeMinor;window._move=(t)=>doMove(t,'ok');window._pedal=pedal;window._targets=targets;window._choose=choose;window._wait=wait;window._use=useItem;
 </script>
 </body>
 </html>
