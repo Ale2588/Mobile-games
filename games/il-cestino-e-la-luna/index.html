@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<title>Il cestino e la luna</title>
+<link rel="icon" href="art/icon.webp"><link rel="apple-touch-icon" href="art/icon.webp">
+<style>
+:root{--bg:#07080b;--tx:#e6e2d8;--t2:#9aa3b2;--lamp:#f3c76a;--lamp3:#ffe2a0;--red:#ff5a4e;--ok:#7fd0a0;--moon:#8cc4ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;height:100%;overflow:hidden}
+#app{max-width:440px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+#top{position:relative;height:118px;padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:flex-end;background:#000 center 55%/cover no-repeat;transition:background-image .3s}
+#top::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.1),rgba(7,8,11,.25) 45%,var(--bg))}#top>*{position:relative}
+#top.day{filter:none}
+#top b{font:500 22px/1 Georgia,serif}
+#phase{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);display:block;margin-bottom:4px}
+#clock{font:700 20px Inter,sans-serif}#clock.late{color:var(--red)}
+#stats{display:flex;gap:12px;padding:6px 14px;font-size:13px;color:var(--t2)}
+#stats span b{color:var(--tx)}
+#board{flex:1;min-height:0;display:flex;justify-content:center;padding:2px 8px;touch-action:none}
+#board svg{height:100%;width:100%;display:block}
+#board svg *{pointer-events:none}#board svg .mv,#board svg .cell{pointer-events:all;cursor:pointer}
+#msg{min-height:40px;padding:4px 14px;text-align:center;font-size:14px;font-style:italic;line-height:1.35}
+#ctrl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
+button{font:600 14px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:50px;padding:6px}
+button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lamp3)}
+.ov{position:fixed;inset:0;background:rgba(4,5,6,.97);z-index:9;overflow-y:auto;display:flex;padding:20px}
+.ov .box{margin:auto;max-width:400px;width:100%}
+.ov h1{font:500 34px/1.05 Georgia,serif;margin:0 0 8px}.ov h2{font:500 26px/1.1 Georgia,serif;margin:0 0 8px}
+.ov p{line-height:1.45;color:var(--t2)}.ov ul{padding-left:18px;color:#c9c4b8;font-size:14px;line-height:1.5}.ov li{margin-bottom:6px}.ov b{color:var(--tx)}
+.main{width:100%;background:var(--lamp);color:#1a1408;border:0;font-size:17px;min-height:54px;border-radius:999px;margin-top:10px}
+.sec{width:100%;background:none;border:1.5px solid #353e4d;border-radius:999px;margin-top:8px}
+.cover{height:58vh;border-radius:18px;background:#000 url(art/icon.webp) center/cover;box-shadow:inset 0 -140px 90px -30px #040506;display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:8;max-width:440px;margin:0 auto;background:#0f1318;border-top:1px solid #2a2f34;border-radius:18px 18px 0 0;padding:16px 14px max(14px,env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 4px;font:500 20px Georgia,serif}.sheet p{margin:0 0 10px;color:var(--t2);font-size:14px;line-height:1.4}
+.sheet .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.score{font:500 44px Georgia,serif;color:var(--lamp)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top"><div><span id="phase"></span><b id="place">Torre Mondovì</b></div><div style="text-align:right;position:relative;padding-top:34px"><div id="clock">16:00</div><button id="bRules" style="position:absolute;right:0;top:-2px;min-height:30px;width:30px;padding:0;border-radius:99px;background:rgba(7,8,11,.55);font-size:13px">?</button><div style="font-size:12px;color:var(--t2)" id="wx"></div></div></div>
+  <div id="stats"><span>Cestino <b id="sBasket">0/8</b></span><span>Funghi <b id="sPts">0</b></span><span>Foto <b id="sPh">0</b></span><span>Con te <b id="sFr">0/3</b></span></div>
+  <div id="board"></div>
+  <div id="msg"></div>
+  <div id="ctrlEnd" class="hide" style="padding:0 10px max(10px,env(safe-area-inset-bottom))"><button class="main" id="bSeeEnd" style="margin-top:0">Com'è andata →</button></div>
+  <div id="ctrl"><button id="bShot">📷 Scatta</button><button id="bBait">Butta un fungo</button><button id="bMap">🗺 Mappa</button></div>
+</div>
+
+<div class="sheet hide" id="shDub"><h3>Un fungo dubbio</h3><p>Cappello arancio, gambo bianco. Potrebbe essere un ovolo (4 punti). O un'amanita, e allora avvelena metà del cestino. Lo scoprirai solo in paese.</p>
+  <div class="row"><button id="dYes" class="ready">Lo prendo</button><button id="dNo">Lo lascio</button></div></div>
+
+<div class="ov" id="ovCover"><div class="box">
+  <div class="cover"><h1>Il cestino e la luna</h1><p style="margin:0;color:#d8d2c4">Funghi e fotografie nei boschi sopra Torre Mondovì. Torna in paese prima che sorga la luna.</p></div>
+  <p id="dayTxt"></p>
+  <button class="main" id="bDaily">Sfida di oggi</button><button class="sec" id="bRand" style="min-height:50px">Una giornata a caso</button>
+</div></div>
+
+<div class="ov hide" id="ovRules"><div class="box">
+  <h2>Come si gioca</h2>
+  <ul>
+    <li>Parti dalla <b>Piazza</b> di Torre Mondovì alle 16:00 e devi tornare in paese (in Piazza o a Torre). Ogni passo dura 5 minuti. Il sole tramonta alle 18:20.</li>
+    <li>Il bosco è grande e si scopre camminando: <b>trascina</b> lo schermo per guardarti intorno, e la <b>mappa</b> ti mostra tutto quello che hai già visto. <b>Tocca una casella vicina</b> per fare un passo, o una lontana (anche nel buio) per fare un passo in quella direzione. <b>Rocce e rovi</b> non si attraversano. Sul <b>sentiero</b> sei silenzioso. <b>Fuori sentiero</b> ci sono più funghi, ma fai rumore.</li>
+    <li>Camminando scopri il bosco intorno a te. I funghi li raccogli passandoci sopra: chiodino 1, porcino 3. Il <b>fungo dubbio</b> può essere un ovolo (4) o un'amanita (avvelena metà del cestino): lo scopri solo in paese.</li>
+    <li><b>Scatta</b> quando un animale è a due passi e non hai fatto rumore: capriolo 3, cinghiale 4, gufo 6 (solo dopo il tramonto).</li>
+    <li>Alle <b>19:00 sorge la luna</b> ed escono i lupi mannari. Li senti ululare, vedi i loro occhi solo da vicino. Seguono il rumore e l'odore del cestino: più è pieno, più da lontano ti fiutano.</li>
+    <li><b>Pinin, Teresa e Gigi</b> girano per conto loro. Di giorno ti mandano via dai loro posti. Dopo le 19:00 sono persi nel buio: li senti chiamare e vedi la loro pila a due caselle di distanza. <b>Passaci accanto</b> e ti seguono. Ognuno che riporti in paese vale <b>5 punti</b>, ma i lupi fiutano anche loro, e se ne prendono uno si fermano a mangiarlo.</li>
+    <li><b>Le cappelle</b> (San Gottardo, Sant'Elena, San Bernardo, San Giorgio) e il borgo di <b>Roatta</b> sono rifugi: i lupi non entrano. Dalla <b>Panchina Gigante</b> vedi lontano, anche i lupi. La lanterna della <b>Madonna del Pilone</b> fa luce di notte.</li>
+    <li><b>Butta un fungo</b> per sviarli: si fermano a mangiarlo. Perdi i suoi punti.</li>
+    <li>Conta solo ciò che riporti in paese. Se un lupo ti prende, perdi il cestino e tieni solo le foto. Non c'è un orario limite, ma più la notte avanza più lupi escono dal bosco. Rientro prima del tramonto: +3; prima della luna: +1. I porcini più belli sono nel bosco fondo, lontano dal paese.</li>
+  </ul>
+  <button class="main" id="bRulesOk">Nel bosco</button>
+</div></div>
+
+<div class="ov hide" id="ovMap" style="padding:14px"><div class="box" style="text-align:center"><h2 style="margin-bottom:4px">La mappa</h2><p style="margin:0 0 8px;font-size:13px">Quello che hai visto finora. Il paese è in alto.</p><div id="mapBox"></div><button class="main" id="bMapOk">Torna nel bosco</button></div></div>
+<div class="ov hide" id="ovEnd"><div class="box">
+  <h2 id="eT"></h2><div class="score" id="eS"></div><p id="eP"></p>
+  <button class="main" id="bAgain">Un'altra giornata</button><button class="sec" id="bSame" style="min-height:50px">Riprova la stessa</button>
+</div></div>
+
+<script>
+const GW=21,GH=25,CS=50,VW=7,VH=11; // bosco largo; a schermo una finestra che ti segue e si può trascinare
+const TURN_SUNSET=28,TURN_MOON=36;
+const WX={sereno:{n:'Sereno',d:'Una giornata limpida.'},pioggia:{n:'Dopo la pioggia',d:'Più funghi, ma anche più funghi dubbi.'},nebbia:{n:'Nebbia',d:'Anche di giorno vedi solo le caselle accanto a te.'},luna:{n:'Luna piena',d:'La luna sorge prima, e i lupi sono quattro.'}};
+const MUSH={chiodino:{n:'chiodini',p:1,c:'#d8b27a'},porcino:{n:'un porcino',p:3,c:'#8a5a2b'},dubbio:{n:'un fungo dubbio',p:0,c:'#ff8a3c'}};
+const ANI={capriolo:{n:'un capriolo',p:3,e:'🦌'},cinghiale:{n:'un cinghiale',p:4,e:'🐗'},gufo:{n:'un gufo',p:6,e:'🦉'}};
+let SEED=1;function rnd(){SEED|=0;SEED=SEED+0x6D2B79F5|0;let t=Math.imul(SEED^SEED>>>15,1|SEED);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+const R=n=>Math.floor(rnd()*n);
+function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
+const key=(c,r)=>c+','+r, inG=(c,r)=>c>=0&&c<GW&&r>=0&&r<GH, dist=(a,b,c,d)=>Math.max(Math.abs(a-c),Math.abs(b-d));
+let S,msgs=[],LAST=0;
+const FR=[{n:'Pinin',c:'#c98bff'},{n:'Teresa',c:'#7fd0a0'},{n:'Gigi',c:'#ff9e6b'}];
+const LM={panchina:{n:'Panchina Gigante 220',s:'Da qui si vede lontano',i:'🪑'},santuario:{n:'San Gottardo',s:'Santuario · rifugio',chap:1,i:'⛪'},cappella_bosco:{n:'Sant\'Elena',s:'Cappella · rifugio',chap:1,i:'⛪'},
+  cappella_colle:{n:'San Bernardo',s:'Cappella · rifugio',chap:1,i:'⛪'},sangiorgio:{n:'San Giorgio',s:'Cappella · rifugio',chap:1,i:'⛪'},frazione:{n:'Roatta',s:'Borgo e cappella · rifugio',chap:1,i:'🏘'},
+  pilone:{n:'Madonna del Pilone',s:'Una lanterna accesa',i:'✝'},radura:{n:'Il parco',s:'Il prato sotto il paese',i:''},castagneto:{n:'Via Ascheri',s:'Il castagneto',i:''},rerum:{n:'Rerum',s:'Quattro case nel bosco',i:''},borbera:{n:'Borbera',s:'Le case sotto Roatta',i:''},cancello:{n:'Il cancello',s:'La strada vecchia',i:''}};
+const VILLAGE=['piazza','fontana','torre','case','frazione','strada'];
+const CALL=['«Ohi! Sono qui!»','«C\'è qualcuno?»','«Non vedo niente!»'];
+
+/* mappa ispirata a Torre Mondovì (nord in alto): il paese in alto, il bosco scende verso sud */
+const VIL={'5,5':'torre','6,5':'case','5,6':'strada','6,6':'case','9,4':'piazza','10,4':'fontana'};
+const isV=(c,r)=>!!VIL[key(c,r)];
+const SR=r=>r<=6?r:Math.round(6+(r-6)*1.45);
+const FIXED_LM0={'3,0':'panchina','12,1':'santuario','18,3':'cappella_bosco','2,8':'radura','10,9':'castagneto','11,12':'rerum','13,15':'borbera','15,12':'frazione','1,13':'cappella_colle','4,17':'sangiorgio','12,18':'pilone','19,9':'cancello'};
+const FIXED_LM=Object.fromEntries(Object.entries(FIXED_LM0).map(([k,v])=>{const [c,r]=k.split(',').map(Number);return [key(c,SR(r)),v];}));
+const TRAILS=[[[5,5],[4,2],[3,0]],[[10,4],[11,2],[12,1]],[[12,1],[15,2],[18,3],[20,6]],[[6,6],[8,8],[10,9],[11,12],[15,12]],[[15,12],[15,15],[12,18]],[[11,12],[13,15]],[[5,6],[3,9],[1,13],[2,15],[4,17]],[[6,5],[8,4],[9,4]],[[10,4],[14,6],[19,9]],[[19,9],[18,11],[15,12]],[[2,8],[4,7]],[[4,17],[8,18],[12,18]]];
+const BLOCK={roccia:{n:'rocce',c:'#3b3e44'},rovi:{n:'rovi',c:'#2a1e26'}};
+function line(a,b){const o=[];let [c,r]=a;o.push([c,r]);while(c!==b[0]||r!==b[1]){c+=Math.sign(b[0]-c);r+=Math.sign(b[1]-r);o.push([c,r]);}return o;}
+let MAP=null;
+function buildMap(){ // la stessa ogni partita: è un posto
+  const keep=SEED;SEED=20261125;
+  const trail=new Set(Object.keys(VIL));
+  for(const tr0 of TRAILS){const tr=tr0.map(([c,r])=>[c,SR(r)]);for(let i=0;i<tr.length-1;i++)for(const [c,r] of line(tr[i],tr[i+1]))trail.add(key(c,r));}
+  const block={};const safe=(c,r)=>{for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const k=key(c+dc,r+dr);if(trail.has(k)&&!(dc||dr)?true:false)return false;}const k=key(c,r);return !trail.has(k)&&!FIXED_LM[k]&&!isV(c,r);};
+  const nearSpecial=(c,r)=>{for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const k=key(c+dc,r+dr);if(FIXED_LM[k]||VIL[k])return true;}return false;};
+  for(let n=0;n<34;n++){let c=R(GW),r=R(GH);const t=rnd()<.55?'roccia':'rovi';let len=2+R(2);
+    while(len-->0){if(inG(c,r)&&safe(c,r)&&!nearSpecial(c,r))block[key(c,r)]=t;c+=R(3)-1;r+=R(3)-1;}}
+  // tutto ciò che non è raggiungibile dal paese diventa bosco impenetrabile
+  const seen=new Set(['9,4']);const q=[[9,4]];while(q.length){const [c,r]=q.shift();for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const nc=c+dc,nr=r+dr,k=key(nc,nr);if(!inG(nc,nr)||seen.has(k)||block[k])continue;seen.add(k);q.push([nc,nr]);}}
+  for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const k=key(c,r);if(!seen.has(k)&&!block[k])block[k]='rovi';}
+  SEED=keep;return{trail,block};
+}
+const open=(c,r)=>inG(c,r)&&!MAP.block[key(c,r)];
+function genTrail(){return MAP.trail;}
+const fromHome=(c,r)=>Math.min(...Object.keys(VIL).map(k=>{const [a,b]=k.split(',').map(Number);return dist(a,b,c,r);}));
+function bfsFrom(tc,tr,avoid){const d={};const q=[[tc,tr]];d[key(tc,tr)]=0;while(q.length){const [c,r]=q.shift();const dd=d[key(c,r)];for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const nc=c+dc,nr=r+dr,k=key(nc,nr);if(!open(nc,nr)||k in d||(avoid&&avoid(nc,nr)))continue;d[k]=dd+1;q.push([nc,nr]);}}return d;}
+function newGame(daily,seed){
+  if(!MAP)MAP=buildMap();
+  SEED=seed!=null?seed:(daily?todayN()*104729+3:(Date.now()%1e9));LAST=SEED;
+  const wx=Object.keys(WX)[R(4)];
+  S={friends:[],lm:{...FIXED_LM},turn:0,pan:{c:0,r:0},p:{c:9,r:4},trail:MAP.trail,known:new Set(),mush:{},ani:[],wolves:[],bait:null,basket:[],photos:[],noise:false,over:false,left:false,seenHint:{},wx,daily:!!daily};
+  for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const k=key(c,r);if(isV(c,r)||S.lm[k]||!open(c,r))continue;const tr=S.trail.has(k),h=fromHome(c,r),f=wx==='pioggia'?1.45:1;
+    if(h<=1)continue;
+    if(!tr){if(rnd()<(h>=11?.24:h>=6?.12:.04)*f){S.mush[k]={k:'porcino'};continue;}
+            if(rnd()<(wx==='pioggia'?.07:.045)){S.mush[k]={k:'dubbio',real:rnd()<.5?'ovolo':'amanita'};continue;}}
+    const nearT=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>S.trail.has(key(c+a,r+b)));
+    if(nearT&&rnd()<(tr?.05:.09)*f)S.mush[k]={k:'chiodino'};
+  }
+  const spots=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&!S.trail.has(key(c,r))&&!S.mush[key(c,r)]&&!S.lm[key(c,r)]&&fromHome(c,r)>=3)spots.push([c,r]);
+  for(const k of ['capriolo','capriolo','capriolo','cinghiale','cinghiale','cinghiale']){const i=R(spots.length);const [c,r]=spots.splice(i,1)[0];S.ani.push({k,c,r});}
+  {const used=[];FR.forEach((f,i)=>{let c,r,t=0;do{c=R(GW);r=R(GH);t++;}while(t<300&&(!open(c,r)||fromHome(c,r)<6||S.lm[key(c,r)]||used.some(([a,b])=>dist(a,b,c,r)<6)));used.push([c,r]);S.friends.push({i,c,r,st:'lost'});});}
+  for(const k of Object.keys(VIL)){const [vc,vr]=k.split(',').map(Number);for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++)if(inG(vc+dc,vr+dr))S.known.add(key(vc+dc,vr+dr));}
+  reveal();
+  msgs=['Vi dividete in piazza: Pinin, Teresa e Gigi spariscono tra gli alberi. «Ci vediamo qui prima che faccia buio!» '+WX[wx].n+'. '+WX[wx].d];
+  render();
+}
+function moonTurn(){return S.wx==='luna'?TURN_MOON-4:TURN_MOON;}
+function phase(){return S.turn<TURN_SUNSET?'giorno':S.turn<moonTurn()?'tramonto':'notte';}
+function vis(){const ph=phase();if(ph==='giorno')return S.wx==='nebbia'?1:2;return 1;}
+function reveal(){const here=S.lm&&S.lm[key(S.p.c,S.p.r)];const v=here==='panchina'?4:here==='pilone'&&phase()!=='giorno'?2:vis();for(let r=S.p.r-v;r<=S.p.r+v;r++)for(let c=S.p.c-v;c<=S.p.c+v;c++)if(inG(c,r))S.known.add(key(c,r));}
+const seeNow=(c,r)=>dist(c,r,S.p.c,S.p.r)<=vis()||isV(c,r);
+function clock(t){const m=16*60+t*5;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function score(){let p=0,poison=false;for(const m of S.basket){if(m.k==='dubbio'){if(m.real==='ovolo')p+=4;else poison=true;}else p+=MUSH[m.k].p;}
+  if(poison){const certain=S.basket.filter(m=>m.k!=='dubbio'||m.real==='ovolo');p=Math.ceil(p/2);}return{p,poison};}
+function shownPts(){return S.basket.reduce((a,m)=>a+(m.k==='dubbio'?0:MUSH[m.k].p),0);}
+function photoTarget(){if(S.noise)return null;return S.ani.filter(a=>dist(a.c,a.r,S.p.c,S.p.r)<=2&&seeNow(a.c,a.r)&&!S.photos.some(p=>p.id===a)).sort((a,b)=>ANI[b.k].p-ANI[a.k].p)[0]||null;}
+
+function move(c,r){
+  if(S.over||S.pending||!open(c,r))return;msgs=[];S.pan={c:0,r:0};
+  const k=key(c,r);S.noise=!S.trail.has(k);
+  const prev={c:S.p.c,r:S.p.r};S.p={c,r};if(!isV(c,r))S.left=true;
+  {let pc=prev;for(const f of S.friends.filter(f=>f.st==='follow').sort((a,b)=>a.ord-b.ord)){const o={c:f.c,r:f.r};f.c=pc.c;f.r=pc.r;pc=o;}}
+  const w=S.wolves.find(w=>w.c===c&&w.r===r);if(w)return caught();
+  reveal();
+  {const L=S.lm[k];if(L&&!S.seenHint['lm'+L]){S.seenHint['lm'+L]=1;
+    if(LM[L].chap)msgs.push(LM[L].n+'. Qui dentro i lupi non entrano. Ma fuori, intanto, ne arrivano altri.');
+    if(L==='panchina')msgs.push('Dalla Panchina Gigante vedi mezzo bosco.');
+    if(L==='pilone')msgs.push('La lanterna della Madonna del Pilone è accesa: di notte, qui, vedi un po\' più lontano.');}}
+  const m=S.mush[k];
+  if(m){if(S.basket.length>=8)msgs.push('Il cestino è pieno.');
+    else if(m.k==='dubbio'){S.pending=k;document.getElementById('shDub').classList.remove('hide');render();return;}
+    else{S.basket.push(m);delete S.mush[k];msgs.push(m.k==='porcino'?'Un porcino! Nel cestino.':'Una manciata di chiodini.');}}
+  if(S.noise&&!S.seenHint.noise){S.seenHint.noise=1;msgs.push('Fuori sentiero le foglie scricchiolano: ogni passo si sente.');}
+  endTurn();
+}
+function stepToward(tc,tr){ // tocchi lontano: fai un passo nella direzione giusta
+  if(S.over||S.pending)return;if(dist(tc,tr,S.p.c,S.p.r)===0)return;
+  const d={};{const q=[[tc,tr]];d[key(tc,tr)]=0;const pass=(c,r)=>inG(c,r)&&!(S.known.has(key(c,r))&&MAP.block[key(c,r)]);while(q.length){const [c,r]=q.shift();for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const nc=c+dc,nr=r+dr,k=key(nc,nr);if(!pass(nc,nr)||k in d)continue;d[k]=d[key(c,r)]+1;q.push([nc,nr]);}}}
+  let best=null,bd=1e9;for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const c=S.p.c+dc,r=S.p.r+dr;if((!dc&&!dr)||!open(c,r))continue;const v=(d[key(c,r)]??1e6)+(S.trail.has(key(c,r))?-.1:0);if(v<bd){bd=v;best=[c,r];}}
+  if(best)move(best[0],best[1]);}
+function takeDub(yes){
+  document.getElementById('shDub').classList.add('hide');const k=S.pending;S.pending=null;
+  if(yes){S.basket.push(S.mush[k]);delete S.mush[k];msgs.push('Lo metti in fondo al cestino. In paese qualcuno saprà dirti cos\'è.');}else msgs.push('Lo lasci dov\'è.');
+  endTurn();
+}
+function shoot(){
+  if(S.over||S.pending)return;const a=photoTarget();if(!a)return;msgs=[];
+  S.photos.push({id:a,k:a.k});msgs.push('Clic. '+ANI[a.k].n[0].toUpperCase()+ANI[a.k].n.slice(1)+' nella foto: '+ANI[a.k].p+' punti.');
+  S.ani.splice(S.ani.indexOf(a),1);S.noise=false;endTurn();
+}
+function bait(){
+  if(S.over||S.pending||!S.basket.length)return;
+  const order=['chiodino','porcino','dubbio'];S.basket.sort((a,b)=>order.indexOf(a.k)-order.indexOf(b.k));const m=S.basket.shift();
+  S.bait={c:S.p.c,r:S.p.r,t:3};msgs=['Butti '+MUSH[m.k].n+' tra le foglie. L\'odore resta lì.'];render();
+}
+function caught(){S.over=true;S.caughtBy='lupo';render();
+  const why=S.noise?'Un lupo sbuca dal buio e ti è addosso: fuori sentiero hai fatto rumore e ti ha sentito da lontano. Lasci cadere il cestino e scappi.':(S.basket.length>=5?'Un lupo sbuca dal buio e ti è addosso: ha fiutato il cestino pieno. Lasci cadere il cestino e scappi.':'Un lupo sbuca dal buio e ti è addosso. Lasci cadere il cestino e scappi.');
+  end(false,why);}
+function endTurn(){
+  S.turn++;
+  // animali
+  for(const a of [...S.ani]){
+    const d=dist(a.c,a.r,S.p.c,S.p.r);
+    if(S.noise&&d<=2||d===0){const dc=Math.sign(a.c-S.p.c)||(rnd()<.5?-1:1),dr=Math.sign(a.r-S.p.r)||-1;a.c=Math.max(0,Math.min(GW-1,a.c+dc*2));a.r=Math.max(0,Math.min(GH-1,a.r+dr*2));if(isV(a.c,a.r)||!open(a.c,a.r)){a.gone=true;}if(d<=2&&!S.seenHint.flee){S.seenHint.flee=1;msgs.push('Hai fatto rumore: l\'animale scappa.');}}
+    else if(rnd()<.35){const nc=a.c+R(3)-1,nr=a.r+R(3)-1;if(open(nc,nr)&&!isV(nc,nr))Object.assign(a,{c:nc,r:nr});}
+  }
+  S.ani=S.ani.filter(a=>!a.gone);
+  if(S.turn===TURN_SUNSET){msgs.push('Il sole è sceso dietro il monte. Ora vedi solo intorno a te.');S.ani=S.ani.filter(a=>a.k!=='capriolo');
+    const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>2&&dist(c,r,S.p.c,S.p.r)<8&&!isV(c,r)&&!S.lm[key(c,r)])sp.push([c,r]);const [gc,gr]=sp[R(sp.length)];S.ani.push({k:'gufo',c:gc,r:gr});}
+  if(S.turn===moonTurn()){S.ani=S.ani.filter(a=>a.k==='gufo');const n=S.wx==='luna'?4:3;
+    const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>=6&&fromHome(c,r)>=4&&!isV(c,r)&&!LM[S.lm[key(c,r)]]?.chap)sp.push([c,r]);
+    for(let i=0;i<n&&sp.length;i++){const [c,r]=sp.splice(R(sp.length),1)[0];S.wolves.push({c,r,eat:0});}
+    msgs.push('Sorge la luna. Un ululato '+howl()+'.');}
+  else if(S.wolves.length&&S.turn%4===0)msgs.push('Un ululato '+howl()+'.');
+  // lupi
+  if(S.bait){S.bait.t--;}
+  const scent=3+Math.floor(S.basket.length/3)+S.friends.filter(f=>f.st==='follow').length;
+  for(const w of S.wolves){
+    if(w.eat>0){w.eat--;continue;}
+    let tg=null,steps=1;
+    if(S.bait&&S.bait.t>0&&dist(w.c,w.r,S.bait.c,S.bait.r)<=5)tg=S.bait;
+    else{const prey=[S.p,...S.friends.filter(f=>f.st==='follow'||f.st==='lost')].sort((a,b)=>dist(w.c,w.r,a.c,a.r)-dist(w.c,w.r,b.c,b.r));const near=prey[0];const d=dist(w.c,w.r,near.c,near.r);
+      if(S.noise&&near===S.p){tg=S.p;steps=2;}else if(d<=scent)tg=near;else if(rnd()<.5)tg=near;
+      if(tg&&tg!==S.p)tg={c:tg.c,r:tg.r};}
+    for(let s=0;s<steps&&tg;s++){
+      const dm=bfsFrom(tg.c,tg.r,(c,r)=>isV(c,r)&&!(c===tg.c&&r===tg.r));let best=null,bd=1e9;for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const nc=w.c+dc,nr=w.r+dr;if(!open(nc,nr)||isV(nc,nr)||(dc===0&&dr===0))continue;if(LM[S.lm[key(nc,nr)]]?.chap)continue;if(S.wolves.some(o=>o!==w&&o.c===nc&&o.r===nr))continue;const dd=(dm[key(nc,nr)]??999)+rnd()*.3;if(dd<bd){bd=dd;best=[nc,nr];}}
+      if(best){w.c=best[0];w.r=best[1];}
+      if(tg===S.bait&&w.c===S.bait.c&&w.r===S.bait.r){w.eat=2;S.bait=null;msgs.push('Da qualche parte un lupo si ferma a mangiare.');break;}
+      if(w.c===S.p.c&&w.r===S.p.r)return caught();
+      if(S.friends.some(f=>(f.st==='follow'||f.st==='lost')&&f.c===w.c&&f.r===w.r))break;
+    }
+  }
+  if(S.bait&&S.bait.t<=0)S.bait=null;
+  // amici
+  for(const f of S.friends){
+    if(f.st==='lost'){
+      if(rnd()<.4){const nc=f.c+R(3)-1,nr=f.r+R(3)-1;if(open(nc,nr)&&!isV(nc,nr)&&!S.wolves.some(w=>w.c===nc&&w.r===nr)){f.c=nc;f.r=nr;}}
+      if(dist(f.c,f.r,S.p.c,S.p.r)<=1){
+        if(phase()==='notte'){f.st='follow';f.ord=S.friends.filter(x=>x.st==='follow').length;msgs.push(FR[f.i].n+' ti vede e ti si attacca alla giacca: «Portami via di qui.»');}
+        else if(!f.met){f.met=1;msgs.push(FR[f.i].n+': «Questo è il mio posto, vai via!» E sparisce tra i castagni.');}
+      }
+    }
+    if(f.st!=='gone'&&f.st!=='safe'){const w=S.wolves.find(w=>w.c===f.c&&w.r===f.r);if(w){f.st='gone';w.eat=3;msgs.push('Un urlo nel buio. Era la voce di '+FR[f.i].n+'.');}}
+  }
+  {const fl=S.friends.filter(f=>f.st==='follow').sort((a,b)=>a.ord-b.ord);fl.forEach((f,i)=>f.ord=i);}
+  if(phase()==='notte'&&S.turn%2===0){const lost=S.friends.filter(f=>f.st==='lost');if(lost.length){const f=lost[R(lost.length)];msgs.push(FR[f.i].n+' chiama '+dirTo(f.c,f.r)+': '+CALL[R(3)]);}}
+  if(S.wolves.some(w=>dist(w.c,w.r,S.p.c,S.p.r)<=2)&&!S.seenHint.eyes){S.seenHint.eyes=1;msgs.push('Due occhi gialli tra gli alberi. Vicino.');}
+  // la notte avanza: ogni 6 turni esce un altro lupo (massimo 5)
+  if(S.wolves.length&&S.turn>moonTurn()&&(S.turn-moonTurn())%8===0&&S.wolves.length<6){
+    const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>=6&&(r===0||r===GH-1||c===0||c===GW-1)&&!isV(c,r)&&!LM[S.lm[key(c,r)]]?.chap)sp.push([c,r]);
+    if(sp.length){const [c,r]=sp[R(sp.length)];S.wolves.push({c,r,eat:0});msgs.push('Un altro ululato si unisce al primo. Sono '+S.wolves.length+'.');}}
+  if(S.left&&isV(S.p.c,S.p.r)){S.friends.forEach(f=>{if(f.st==='follow')f.st='safe';});S.over=true;render();return end(true);}
+  render();
+}
+function dirTo(c,r){const ns=r<S.p.r-1?'nord':r>S.p.r+1?'sud':'',eo=c<S.p.c-1?'ovest':c>S.p.c+1?'est':'';const d=(ns&&eo)?ns+'-'+eo:(ns||eo);return d?'da '+d:'qui vicino';}
+function howl(){if(!S.wolves.length)return'';let w=S.wolves.slice().sort((a,b)=>dist(a.c,a.r,S.p.c,S.p.r)-dist(b.c,b.r,S.p.c,S.p.r))[0];
+  const ns=w.r<S.p.r-1?'nord':w.r>S.p.r+1?'sud':'',eo=w.c<S.p.c-1?'ovest':w.c>S.p.c+1?'est':'';const d=(ns&&eo)?ns+'-'+eo:(ns||eo||'qui vicino');
+  const far=dist(w.c,w.r,S.p.c,S.p.r);return (d==='qui vicino'?'':'da ')+d+(far>=5?', lontano':far<=2?', vicinissimo':'');}
+function end(ok,why){
+  const sc=score(),ph=S.photos.reduce((a,p)=>a+ANI[p.k].p,0);
+  let bonus=0;if(ok){if(S.turn<=TURN_SUNSET)bonus=3;else if(S.turn<=moonTurn())bonus=1;}
+  const saved=S.friends.filter(f=>f.st==='safe');const fp=saved.length*5;
+  const tot=ok?sc.p+ph+bonus+fp:ph;
+  const bk='tm_best';let best=0;try{best=+localStorage.getItem(bk)||0;if(tot>best)localStorage.setItem(bk,tot);}catch(_){}
+  document.getElementById('eT').textContent=ok?'In paese, alle '+clock(S.turn):'Un lupo ti ha preso';
+  document.getElementById('eS').textContent=tot+' punti';
+  const nd=S.basket.filter(m=>m.k==='dubbio');
+  let p=(S.daily?`Sfida n° ${todayN()} · `:'')+WX[S.wx].n+'. ';
+  if(ok){p+=`Funghi: ${sc.p}`+(nd.length?` (i dubbi: ${nd.map(m=>m.real==='ovolo'?'ovolo':'amanita').join(', ')}${sc.poison?' — un\'amanita ha avvelenato metà del cestino':''})`:'')+`. Foto: ${ph}. `+(bonus?`Rientro presto: +${bonus}. `:'')+(saved.length?`In salvo con te: ${saved.map(f=>FR[f.i].n).join(', ')} (+${fp}). `:'Nessuno è tornato con te. ')+(S.friends.some(f=>f.st==='gone')?`Non sono tornati: ${S.friends.filter(f=>f.st!=='safe').map(f=>FR[f.i].n).join(', ')}. `:'');}
+  else p+=(why||'Un lupo ti è addosso. Lasci cadere il cestino e scappi.')+` Ti restano le foto: ${ph} punti. `;
+  p+=`Record: ${Math.max(best,tot)}.`;
+  document.getElementById('eP').textContent=p;
+  if(ok)setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),450);
+  else{msgs=[why||''];S.reveal=true;render();document.getElementById('ctrl').classList.add('hide');document.getElementById('ctrlEnd').classList.remove('hide');}
+}
+
+/* ---------- disegno ---------- */
+function render(){
+  const ph=phase();
+  {const L=S.lm[key(S.p.c,S.p.r)];let img,nm;
+    const V=VIL[key(S.p.c,S.p.r)],h=fromHome(S.p.c,S.p.r);if(V){img=V;nm=S.p.c>=2&&S.p.r===4?'Piazza':'Torre Mondovì';}else if(L){img={rerum:'case',borbera:'strada'}[L]||L;nm=LM[L].n;}else if(h<=2){img='castagni_paese';nm='I castagni sotto il paese';}else if(S.p.r<=3){img='bosco_alto';nm='Il bosco a nord';}else if(S.p.r>=19){img='bosco_alto';nm='Il bosco a sud';}else if(S.p.c>=15){img='bosco_alto';nm='Il bosco a est';}else if(S.p.c<=4){img='castagneto';nm='Il bosco a ovest';}else{img='castagneto';nm='Verso Via Ascheri';}
+    const t=document.getElementById('top');if(t.dataset.img!==img){t.dataset.img=img;t.style.backgroundImage=`url(art/${img}.webp)`;}document.getElementById('place').textContent=nm;}
+  document.getElementById('phase').textContent={giorno:'Pomeriggio',tramonto:'Tramonto',notte:'Notte · la luna è alta'}[ph];
+  const ck=document.getElementById('clock');ck.textContent=clock(S.turn);ck.classList.toggle('late',S.turn>=moonTurn()-2);
+  document.getElementById('wx').textContent=WX[S.wx].n;
+  document.getElementById('sBasket').textContent=S.basket.length+'/8';
+  const nd=S.basket.filter(m=>m.k==='dubbio').length;
+  document.getElementById('sPts').textContent=shownPts()+(nd?` + ${nd}?`:'');
+  document.getElementById('sFr').textContent=S.friends.filter(f=>f.st==='follow'||f.st==='safe').length+'/3';
+  document.getElementById('sPh').textContent=S.photos.reduce((a,p)=>a+ANI[p.k].p,0);
+  const c0=Math.max(0,Math.min(GW-VW,S.p.c-Math.floor(VW/2)+S.pan.c)),r0=Math.max(0,Math.min(GH-VH,S.p.r-Math.floor(VH/2)+S.pan.r));
+  const W=VW*CS,H=VH*CS;const X=c=>(c-c0)*CS,Y=r=>(r-r0)*CS;const inV=(c,r)=>c>=c0&&c<c0+VW&&r>=r0&&r<r0+VH;
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="eye"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#ffd84a" stop-opacity="0"/></radialGradient><pattern id="tb" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_bosco.webp" width="100" height="100"/></pattern><pattern id="tf" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_bosco_fondo.webp" width="100" height="100"/></pattern><pattern id="ts" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_sentiero.webp" width="100" height="100"/></pattern><pattern id="tp" patternUnits="userSpaceOnUse" width="100" height="100"><image href="art/t_piazza.webp" width="100" height="100"/></pattern><radialGradient id="lt"><stop offset="0" stop-color="#f3c76a" stop-opacity=".25"/><stop offset="1" stop-color="#f3c76a" stop-opacity="0"/></radialGradient></defs>`;
+  const night=ph!=='giorno';
+  for(let r=r0;r<r0+VH;r++)for(let c=c0;c<c0+VW;c++){const k=key(c,r),kn=S.known.has(k)||isV(c,r),seenT=true;const bl=MAP.block[k];
+    let f=bl?BLOCK[bl].c:isV(c,r)?'url(#tp)':S.trail.has(k)?'url(#ts)':fromHome(c,r)>=10?'url(#tf)':'url(#tb)';
+    s+=`<rect class="cell" data-c="${c}" data-r="${r}" x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="transparent"/>`;
+    if(!kn){s+=`<rect x="${X(c)+1}" y="${Y(r)+1}" width="${CS-2}" height="${CS-2}" rx="6" fill="#0e1215"/>`;continue;}
+    s+=`<rect x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="${f}"/>`;
+    if(!bl&&!isV(c,r)&&!S.trail.has(k))s+=`<rect x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="#0a1408" opacity=".28"/>`;
+    if(bl){s+=bl==='roccia'?`<path d="M${X(c)+8} ${Y(r)+40} L${X(c)+20} ${Y(r)+14} L${X(c)+28} ${Y(r)+26} L${X(c)+36} ${Y(r)+12} L${X(c)+44} ${Y(r)+40} Z" fill="#5a5e66" stroke="#2a2c30" stroke-width="2"/>`:`<text x="${X(c)+CS/2}" y="${Y(r)+CS/2+9}" text-anchor="middle" font-size="26" fill="#6a3a52">✳</text>`;}
+
+    if(VIL[k]==='piazza')s+=`<image href="art/l_cappella.png" x="${X(c)+3}" y="${Y(r)+2}" width="${CS-6}" height="${CS-6}"/>`;
+    const L=S.lm[k];if(L&&LM[L].i){const im=L==='panchina'?'l_panchina':L==='pilone'?'l_pilone':'l_cappella';if(LM[L].chap)s+=`<rect x="${X(c)+2}" y="${Y(r)+2}" width="${CS-4}" height="${CS-4}" rx="8" fill="none" stroke="#f3c76a" stroke-width="2" stroke-opacity=".8"/>`;s+=`<image href="art/${im}.png" x="${X(c)+2}" y="${Y(r)+1}" width="${CS-4}" height="${CS-4}"/>`;}
+    if(L==='pilone'&&kn&&night)s+=`<circle cx="${X(c)+CS/2}" cy="${Y(r)+CS/2}" r="${CS}" fill="url(#lt)"/>`;
+    const m=S.mush[k];if(m&&kn){s+=`<image href="art/f_${m.k}.png" x="${X(c)+5}" y="${Y(r)+3}" width="${CS-10}" height="${CS-10}"/><circle cx="${X(c)+CS-9}" cy="${Y(r)+CS-9}" r="8" fill="#14100a" stroke="#f0e2c0" stroke-width="1.2"/><text x="${X(c)+CS-9}" y="${Y(r)+CS-5.5}" text-anchor="middle" font-size="10" font-weight="700" fill="#ffe2a0">${m.k==='dubbio'?'?':MUSH[m.k].p}</text>`;}
+    {let a=0;if(!isV(c,r)&&!seeNow(c,r)){a=night?(ph==='notte'?.66:.45):0;}if(a)s+=`<rect x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="#000" opacity="${a}"/>`;}
+  }
+  if(night){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="${CS*1.6}" fill="url(#lt)"/>`;}
+  if(S.bait&&inV(S.bait.c,S.bait.r))s+=`<text x="${X(S.bait.c)+CS/2}" y="${Y(S.bait.r)+14}" text-anchor="middle" font-size="12">🍄</text>`;
+  for(const a of S.ani){if(!inV(a.c,a.r))continue;if(!S.known.has(key(a.c,a.r))||!seeNow(a.c,a.r))continue;s+=`<image href="art/a_${a.k}.png" x="${X(a.c)+2}" y="${Y(a.r)+2}" width="${CS-4}" height="${CS-4}"/>`;}
+  for(const f of S.friends){if(f.st==='gone'||f.st==='safe'||!inV(f.c,f.r))continue;const d=dist(f.c,f.r,S.p.c,S.p.r);if(f.st==='lost'&&d>Math.max(2,vis()))continue;const cx=X(f.c)+CS/2,cy=Y(f.r)+CS/2,fo=f.st==='follow';
+    s+=`<circle cx="${cx}" cy="${cy}" r="${fo?19:22}" fill="#0b0d10" fill-opacity=".55" stroke="${FR[f.i].c}" stroke-width="2.5" ${fo?'':'stroke-dasharray="4 3"'}/><image href="art/s_${FR[f.i].n.toLowerCase()}.png" x="${cx-(fo?19:23)}" y="${cy-(fo?19:23)}" width="${fo?38:46}" height="${fo?38:46}"/>`;}
+  for(const w of S.wolves){if(!inV(w.c,w.r))continue;const d=dist(w.c,w.r,S.p.c,S.p.r);const cx=X(w.c)+CS/2,cy=Y(w.r)+CS/2;
+    if(S.reveal&&d===0)s+=`<circle cx="${cx}" cy="${cy}" r="${CS*.7}" fill="none" stroke="#ff3b2f" stroke-width="4"/>`;
+    if(S.reveal||d<=vis()||(S.lm[key(S.p.c,S.p.r)]==='panchina'&&d<=4))s+=`<circle cx="${cx}" cy="${cy}" r="23" fill="#3a0806" fill-opacity=".6" stroke="#ff3b2f" stroke-width="2.5"/><image href="art/s_lupo.png" x="${cx-25}" y="${cy-25}" width="50" height="50"/>`;
+    else if(d<=2)s+=`<circle cx="${cx-6}" cy="${cy}" r="7" fill="url(#eye)"/><circle cx="${cx+6}" cy="${cy}" r="7" fill="url(#eye)"/><circle cx="${cx-6}" cy="${cy}" r="2" fill="#fff6c0"/><circle cx="${cx+6}" cy="${cy}" r="2" fill="#fff6c0"/>`;}
+  // mosse
+  if(!S.over)for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){if(!dc&&!dr)continue;const c=S.p.c+dc,r=S.p.r+dr;if(!open(c,r))continue;const tr=S.trail.has(key(c,r));
+    s+=`<rect class="mv" data-c="${c}" data-r="${r}" x="${X(c)+4}" y="${Y(r)+4}" width="${CS-8}" height="${CS-8}" rx="8" fill="#fff" fill-opacity=".03" stroke="${tr?'#ffe2a0':'#ff8a5c'}" stroke-opacity=".7" stroke-width="2" ${tr?'':'stroke-dasharray="5 4"'}/>`;}
+  if(!(S.reveal&&S.caughtBy==='lupo')){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="22" fill="#0b1a33" fill-opacity=".55" stroke="#8cc4ff" stroke-width="2.5"/><image href="art/s_tu.png" x="${cx-24}" y="${cy-24}" width="48" height="48"/>`;}
+  s+='</svg>';
+  const b=document.getElementById('board');b.innerHTML=s;
+  b.querySelectorAll('.mv').forEach(el=>el.addEventListener('click',()=>{if(!DRAG.moved)move(+el.dataset.c,+el.dataset.r);}));
+  b.querySelectorAll('.cell').forEach(el=>el.addEventListener('click',()=>{if(!DRAG.moved)stepToward(+el.dataset.c,+el.dataset.r);}));
+  document.getElementById('msg').textContent=msgs.join(' ');
+  const pt=photoTarget(),bs=document.getElementById('bShot');bs.disabled=!pt||S.over;bs.classList.toggle('ready',!!pt);bs.textContent=pt?'📷 '+ANI[pt.k].e+' '+ANI[pt.k].p:'📷 Scatta';
+  const bb=document.getElementById('bBait');bb.disabled=!S.basket.length||S.over;bb.classList.toggle('ready',S.wolves.length>0&&S.basket.length>0);
+}
+document.getElementById('bShot').onclick=shoot;
+const DRAG={on:false,moved:false,x:0,y:0,pc:0,pr:0};
+{const bd=document.getElementById('board');
+ bd.addEventListener('pointerdown',e=>{if(!S)return;DRAG.on=true;DRAG.moved=false;DRAG.x=e.clientX;DRAG.y=e.clientY;DRAG.pc=S.pan.c;DRAG.pr=S.pan.r;});
+ bd.addEventListener('pointermove',e=>{if(!DRAG.on)return;const sv=bd.querySelector('svg');if(!sv)return;const cell=sv.getBoundingClientRect().width/VW;const dx=e.clientX-DRAG.x,dy=e.clientY-DRAG.y;
+   if(Math.abs(dx)+Math.abs(dy)>12)DRAG.moved=true;if(!DRAG.moved)return;const nc=DRAG.pc-Math.round(dx/cell),nr=DRAG.pr-Math.round(dy/cell);if(nc!==S.pan.c||nr!==S.pan.r){S.pan={c:nc,r:nr};render();}});
+ const up=()=>{DRAG.on=false;setTimeout(()=>DRAG.moved=false,0);};bd.addEventListener('pointerup',up);bd.addEventListener('pointercancel',up);bd.addEventListener('pointerleave',up);}
+function drawMap(){const z=12;let m=`<svg viewBox="0 0 ${GW*z} ${GH*z}" style="width:min(100%,${GW*z*1.7}px);display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">`;
+  for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const k=key(c,r),kn=S.known.has(k)||isV(c,r);if(!kn){m+=`<rect x="${c*z}" y="${r*z}" width="${z}" height="${z}" fill="#050607"/>`;continue;}
+    const bl=MAP.block[k];m+=`<rect x="${c*z}" y="${r*z}" width="${z}" height="${z}" fill="${bl?BLOCK[bl].c:isV(c,r)?'#8a7450':S.trail.has(k)?'#6b5a3e':'#1f3222'}"/>`;
+    const L=S.lm[k];if(L&&LM[L].i)m+=`<circle cx="${c*z+z/2}" cy="${r*z+z/2}" r="4" fill="${LM[L].chap?'#f3c76a':'#cfd3da'}"/>`;}
+  m+=`<rect x=".5" y=".5" width="${GW*z-1}" height="${GH*z-1}" fill="none" stroke="#353e4d"/><text x="${7.5*z}" y="${4*z-3}" text-anchor="middle" font-size="9" fill="#ffe2a0">paese</text>`;
+  m+=`<circle cx="${S.p.c*z+z/2}" cy="${S.p.r*z+z/2}" r="5" fill="#8cc4ff" stroke="#fff" stroke-width="1.5"/></svg>`;document.getElementById('mapBox').innerHTML=m;}
+
+document.getElementById('bMap').onclick=()=>{drawMap();document.getElementById('ovMap').classList.remove('hide');};
+document.getElementById('bMapOk').onclick=()=>document.getElementById('ovMap').classList.add('hide');
+document.getElementById('bSeeEnd').onclick=()=>document.getElementById('ovEnd').classList.remove('hide');
+function resetCtrl(){document.getElementById('ctrl').classList.remove('hide');document.getElementById('ctrlEnd').classList.add('hide');}
+document.getElementById('bBait').onclick=bait;
+document.getElementById('dYes').onclick=()=>takeDub(true);
+document.getElementById('dNo').onclick=()=>takeDub(false);
+document.getElementById('bRules').onclick=()=>{document.getElementById('bRulesOk').textContent='Torna nel bosco';document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bRulesOk').onclick=()=>document.getElementById('ovRules').classList.add('hide');
+const start=d=>{document.getElementById('ovCover').classList.add('hide');newGame(d);document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bDaily').onclick=()=>start(true);
+document.getElementById('bRand').onclick=()=>start(false);
+document.getElementById('bAgain').onclick=()=>{resetCtrl();document.getElementById('ovEnd').classList.add('hide');newGame(false);};
+document.getElementById('bSame').onclick=()=>{resetCtrl();document.getElementById('ovEnd').classList.add('hide');newGame(S.daily,LAST);};
+newGame(true);document.getElementById('dayTxt').innerHTML=`Sfida n° ${todayN()} · oggi: <b>${WX[S.wx].n}</b>. ${WX[S.wx].d}`;
+window._open=open;window._fh=fromHome;window._isV=isV;window._S=()=>S;window._move=move;window._dub=takeDub;window._shoot=shoot;window._bait=bait;window._new=newGame;
+</script>
+</body>
+</html>
