@@ -56,7 +56,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
 <div class="ov hide" id="ovRules"><div class="box">
   <h2>Come si gioca</h2>
   <ul>
-    <li>Sono le 14:00 e sei da qualche parte in centro. Casa è in fondo a via Po. Hai delle commissioni in centro: arrivano una alla volta, in alto, e la <b>stella</b> ti dice dove andare.</li>
+    <li>Sono le 14:00 e sei da qualche parte in centro. Casa è in fondo a via Po. Hai delle commissioni in centro: arrivano una alla volta, in alto, e la <b>stella</b> ti dice dove andare. Non sono sempre uguali: ci sono <b>consegne</b> (prendi qui, porta là), <b>appuntamenti a un'ora precisa</b> (né prima né dopo: se arrivi tardi la perdi), <b>scelte</b> tra due posti che valgono diverso, e a volte devi <b>acchiappare il Collezionista</b>.</li>
     <li>Tocca una casella vicina per camminare (anche in diagonale), o una lontana per fare un passo verso di lei.</li>
     <li>Per strada trovi <b>gianduiotti</b> (1 punto).</li>
     <li>Sui <b>tombini</b> puoi <b>scendere</b>. Sotto ci sono tesori che valgono molto, e i mostri ci sono già.</li>
@@ -146,25 +146,64 @@ const cheb=(a,b,c,d)=>Math.max(Math.abs(a-c),Math.abs(b-d));
 function bfs(tc,tr,L,block){const d={};const q=[[tc,tr]];d[key(tc,tr)]=0;while(q.length){const [c,r]=q.shift();for(const [nc,nr] of nbL(c,r,L)){const k=key(nc,nr);if(k in d||(block&&block(nc,nr)))continue;d[k]=d[key(c,r)]+1;q.push([nc,nr]);}}return d;}
 
 /* ---------- missioni ---------- */
-function buildMissions(){
-  const pool=[{t:'luogo',p:'editore',pts:3,txt:'Ritira le bozze dall\'editore, nel Quadrilatero.'},
-    {t:'luogo',p:'caffe',pts:3,fav:'barista',txt:'Un bicerin con la tua agente, al caffè dietro la Consolata.'},
-    {t:'luogo',p:'edicola',pts:2,fav:'giornalaio',txt:'All\'edicola di via Garibaldi: c\'è la recensione del tuo libro.'},
-    {t:'luogo',p:'balon',pts:3,txt:'Cerca una prima edizione di Pavese tra i banchi del Balôn.'},
-    {t:'luogo',p:'libreria',pts:4,fav:'libraio',txt:'Firma le copie alla libreria sotto i portici di via Po.'},
-    {t:'luogo',p:'egizio',pts:3,txt:'Restituisci al Museo Egizio il libro sui papiri che ti hanno prestato.'},
-    {t:'luogo',p:'mole',pts:3,txt:'Un\'intervista per la radio, ai piedi della Mole.'}].sort(()=>rnd()-.5);
-  const favs=pool.filter(m=>m.fav),pick=[favs[0],...pool.filter(m=>m!==favs[0]).slice(0,2)].sort(()=>rnd()-.5);
-  const under=rnd()<.5?{t:'tesoro',k:'manoscritto',pts:4,txt:'Si dice che sotto Porta Palazzo ci sia un manoscritto perduto. Scendi a cercarlo.'}:{t:'tesoro',k:'amuleto',pts:4,txt:'Il tuo editore giura che nelle gallerie c\'è un amuleto egizio. Trovalo: farà un romanzo.'};
-  return [...pick,under];}
+const MPOOL={
+ luogo:[{t:'luogo',p:'editore',pts:3,txt:'Ritira le bozze dall\'editore, nel Quadrilatero.'},
+  {t:'luogo',p:'caffe',pts:3,fav:'barista',txt:'Un bicerin con la tua agente, al caffè dietro la Consolata.'},
+  {t:'luogo',p:'edicola',pts:2,fav:'giornalaio',txt:'All\'edicola di via Garibaldi: c\'è la recensione del tuo libro.'},
+  {t:'luogo',p:'balon',pts:3,txt:'Cerca una prima edizione di Pavese tra i banchi del Balôn.'},
+  {t:'luogo',p:'libreria',pts:4,fav:'libraio',txt:'Firma le copie alla libreria sotto i portici di via Po.'},
+  {t:'luogo',p:'egizio',pts:3,txt:'Restituisci al Museo Egizio il libro sui papiri che ti hanno prestato.'},
+  {t:'luogo',p:'mole',pts:3,txt:'Un caffè con un vecchio amico, ai piedi della Mole.'}],
+ consegna:[{t:'consegna',a:'editore',b:'caffe',pts:4,fav:'barista',txt:'Ritira le bozze dall\'editore e portale alla tua agente, al caffè della Consolata.',txt2:'Hai le bozze. Ora al caffè della Consolata.'},
+  {t:'consegna',a:'balon',b:'egizio',pts:4,txt:'Al Balôn vendono un papiro che il Museo Egizio vuole vedere. Compralo e portalo al museo.',txt2:'Hai il papiro. Ora al Museo Egizio.'},
+  {t:'consegna',a:'edicola',b:'libreria',pts:4,fav:'libraio',txt:'Prendi in edicola dieci copie della Stampa con la tua recensione e portale al libraio di via Po.',txt2:'Hai i giornali. Ora alla libreria di via Po.'},
+  {t:'consegna',a:'libreria',b:'mole',pts:4,txt:'Il libraio ha una copia firmata per il giornalista della radio. Portagliela, alla Mole.',txt2:'Hai il libro. Ora alla Mole.'},
+  {t:'consegna',a:'egizio',b:'editore',pts:4,txt:'All\'Egizio ti hanno preparato le foto dei papiri per la copertina. Portale all\'editore.',txt2:'Hai le foto. Ora dall\'editore.'}],
+ orario:[{t:'orario',p:'mole',pts:5,txt:'Intervista in radio ai piedi della Mole, alle {T}. Non prima, non dopo.'},
+  {t:'orario',p:'libreria',pts:5,fav:'libraio',txt:'Presentazione del libro alla libreria di via Po, alle {T}. Il pubblico non aspetta.'},
+  {t:'orario',p:'caffe',pts:4,fav:'barista',txt:'Appuntamento con la tua agente al caffè della Consolata, alle {T}. È una che se ne va.'},
+  {t:'orario',p:'edicola',pts:4,fav:'giornalaio',txt:'Il giornalaio riceve una sola copia di Tuttolibri alle {T}: passa a quell\'ora, poi la vende.'}],
+ scelta:[{t:'scelta',o:[{p:'balon',pts:3},{p:'libreria',pts:5,fav:'libraio'}],txt:'Un regalo per tua madre: un vaso al Balôn (+3) o la strenna illustrata in libreria (+5).'},
+  {t:'scelta',o:[{p:'edicola',pts:2,fav:'giornalaio'},{p:'egizio',pts:4}],txt:'Documentati per il nuovo romanzo: i giornali vecchi in edicola (+2) o la sala delle mummie all\'Egizio (+4).'},
+  {t:'scelta',o:[{p:'caffe',pts:3,fav:'barista'},{p:'mole',pts:4}],txt:'Ti serve ispirazione: un bicerin al caffè (+3) o il panorama dalla Mole (+4).'}],
+ col:[{t:'col',pts:4,txt:'Il Collezionista ti ha sfilato una lettera dalla borsa. Raggiungilo e riprenditela, prima che faccia buio.'},
+  {t:'col',pts:4,txt:'Il tuo editore vuole sapere chi è il signore col cappello. Raggiungilo, prima che faccia buio.'}]};
+const MUNDER=[{t:'tesoro',k:'manoscritto',pts:4,txt:'Si dice che sotto Porta Palazzo ci sia un manoscritto perduto. Scendi a cercarlo.'},
+  {t:'tesoro',k:'amuleto',pts:4,txt:'Il tuo editore giura che nelle gallerie c\'è un amuleto egizio. Trovalo: farà un romanzo.'},
+  {t:'tesoro',k:'oro',pts:4,txt:'Una leggenda del Quadrilatero parla di un gianduiotto d\'oro sotto la città. Trovalo.'},
+  {t:'tesoro',k:'pergamena',pts:4,txt:'Un alchimista del Seicento ha nascosto una pergamena nelle gallerie. La vuoi per il prossimo libro.'}];
+const hasFav=m=>m.fav||(m.o&&m.o.some(x=>x.fav));
+function buildMissions(){let pick;
+  for(let g=0;g<30;g++){const types=['luogo','consegna','orario','scelta','col'].sort(()=>rnd()-.5).slice(0,3);
+    pick=types.map(t=>{const L=MPOOL[t];return Object.assign({},L[R(L.length)]);});
+    const used=new Set();let clash=false;for(const m of pick){const ps=m.t==='consegna'?[m.a,m.b]:m.o?m.o.map(x=>x.p):m.p?[m.p]:[];for(const q of ps){if(used.has(q))clash=true;used.add(q);}}
+    if(!clash&&pick.some(hasFav))break;}
+  const ci=pick.findIndex(m=>m.t==='col');if(ci>0){const [c]=pick.splice(ci,1);pick.unshift(c);}
+  return [...pick,Object.assign({},MUNDER[R(MUNDER.length)])];}
 const FAV={medaglia:'🏅 Medaglietta di san Giovanni',gatto:'🐈 Il gatto ti segue',barista:'☕ Il caffè ti lascia la serranda aperta',giornalaio:'🗞 Il giornalaio ti avvisa',libraio:'🔦 Hai la torcia del libraio'};
 function curM(){return S.mq[S.mi];}
-function mTarget(){const m=curM();if(!m)return S.night?{c:PLACES.casa.c,r:PLACES.casa.r,L:'su'}:null;if(m.t==='luogo')return{c:PLACES[m.p].c,r:PLACES[m.p].r,L:'su'};
+function mPlace(m){if(m.t==='luogo'||m.t==='orario')return m.p;if(m.t==='consegna')return m.st?m.b:m.a;return null;}
+function mTarget(){const m=curM();if(!m)return S.night?{c:PLACES.casa.c,r:PLACES.casa.r,L:'su'}:null;
+  const pl=mPlace(m);if(pl)return{c:PLACES[pl].c,r:PLACES[pl].r,L:'su'};
+  if(m.t==='scelta'){const o=m.o.slice().sort((a,b)=>dist(PLACES[a.p].c,PLACES[a.p].r,S.p.c,S.p.r)-dist(PLACES[b.p].c,PLACES[b.p].r,S.p.c,S.p.r))[0];return{c:PLACES[o.p].c,r:PLACES[o.p].r,L:'su'};}
+  if(m.t==='col'){const C=S.col;return C&&!C.gone&&!C.down?{c:C.c,r:C.r,L:'su'}:null;}
   const t=S.treas.find(x=>x.k===m.k&&!x.got);return t?{c:t.c,r:t.r,L:'giu'}:null;}
-function checkMission(){let m=curM(),g=0;while(m&&g++<8){let ok=false;
-    if(m.t==='luogo')ok=S.visited.has(m.p);if(m.t==='tesoro')ok=S.bag.some(x=>x.k===m.k);
-    if(!ok)break;S.mpts+=m.pts;if(m.fav){S.fav[m.fav]=true;msgs.push(FAV[m.fav]+(m.fav==='barista'?' stanotte: lì dentro i mostri non entrano.':m.fav==='giornalaio'?' se di notte un mostro ti si avvicina.':': di notte vedi più lontano.'));}
-    msgs.push(`✓ Fatto: +${m.pts}.`);S.mi++;m=curM();if(m)msgs.push('Ora: '+m.txt);}
+function mTxt(m){if(m.t==='orario')return m.txt.replace('{T}',clock(m.at));if(m.t==='consegna'&&m.st)return m.txt2;if(m.t==='col'&&S.col&&S.col.down)return m.txt+' Ora è sotto terra: aspetta che risalga.';return m.txt;}
+function activate(m){if(!m)return;if(m.t==='orario'){const P=PLACES[m.p];const d=bfs(P.c,P.r,'su')[key(S.p.c,S.p.r)]??20;let at=S.turn+d+4;at=Math.ceil(at/3)*3;m.at=Math.min(at,DUSK-3);}
+  if(m.t==='col')m.base=S.caughtN||0;}
+function giveFav(f){if(!f||S.fav[f])return;S.fav[f]=true;msgs.push(FAV[f]+(f==='barista'?' stanotte: lì dentro i mostri non entrano.':f==='giornalaio'?' se di notte un mostro ti si avvicina.':': di notte vedi più lontano.'));}
+function checkMission(){let m=curM(),g=0;const here=S.L==='su'?placeAt(S.p.c,S.p.r):null;
+  while(m&&g++<8){let ok=false,pts=m.pts,fav=m.fav,fail=null;
+    if(m.t==='luogo')ok=S.visited.has(m.p);
+    if(m.t==='tesoro')ok=S.bag.some(x=>x.k===m.k);
+    if(m.t==='consegna'){if(!m.st&&here===m.a){m.st=1;msgs.push(m.txt2);}if(m.st&&here===m.b)ok=true;}
+    if(m.t==='orario'){if(S.turn>m.at+2)fail='Troppo tardi: '+(m.p==='mole'?'l\'intervista è andata in onda senza di te.':m.p==='libreria'?'la presentazione è finita.':m.p==='caffe'?'la tua agente se n\'è andata.':'la copia l\'hanno venduta.');
+      else if(here===m.p){if(S.turn>=m.at)ok=true;else if(!m.warn){m.warn=1;msgs.push(`Sei in anticipo: è alle ${clock(m.at)}. Aspetta qui.`);}}}
+    if(m.t==='scelta'&&here){const o=m.o.find(x=>x.p===here);if(o){ok=true;pts=o.pts;fav=o.fav;}}
+    if(m.t==='col'){if((S.caughtN||0)>m.base)ok=true;else if(S.col.gone)fail='Il Collezionista è sparito con il buio. Commissione persa.';}
+    if(fail){msgs.push(fail);S.mi++;m=curM();activate(m);if(m)msgs.push('Ora: '+mTxt(m));continue;}
+    if(!ok)break;S.mpts+=pts;S.mdone=(S.mdone||0)+1;giveFav(fav);
+    msgs.push(`✓ Fatto: +${pts}.`);S.mi++;m=curM();activate(m);if(m)msgs.push('Ora: '+mTxt(m));}
 }
 
 /* ---------- il Collezionista ---------- */
@@ -194,7 +233,7 @@ function colStep(){const C=S.col;if(!C||C.gone)return;
 function catchCol(){const C=S.col;let t=`Prendi il Collezionista per la manica.`;
   if(C.carry){S.gpts+=C.carry;t+=` Ti molla ${C.carry} gianduiotti`;C.carry=0;}else t+=' Non ha niente in tasca';
   if(C.loot.length){const x=C.loot.shift();S.bag.push(x);t+=` e ${TREAS[x.k].n}`;}
-  t+=', poi scappa via.';msgs.push(t);const f=farStreet(7);if(f){C.c=f[0];C.r=f[1];}C.rest=4;}
+  t+=', poi scappa via.';S.caughtN=(S.caughtN||0)+1;msgs.push(t);const f=farStreet(7);if(f){C.c=f[0];C.r=f[1];}C.rest=4;}
 
 /* ---------- incontri ---------- */
 const EVENTS=[
@@ -233,7 +272,7 @@ function newGame(daily,seed){
   TOMB=TOMB_ALL.slice().sort(()=>rnd()-.5).slice(0,6);UNDER=buildUnder(SEED^0x5bd1e995);
   const ST=[[1,20,'Esci dallo studio di un\'amica, in borgo San Paolo'],[13,3,'Esci dal dentista, in corso Regina'],[1,9,'Esci dalla piscina, vicino a piazza Statuto'],[10,20,'Esci dalla redazione, verso il Po'],[5,3,'Esci dalla casa di tua madre, alla Consolata'],[7,12,'Scendi dal tram in piazza Castello']];const st=ST[R(ST.length)];
   S={daily:!!daily,turn:0,p:{c:st[0],r:st[1]},L:'su',left:true,opened:new Set(),mons:[],gian:[],treas:[],bag:[],gpts:0,mpts:0,fav:{},visited:new Set(),night:false,over:false,pan:{c:0,r:0},seen:{},known:new Set()};
-  S.mq=buildMissions();S.mi=0;S.match=2;S.myLight=0;S.boxes=[];S.books=2;S.ugian=[];
+  S.mq=buildMissions();S.mi=0;S.mdone=0;S.caughtN=0;S.match=2;S.myLight=0;S.boxes=[];S.books=2;S.ugian=[];
   const streets=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(tile(c,r)!=='#'&&!placeAt(c,r)&&!isTomb(c,r)&&dist(c,r,14,21)>3&&dist(c,r,st[0],st[1])>1)streets.push([c,r]);
   for(let i=0;i<14;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.gian.push({c,r});}
   for(let i=0;i<3;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.boxes.push({c,r});}
@@ -245,7 +284,7 @@ function newGame(daily,seed){
   for(let i=0;i<8;i++){const cs=ucells.filter(([c,r])=>!S.treas.some(t=>t.c===c&&t.r===r)&&!S.ugian.some(g=>g.c===c&&g.r===r));const [c,r]=cs[R(cs.length)];S.ugian.push({c,r});}
   for(let i=0;i<3;i++){const far=ucells.filter(([c,r])=>TOMB.every(([a,b])=>dist(a,b,c,r)>=3));const [c,r]=far[R(far.length)];S.mons.push({c,r,L:'giu',rest:0});}
   LAMPS=LAMPS_ALL.slice().sort(()=>rnd()-.5).slice(0,12);S.lamps=new Set(LAMPS.map(([c,r])=>key(c,r)));S.lampTimer=0;
-  msgs=[st[2]+'. Casa è in fondo a via Po. Prima commissione: '+S.mq[0].txt];
+  activate(S.mq[0]);msgs=[st[2]+'. Casa è in fondo a via Po. Prima commissione: '+mTxt(S.mq[0])];
   render();
 }
 function clock(t){const m=START_T+t*MIN;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
@@ -320,6 +359,7 @@ function endTurn(){
   if((S.fav.giornalaio||S.fav.gatto)&&S.night&&S.L==='su'){const near=S.mons.filter(m=>m.L==='su'&&dist(m.c,m.r,S.p.c,S.p.r)<=4&&!seeNow(m.c,m.r));if(near.length&&S.turn%2===0)msgs.push(S.fav.giornalaio?'Ti torna in mente il giornalaio: «Occhio '+dirTo(near[0].c,near[0].r).replace('da ','a ')+'.»':'Il gatto soffia, il pelo dritto, verso '+dirTo(near[0].c,near[0].r).replace('da ','')+'.');}
   if(S.L==='giu'&&S.mons.some(m=>m.L==='giu'&&dist(m.c,m.r,S.p.c,S.p.r)<=2)&&!S.seen.mon){S.seen.mon=1;msgs.push('Qualcosa si muove nel buio della galleria. Vicino.');}
   if(S.left&&S.L==='su'&&S.p.c===14&&S.p.r===21){S.over=true;render();return end(true);}
+  if(!S.over)checkMission();
   render();maybeEvent();
 }
 function caught(){if(S.shield){S.shield=0;delete S.fav.medaglia;for(const m of S.mons)if(m.L===S.L&&cheb(m.c,m.r,S.p.c,S.p.r)<=1){const o=nbL(m.c,m.r,m.L).filter(([c,r])=>cheb(c,r,S.p.c,S.p.r)>1);if(o.length)[m.c,m.r]=o[R(o.length)];m.rest=3;}
@@ -333,7 +373,7 @@ function end(ok){
   let best=0;try{best=+localStorage.getItem('to_best')||0;if(tot>best)localStorage.setItem('to_best',tot);}catch(_){}
   document.getElementById('eT').textContent=ok?'A casa, alle '+clock(S.turn):'Torino ti ha presa';
   document.getElementById('eS').textContent=tot+' punti';
-  document.getElementById('eP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+(ok?`Commissioni: ${S.mi}/${S.mq.length} (+${S.mpts}). Gianduiotti: ${S.gpts}. Dal sottosuolo: ${S.bag.length?S.bag.map(t=>TREAS[t.k].n).join(', ')+` (+${tp})`:'niente'}. Tombini lasciati aperti: ${S.opened.size}.`+(bonus?` Rientro prima del buio: +3.`:''):`${S.why} Commissioni fatte: ${S.mi}. Tombini aperti: ${S.opened.size}.`)+` Record: ${Math.max(best,tot)}.`;
+  document.getElementById('eP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+(ok?`Commissioni: ${S.mdone}/${S.mq.length} (+${S.mpts}). Gianduiotti: ${S.gpts}. Dal sottosuolo: ${S.bag.length?S.bag.map(t=>TREAS[t.k].n).join(', ')+` (+${tp})`:'niente'}. Tombini lasciati aperti: ${S.opened.size}.`+(bonus?` Rientro prima del buio: +3.`:''):`${S.why} Commissioni fatte: ${S.mdone}. Tombini aperti: ${S.opened.size}.`)+` Record: ${Math.max(best,tot)}.`;
   setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),ok?400:0);
 }
 
@@ -345,7 +385,7 @@ function render(){
   document.getElementById('place').textContent=S.L==='giu'?'Le gallerie':here?PLACES[here].n:tile(S.p.c,S.p.r)==='p'?'Sotto i portici':tile(S.p.c,S.p.r)==='P'?'In piazza':'Per i vicoli';
   const ck=document.getElementById('clock');ck.textContent=clock(S.turn);ck.classList.toggle('late',S.turn>=DUSK);
   document.getElementById('layer').textContent=S.L==='giu'?'sotto la città':'in superficie';
-  const m=curM();document.getElementById('mis').innerHTML=m?`<b>Commissione ${S.mi+1}/${S.mq.length}</b> · ${m.txt} <span style="color:#c9b892">(+${m.pts})</span>`:`<b>Tutto fatto</b> · Ora torna a casa, in fondo a via Po.`;
+  const m=curM();document.getElementById('mis').innerHTML=m?`<b>Commissione ${S.mi+1}/${S.mq.length}</b> · ${mTxt(m)} <span style="color:#c9b892">(+${m.pts})</span>`:`<b>Tutto fatto</b> · Ora torna a casa, in fondo a via Po.`;
   document.getElementById('sPts').textContent=S.mpts+S.gpts+S.bag.reduce((a,t)=>a+TREAS[t.k].p,0);document.getElementById('sG').textContent=S.gpts;document.getElementById('sM').textContent=S.match;document.getElementById('sB').textContent=S.books;document.getElementById('sT').textContent=S.bag.length;document.getElementById('sO').textContent=S.opened.size;document.getElementById('lampS').classList.toggle('hide',!S.night);document.getElementById('sL').textContent=S.lamps.size;
   document.getElementById('fav').innerHTML=Object.keys(S.fav).map(k=>`<span>${FAV[k]}</span>`).join('');
   {const bd=document.getElementById('board');const w=bd.clientWidth-16,h=bd.clientHeight-4;if(w>50&&h>50)VH=Math.max(7,Math.min(GH,Math.floor(h/(w/VW))));}
@@ -426,7 +466,7 @@ document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').
 document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');resetCtrl();newGame(S.daily,LAST);};
 document.getElementById('cvTxt').innerHTML=`Sfida n° ${todayN()}. Fai le tue commissioni. Torna a casa prima che la città si svegli.`;
 newGame(true);
-window._ev=evPick;window._T=()=>TOMB;window._strike=strike;window._throw=throwBook;window._near=nearMon;window._S=()=>S;window._move=move;window._hole=hole;window._wait=wait;window._new=newGame;window._step=stepToward;window._bfs=bfs;window._open=openAt;window._isTomb=isTomb;
+window._ev=evPick;window._mt=mTarget;window._cur=curM;window._T=()=>TOMB;window._strike=strike;window._throw=throwBook;window._near=nearMon;window._S=()=>S;window._move=move;window._hole=hole;window._wait=wait;window._new=newGame;window._step=stepToward;window._bfs=bfs;window._open=openAt;window._isTomb=isTomb;
 </script>
 <script id="sh-skip">(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_torino-magica';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
 const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
