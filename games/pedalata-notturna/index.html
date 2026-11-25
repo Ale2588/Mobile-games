@@ -9,43 +9,32 @@
 <style>
 :root{--bg:#07080b;--card:#12161d;--raise:#1a1f28;--ink6:#353e4d;--ink7:#262d39;--tx:#e6e2d8;--t2:#9aa3b2;--t3:#7f899b;--lamp:#f3c76a;--lamp3:#ffe2a0;--red:#ff5a4e;--moon:#8cc4ff;--ok:#7fd0a0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;height:100%;overscroll-behavior:none}
-#app{max-width:440px;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
-.scene{position:relative;height:150px;flex:0 0 auto;background:#000 center 60%/cover no-repeat}
-.scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.2),rgba(7,8,11,.1) 50%,var(--bg))}
-.scene .lbl{position:absolute;left:14px;bottom:8px;z-index:1}
-.scene .lbl b{display:block;font:500 22px/1.1 Georgia,serif}
-.scene .lbl span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
-.hud{position:absolute;right:12px;bottom:10px;z-index:1;text-align:right;font-size:12px;color:var(--t2);line-height:1.5}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;height:100%;overscroll-behavior:none;overflow:hidden}
+#app{max-width:440px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+.scene{position:relative;height:96px;flex:0 0 auto;background:#000 center 60%/cover no-repeat}
+.scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.25),rgba(7,8,11,.15) 40%,var(--bg))}
+.scene .lbl{position:absolute;left:14px;bottom:6px;z-index:1}
+.scene .lbl b{display:block;font:500 20px/1.1 Georgia,serif}
+.scene .lbl span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+.hud{position:absolute;right:12px;bottom:8px;z-index:1;text-align:right;font-size:12px;color:var(--t2);line-height:1.45}
 .hud b{color:var(--tx);font-size:15px}
-#goal{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;font-size:13px;color:var(--t2);border-bottom:1px solid #1a1f28}
-.fiato{display:flex;align-items:center;gap:6px}
-#fiato{display:flex;gap:3px}#fiato b{width:12px;height:8px;border-radius:2px;background:#353e4d}#fiato b.on{background:#7fd0a0}#fiato b.low{background:#ff8a5c}
+#pauseB{position:absolute;right:10px;top:8px;z-index:2;min-height:34px;width:34px;padding:0;border-radius:999px;background:rgba(7,8,11,.6);font-size:13px}
+#goal{display:flex;justify-content:space-between;align-items:center;padding:5px 14px;font-size:12px;color:var(--t2);border-bottom:1px solid #1a1f28;gap:8px}
+#mission{color:var(--lamp3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fiato{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#fiato{width:78px;height:8px;border-radius:4px;background:#353e4d;overflow:hidden}#fiato i{display:block;height:100%;background:#7fd0a0;border-radius:4px}#fiato.low i{background:#ff8a5c}
 #clock.late{color:#ff5a4e}
-#board{flex:1;min-height:0;display:flex;justify-content:center}
-#board svg{height:100%;width:100%;display:block;touch-action:manipulation}
-#board svg *{pointer-events:none}
-
-#msg{min-height:38px;padding:4px 12px;text-align:center;font-size:14px;font-style:italic;color:var(--tx);line-height:1.35}
-#bar{display:flex;gap:6px;padding:0 10px 4px}
-#bar button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
-#pad{position:relative;height:clamp(120px,19vh,170px);margin:0 10px 6px;border-radius:14px;overflow:hidden;border:1px solid #262d39;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#pad.off{opacity:.35}
-#pbands{position:absolute;inset:0}
-#pbands>div{position:absolute;left:0;right:0}
-#pbands .lb{position:absolute;right:8px;font:600 10px Inter,sans-serif;letter-spacing:.12em;color:rgba(230,226,216,.55);text-transform:uppercase}
-#pline{position:absolute;left:0;right:0;height:4px;margin-bottom:-2px;background:#ffe2a0;box-shadow:0 0 12px #f3c76a,0 0 3px #fff;pointer-events:none}
-#pcols{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr}
-#pcols div{border-left:1px dashed rgba(230,226,216,.16);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font:600 11px Inter,sans-serif;color:rgba(230,226,216,.7);cursor:pointer}
-#plab{display:grid;grid-template-columns:1fr 1fr 1fr;margin:0 10px 3px;text-align:center;font:600 11px Inter,sans-serif;color:rgba(230,226,216,.7)}
-#plab span.no{color:rgba(230,226,216,.18)}
-#pcols div:first-child{border-left:0}
-#pcols div.no{color:rgba(230,226,216,.15)}
-#pcols div.flash{background:rgba(255,226,160,.18)}
-#ctrl{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
+#board{position:relative;flex:1;min-height:0;touch-action:none;cursor:pointer}
+#board canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#msg{position:absolute;left:10px;right:10px;top:8px;text-align:center;font-size:14px;font-style:italic;line-height:1.35;color:var(--tx);text-shadow:0 1px 3px #000,0 0 8px #000;pointer-events:none;transition:opacity .4s}
+#hold{position:absolute;left:0;right:0;bottom:22%;text-align:center;pointer-events:none;font:500 18px Georgia,serif;color:var(--lamp3);text-shadow:0 0 10px #000}
+#hold small{display:block;font:400 13px Inter,sans-serif;color:var(--t2);margin-top:4px}
+#bar{display:flex;gap:6px;padding:6px 10px}
+#board{margin-bottom:env(safe-area-inset-bottom)}
+#bar button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px}
 button{font:600 14px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:46px;padding:6px}
 button:disabled{opacity:.3}
-button.aim{border-color:var(--lamp);color:var(--lamp)}
+button.ready{border-color:var(--lamp);color:var(--lamp3);box-shadow:0 0 12px rgba(243,199,106,.25)}
 .ov{position:fixed;inset:0;background:rgba(4,5,6,.97);z-index:9;overflow-y:auto;display:flex;padding:20px}
 .ov .box{margin:auto;max-width:400px;width:100%}
 .ov h1{font:500 34px/1.05 Georgia,serif;margin:0 0 8px;letter-spacing:.02em}
@@ -66,16 +55,11 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
 </head>
 <body>
 <div id="app">
-  <div class="scene" id="scene"><div class="lbl"><span id="zoneSub"></span><b id="zoneName"></b></div>
+  <div class="scene" id="scene"><button id="pauseB" aria-label="Pausa">❚❚</button><div class="lbl"><span id="zoneSub"></span><b id="zoneName"></b></div>
     <div class="hud"><div><b id="clock">23:00</b> / 23:45</div><div id="dist"></div></div></div>
-  <div id="mission" style="padding:4px 14px 0;font-size:12px;color:#ffe2a0"></div>
-  <div id="goal"><span id="goalTxt">Al monumento entro le 23:45</span><span class="fiato">Fiato <i id="fiato"></i></span></div>
-  <div id="board"></div>
-  <div id="msg"></div>
+  <div id="goal"><span id="mission"></span><span class="fiato">Fiato <span id="fiato"><i></i></span></span></div>
   <div id="bar"></div>
-  <div id="plab"><span data-d="-1">◀ sinistra</span><span data-d="0">▲ dritto</span><span data-d="1">destra ▶</span></div>
-  <div id="pad"><div id="pbands"></div><div id="pline"></div><div id="pcols"><div data-d="-1"></div><div data-d="0"></div><div data-d="1"></div></div></div>
-  <div id="ctrl"><button id="bStop">Fermati</button><button id="bRules">Regole</button></div>
+  <div id="board"><canvas id="cv"></canvas><div id="msg"></div><div id="hold">Tieni giù il pollice per pedalare<small>Il pollice decide la corsia: spostalo a destra o a sinistra</small></div></div>
 </div>
 
 <div class="ov" id="ovCover"><div class="box">
@@ -87,22 +71,20 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
 
 <div class="ov hide" id="ovRules"><div class="box">
   <h2>Come si gioca</h2>
-  <p>Sei in bici, è tardi, e devi arrivare in fondo a via Marconi, davanti al monumento.</p>
+  <p>Sei in bici, è tardi. Devi arrivare in fondo a via Marconi, davanti al monumento, <b>entro le 23:45</b>.</p>
   <ul>
-    <li><b>L'obiettivo:</b> arrivare in fondo a via Marconi, al monumento, <b>entro le 23:45</b>. Ogni mossa è un minuto.</li>
-    <li><b>Un solo tocco: il pedale.</b> In basso una linea di luce sale e scende. Tocca quando è all'altezza giusta: in basso fai 1 tratto, a metà 2, in alto 3.</li>
-    <li><b>Dove tocchi è dove vai:</b> sinistra, dritto o destra. Ma <b>sterzi solo se prendi il verde</b>; fuori dal verde tiri dritto.</li>
-    <li><b>Verde:</b> pedalata perfetta, risparmi fiato. <b>Rosso</b> (tra una fascia e l'altra): sbandi, perdi fiato e la dinamo tremola. Più in alto, più il verde è stretto; più vai forte, più la linea corre.</li>
-    <li><b>Il fiato:</b> 2 o 3 tratti lo consumano, 1 tratto lo recupera, fermarti lo recupera di più. Senza fiato vai solo piano. In salita si fatica anche piano.</li>
-    <li><b>La luce è la dinamo:</b> più pedali veloce, più lontano vedi. Piano, vedi solo il tratto davanti. Nella nebbia vedi meno.</li>
-    <li><b>Le buche</b> prese veloce ti fanno cadere: perdi un turno.</li>
-    <li><b>I cani</b> delle cascine ti inseguono: il <b>pane</b> li ferma, il <b>sasso</b> li spaventa.</li>
-    <li><b>I fuochi fatui</b> si vedono sempre. Se ci passi in mezzo, la dinamo si spegne per due turni.</li>
-    <li><b>La masca</b> ti segue da dietro: se vai piano ti raggiunge. Il <b>sale</b> la ferma. L'edicola del crocevia la tiene lontana.</li>
-    <li>Gli oggetti si usano senza perdere il turno. Lungo la strada, nella luce, ne trovi altri, e la <b>borraccia</b> ti ridà fiato.</li>
-    <li>Ogni notte ha una <b>missione</b>: compierla vale una stella in più. E ci sono due <b>scorciatoie</b>, il guado e la vigna, ognuna con il suo prezzo.</li>
+    <li><b>Tieni giù il pollice: pedali.</b> Vai più forte e la dinamo illumina più lontano, ma consumi fiato.</li>
+    <li><b>Stacca il pollice: ruota libera.</b> Recuperi fiato, ma la luce si accorcia.</li>
+    <li><b>Se il fiato finisce</b> non spingi più finché non l'hai recuperato un po'. Recuperi più in fretta se stacchi il pollice.</li>
+    <li><b>Il pollice decide la corsia:</b> sta a sinistra, al centro o a destra della strada? Lì va la bici. Spostalo senza staccarlo.</li>
+    <li><b>Le buche</b> prese forte ti fanno cadere. Piano, passi.</li>
+    <li><b>I cani</b> delle cascine ti tagliano la strada: il <b>pane</b> li ferma, il <b>sasso</b> li spaventa.</li>
+    <li><b>I fuochi fatui</b> si vedono anche al buio. Se ci passi in mezzo, la dinamo si spegne.</li>
+    <li><b>La masca</b> ti segue da dietro. A ruota libera ti raggiunge, pedalando la stacchi. Il <b>sale</b> la ferma.</li>
+    <li>Lungo la strada trovi oggetti e la <b>borraccia</b>, che ridà fiato: passaci sopra.</li>
+    <li>Ogni notte ha una <b>missione</b>: vale una stella in più. E ci sono due <b>scorciatoie</b>, ognuna col suo prezzo.</li>
   </ul>
-  <button class="main" id="bRulesOk">Avanti</button>
+  <button class="main" id="bRulesOk">In sella</button>
 </div></div>
 
 <div class="ov hide" id="ovFork"><div class="box">
@@ -110,7 +92,7 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
   <p>La strada si divide. Da che parte?</p>
   <div class="choice">
     <button id="bLong"><b>Il giro largo</b>In piano, intorno alla cascina: passi accanto al cimitero e al campo da calcio.</button>
-    <button id="bShort"><b>La salita della chiesa</b>Più corta, ma in salita: pedali piano e la dinamo cala.</button>
+    <button id="bShort"><b>La salita della chiesa</b>Più corta, ma in salita: fai più fatica e la masca non molla.</button>
   </div>
 </div></div>
 
@@ -119,11 +101,19 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
   <div class="choice"><button id="mYes"><b>Prendo la scorciatoia</b>Meno strada, ma ha un prezzo.</button><button id="mNo"><b>Resto sulla strada</b>Più lunga, ma la conosci.</button></div>
 </div></div>
 
+<div class="ov hide" id="ovPause"><div class="box">
+  <h2>Pausa</h2><p>La bici è appoggiata al paracarro. La notte aspetta.</p>
+  <button class="main" id="bResume">Riparti</button>
+  <button class="sec" id="bRules2">Come si gioca</button>
+  <button class="sec" id="bQuit">Ricomincia</button>
+</div></div>
+
 <div class="ov hide" id="ovEnd"><div class="box">
   <h2 id="endT"></h2>
   <div class="stars" id="endS"></div>
   <p id="endP"></p>
   <button class="main" id="bAgain">Un'altra notte</button>
+  <button class="sec" id="bSame">Riprova la stessa</button>
 </div></div>
 
 <script>
@@ -140,15 +130,22 @@ const ZONES={
   salita:{n:'La salita della chiesa',s:'Scorciatoia',up:true},
   centro:{n:'Fresonara',s:'Via Marconi',lit:true},
 };
-const ROAD={paese:'ciottolo',campagna:'asfalto',crocevia:'asfalto',cascina:'sterrato',mais:'sterrato',quarti:'asfalto',cimitero:'asfalto',campo:'sterrato',salita:'ciottolo',centro:'ciottolo'}, SIDE={paese:['fosso','fosso'],campagna:['fosso','fosso'],crocevia:['fosso','fosso'],cascina:['vigna','vigna'],mais:['mais','fosso'],quarti:['fosso','vigna'],cimitero:['cimitero','fosso'],campo:['fosso','fosso'],salita:['fosso','fosso'],centro:['fosso','fosso']};
-const LANES=3, RH=54, LW=78, VIEW_AHEAD=8, VIEW_BEHIND=2;
+const ROAD={paese:'ciottolo',campagna:'asfalto',crocevia:'asfalto',cascina:'sterrato',mais:'sterrato',quarti:'asfalto',cimitero:'asfalto',campo:'sterrato',salita:'ciottolo',centro:'ciottolo'};
+const SIDE={paese:['fosso','fosso'],campagna:['fosso','fosso'],crocevia:['fosso','fosso'],cascina:['vigna','vigna'],mais:['mais','fosso'],quarti:['fosso','vigna'],cimitero:['cimitero','fosso'],campo:['fosso','fosso'],salita:['fosso','fosso'],centro:['fosso','fosso']};
+const FIELD={paese:'#1a1712',campagna:'#10140f',crocevia:'#13150f',cascina:'#141a10',mais:'#18170c',quarti:'#141a10',cimitero:'#101214',campo:'#0f1610',salita:'#16140f',centro:'#1a1712'};
+const LANES=3, RH=54, LW=78, W0=LANES*LW+80;
+const K=4; // righe per i vecchi "tratti": ogni riga ora è ~25 m
+/* tempo: 1 secondo di gioco = 0,45 minuti; 100 s = 45 minuti */
+const MIN_PER_S=.45;
+/* fisica */
+const VC=1.35, VP=3.3, ACC=2.2, BRK=1.6, LANE_SPD=10;
 let SEED=1;function rnd(){SEED|=0;SEED=SEED+0x6D2B79F5|0;let t=Math.imul(SEED^SEED>>>15,1|SEED);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
 const R=n=>Math.floor(rnd()*n);
 const NIGHTS={
-  nebbia:{n:'Nebbia fitta',d:'Vedi un tratto in meno, ovunque.'},
-  luna:{n:'Luna piena',d:'La masca è più veloce: non rallentare.'},
-  temporale:{n:'Temporale',d:'Più buche, e le vedi solo quando ci sei sopra.'},
-  serena:{n:'Notte serena',d:'Vedi un tratto in più, ma i cani sono tutti fuori.'},
+  nebbia:{n:'Nebbia fitta',d:'La dinamo arriva meno lontano, ovunque.'},
+  luna:{n:'Luna piena',d:'La masca è più veloce: non mollare i pedali.'},
+  temporale:{n:'Temporale',d:'Più buche, e le vedi solo all\'ultimo.'},
+  serena:{n:'Notte serena',d:'Vedi più lontano, ma i cani sono tutti fuori.'},
   fame:{n:'La masca ha fame',d:'Stanotte il pane ferma anche lei.'}};
 const MISSIONS={
   forno:{n:'Passa dal forno',d:'Raccogli la pagnotta in paese, prima di uscire.',ok:()=>S.got.forno},
@@ -157,313 +154,297 @@ const MISSIONS={
   sale:{n:'Tieni il sale',d:'Arriva con almeno un sacchetto di sale.',ok:()=>S.items.sale>0},
   guado:{n:'Il guado',d:'Prendi la scorciatoia del guado nel fosso.',ok:()=>S.took.guado}};
 const MINOR=[
-  {id:'guado',at:20,skip:5,t:'Il guado del fosso',d:'Tagli attraverso il fosso: 5 tratti in meno, ma l\'acqua gelata ti toglie 3 di fiato.'},
-  {id:'vigna',at:37,skip:3,t:'Il taglio nella vigna',d:'Passi tra i filari: 3 tratti in meno, ma il cane della cascina ti sente di sicuro.'}];
+  {id:'guado',at:20*K,skip:5*K,t:'Il guado del fosso',d:'Tagli attraverso il fosso: un bel pezzo di strada in meno, ma l\'acqua gelata ti toglie metà del fiato.'},
+  {id:'vigna',at:37*K,skip:3*K,t:'Il taglio nella vigna',d:'Passi tra i filari: un pezzo di strada in meno, ma il cane della cascina ti sente di sicuro.'}];
 function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
-let S, msgs=[];
 
-function prefix(){ // righe fino al bivio
-  const z=[];const add=(k,n)=>{for(let i=0;i<n;i++)z.push(k)};
-  add('paese',5);add('campagna',28);add('crocevia',3);add('cascina',4);add('mais',8);add('quarti',2);
-  return z;
-}
-function suffix(){const z=[];for(let i=0;i<10;i++)z.push('centro');return z;}
-function branchRows(kind){const z=[];if(kind==='long'){for(let i=0;i<7;i++)z.push('cimitero');for(let i=0;i<7;i++)z.push('campo');}else for(let i=0;i<7;i++)z.push('salita');return z;}
+/* ---------- immagini ---------- */
+const IMG={};
+['s_bici.png','s_cane.png','s_fatuo.png','s_masca.png','s_buca.webp','i_pane.png','i_sale.png','i_sasso.png','t_asfalto.webp','t_ciottolo.webp','t_sterrato.webp','t_fosso.webp','t_mais.webp','t_vigna.webp','t_cimitero.webp']
+  .forEach(f=>{const i=new Image();i.src='art/'+f;IMG[f.split('.')[0]]=i;});
+const PAT={};
+function pat(k,ctx,size){if(PAT[k])return PAT[k];const i=IMG['t_'+k];if(!i||!i.complete||!i.naturalWidth)return null;const p=ctx.createPattern(i,'repeat');p.setTransform(new DOMMatrix().scale(size/i.naturalWidth));return PAT[k]=p;}
 
-function populate(from,to){ // pericoli per le righe [from,to)
+/* ---------- percorso ---------- */
+function prefix(){const z=[];const add=(k,n)=>{for(let i=0;i<n*K;i++)z.push(k)};
+  add('paese',4);add('campagna',28);add('crocevia',3);add('cascina',5);add('mais',8);add('quarti',2);return z;}
+function suffix(){const z=[];for(let i=0;i<8*K;i++)z.push('centro');return z;}
+function branchRows(kind){const z=[];if(kind==='long'){for(let i=0;i<7*K;i++)z.push('cimitero');for(let i=0;i<7*K;i++)z.push('campo');}else for(let i=0;i<5*K;i++)z.push('salita');return z;}
+
+function populate(from,to){
+  let last=-9;
   for(let r=from;r<to;r++){
-    const k=S.rows[r]; if(ZONES[k].lit||r<6)continue;
-    if(rnd()<(k==='salita'?.25:.16)*(S.night==='temporale'?1.6:1)) S.haz.push({t:'buca',r,l:R(LANES)});
-    if((k==='campagna'||k==='mais'||k==='cimitero')&&rnd()<(k==='cimitero'?.2:.07)) S.haz.push({t:'fatuo',r,l:R(LANES)});
-    if((k==='cascina'||k==='campo')&&rnd()<(k==='cascina'?.2:.12)*(S.night==='serena'?1.4:1)) S.haz.push({t:'cane',r,l:R(LANES),fed:false});
+    const k=S.rows[r]; if(ZONES[k].lit||r<12||r-last<3)continue;
+    const l=R(LANES);
+    if(rnd()<(k==='salita'?.12:.085)*(S.night==='temporale'?1.5:1)){S.haz.push({t:'buca',r,l});last=r;continue;}
+    if((k==='campagna'||k==='mais'||k==='cimitero')&&rnd()<(k==='cimitero'?.07:.025)){S.haz.push({t:'fatuo',r,l,x:l});last=r;continue;}
+    if((k==='cascina'||k==='campo')&&rnd()<(k==='cascina'?.09:.05)*(S.night==='serena'?1.5:1)){S.haz.push({t:'cane',r,l,x:l,fed:false});last=r;continue;}
   }
 }
 
-function newGame(daily){
-  SEED=daily?todayN()*7919+17:(Date.now()%1e9);const nk=Object.keys(NIGHTS)[R(5)];
-  S={night:nk,daily:!!daily,rows:prefix(),haz:[],p:{r:0,l:1},speed:0,turn:0,falls:0,stun:0,dark:0,items:{sasso:2,pane:1,sale:1},
-     masca:null,branch:null,over:false,forkAsked:false,aim:null,shrine:false,fiato:6,seen:{},got:{},took:{},pick:[],minorDone:{},mission:Object.keys(MISSIONS)[R(5)]};
+let S, msgs=[], msgT=0, PRESS=null, RUN=false, LASTSEED=0;
+function newGame(daily,seed){
+  SEED=seed!=null?seed:(daily?todayN()*7919+17:(Date.now()%1e9));LASTSEED=SEED;const isDaily=!!daily;
+  const nk=Object.keys(NIGHTS)[R(5)];
+  S={night:nk,daily:isDaily,rows:prefix(),haz:[],y:.5,lx:1,lt:1,v:0,t:0,falls:0,stun:0,dark:0,items:{sasso:2,pane:1,sale:1},
+     masca:null,branch:null,over:false,started:false,paused:false,shrine:false,fiato:6,seen:{},got:{},took:{},pick:[],minorDone:{},mission:Object.keys(MISSIONS)[R(5)],lastRow:0};
   populate(0,S.rows.length);
-  for(let r=8;r<S.rows.length-2;r+=7+R(4)){if(ZONES[S.rows[r]].lit)continue;const k=['borraccia','pane','sale','sasso','borraccia'][R(5)];S.pick.push({k,r,l:R(LANES)});}
-  if(S.mission==='forno')S.pick.push({k:'forno',r:3,l:R(LANES)});
-  msgs=['Missione: '+MISSIONS[S.mission].d+' '+NIGHTS[S.night].n+'. '+NIGHTS[S.night].d+' Sono le 23:00. A casa ti aspettano entro le 23:45. Pedala forte e la dinamo illumina lontano, ma il fiato finisce.'];
-  render();
+  for(let r=24;r<S.rows.length-6;r+=20+R(12)){if(ZONES[S.rows[r]].lit)continue;const k=['borraccia','pane','sale','sasso','borraccia'][R(5)];S.pick.push({k,r,l:R(LANES)});}
+  if(S.mission==='forno')S.pick.push({k:'forno',r:7,l:R(LANES)});
+  say('Missione: '+MISSIONS[S.mission].d,5);
+  document.getElementById('hold').classList.remove('hide');
+  hud(true);
 }
+function say(t,s){msgs=[t];msgT=s||3.2;const m=document.getElementById('msg');m.textContent=t;m.style.opacity=1;}
+function zone(r){return S.rows[Math.max(0,Math.min(Math.floor(r),S.rows.length-1))];}
+function lane(){return Math.round(S.lx);}
+function light(){ // quante righe davanti illumina la dinamo
+  if(S.dark>0)return 1.6;
+  let L=2.4+Math.max(0,(S.v-VC)/(VP-VC))*4.6;
+  if(ZONES[zone(S.y)].fog||S.night==='nebbia')L-=1.2;
+  if(S.night==='serena')L+=1.2;
+  return Math.max(1.4,L);
+}
+function litRow(r){const d=r+.5-S.y;if(ZONES[zone(r)].lit)return true;return d>-1&&d<=light();}
 
-function zone(r){return S.rows[Math.min(r,S.rows.length-1)];}
-function lightRange(){
-  if(ZONES[zone(S.p.r)].lit) return 6;
-  if(S.dark>0) return 1;
-  let L=Math.max(1,S.speed+1);
-  if(ZONES[zone(S.p.r)].fog||S.night==='nebbia') L=Math.max(1,L-1);
-  if(S.night==='serena')L++;
-  return L;
-}
-function litRow(r){
-  if(ZONES[zone(r)]&&ZONES[zone(r)].lit) return true;
-  return r>S.p.r && r<=S.p.r+lightRange() || r===S.p.r;
-}
-function maxSpeed(){if(ZONES[zone(S.p.r)].up||S.fiato<=0)return 1;return Math.min(3,S.fiato>=2?3:2);}
-function targets(){
-  if(S.over||S.stun>0) return [];
-  const o=[];const ms=maxSpeed();
-  for(let v=1;v<=ms;v++)for(let dl=-1;dl<=1;dl++){const l=S.p.l+dl,r=S.p.r+v;if(l<0||l>=LANES||r>=S.rows.length)continue;o.push({r,l,v});}
-  return o;
-}
-const hazAt=(r,l,t)=>S.haz.find(h=>h.r===r&&h.l===l&&(!t||h.t===t));
-
-/* ---------- il pedale: un solo controllo ---------- */
-const BAND=[0,1/3,2/3,1];
-function greenW(v){const up=S&&ZONES[zone(S.p.r)].up;return ({1:.15,2:.11,3:.075})[v]-(up?.03:0);}
-function padZones(){ // per fascia: centro, verde, rosso ai bordi
-  const o=[];for(let v=1;v<=3;v++){const lo=BAND[v-1],hi=BAND[v],c=(lo+hi)/2,w=greenW(v);o.push({v,lo,hi,g0:c-w/2,g1:c+w/2});}return o;}
-const RED=.035;
-function readPad(y){const z=padZones().find(z=>y>=z.lo&&y<=z.hi)||padZones()[2];
-  if(y-z.lo<RED&&z.v>1||z.hi-y<RED&&z.v<3)return{v:z.v,q:'miss'};
-  return{v:z.v,q:(y>=z.g0&&y<=z.g1)?'perfect':'ok'};}
-function drawPad(){
-  const ms=maxSpeed();const el=document.getElementById('pbands');let h='';
-  const col={1:['#14202e','#1c2a3a'],2:['#2a2616','#3a3218'],3:['#3a2410','#4a2c0c']};
-  for(const z of padZones()){const dis=z.v>ms;
-    h+=`<div style="bottom:${z.lo*100}%;height:${(z.hi-z.lo)*100}%;background:linear-gradient(0deg,${col[z.v][0]},${col[z.v][1]});${dis?'filter:grayscale(1) brightness(.45)':''}"><span class="lb" style="top:4px">${['','piano · 1','svelto · 2','a tutta · 3'][z.v]}${dis?' · senza fiato':''}</span></div>`;
-    if(!dis)h+=`<div style="bottom:${z.g0*100}%;height:${(z.g1-z.g0)*100}%;background:rgba(127,208,160,.5);box-shadow:inset 0 0 0 1.5px #7fd0a0"></div>`;
-    if(z.v<3)h+=`<div style="bottom:${(z.hi-RED)*100}%;height:${RED*2*100}%;background:rgba(255,90,78,.55)"></div>`;}
-  el.innerHTML=h;
-  const cols=document.querySelectorAll('#pcols div');
-  document.querySelectorAll('#plab span').forEach(c=>{const l=S.p.l+(+c.dataset.d);c.classList.toggle('no',l<0||l>=LANES);});
-  document.getElementById('pad').classList.toggle('off',!!(S.over||S.stun));
-}
-let PH=0,PT=0,PY=0;
-function padLoop(now){
-  const dt=PT?Math.min(.05,(now-PT)/1000):0;PT=now;
-  if(S&&!S.over&&!S.stun){const sp=.55+.22*(S.speed||0)+(ZONES[zone(S.p.r)].up?.15:0);PH+=dt*sp;PY=1-Math.abs((PH%2)-1);
-    document.getElementById('pline').style.bottom=(PY*100)+'%';
-    const v=readPad(PY).v;document.querySelectorAll('#board .mv').forEach(e=>e.setAttribute('stroke-opacity',+e.dataset.v===Math.min(v,maxSpeed())?'1':'.12'));}
-  requestAnimationFrame(padLoop);
-}
-requestAnimationFrame(padLoop);
-function pedal(d){
-  if(!S||S.over||S.stun)return;
-  let {v,q}=readPad(PY);const ms=maxSpeed();
-  if(v>ms){v=ms;if(q==='perfect')q='ok';}
-  let l=S.p.l+d;const pre=[];
-  if(d!==0&&q!=='perfect'){l=S.p.l;pre.push('Fuori dal verde: non riesci a sterzare, tiri dritto.');}
-  if(l<0||l>=LANES)l=S.p.l;
-  const r=Math.min(S.p.r+v,S.rows.length-1);if(r<=S.p.r)return;
-  doMove({r,l,v:r-S.p.r},q,pre);
-}
-function doMove(tg,q,pre){
-  q=q||'ok';
-  if(S.over)return;
-  msgs=pre||[];
-  if(q==='perfect')msgs.push('Pedalata perfetta: risparmi fiato.');
-  if(q==='miss'){msgs.push('Pedalata storta: la bici sbanda e la dinamo tremola.');S.dark=Math.max(S.dark,1);}
-  const from=S.p.r;
-  // percorso: corsia attuale per le righe intermedie, corsia scelta all'arrivo
-  for(let r=from+1;r<=tg.r;r++){
-    const l=r===tg.r?tg.l:S.p.l;
-    S.p.r=r;S.p.l=l;
-    const b=hazAt(r,l,'buca');
-    if(b&&tg.v>=2){S.falls++;S.stun=1;S.speed=0;msgs.push('Una buca! Cadi nel fango. Perdi un turno.');break;}
-    if(b)msgs.push('Prendi una buca piano: la bici sobbalza, ma tieni.');
-    const f=hazAt(r,l,'fatuo');
-    if(f){S.dark=2;S.haz.splice(S.haz.indexOf(f),1);msgs.push('Passi dentro un fuoco fatuo. La dinamo si spegne.');}
-    const pk=S.pick.find(q=>q.r===r&&q.l===l);
-    if(pk){S.pick.splice(S.pick.indexOf(pk),1);if(pk.k==='forno'){S.got.forno=true;S.items.pane++;msgs.push('Prendi la pagnotta dal forno: ancora calda.');}else if(pk.k==='borraccia'){S.fiato=Math.min(6,S.fiato+3);msgs.push('Una borraccia sul ciglio: riprendi fiato.');}else{S.items[pk.k]++;msgs.push({pane:'Un pezzo di pane in un sacchetto.',sale:'Un sacchetto di sale lasciato su un paracarro.',sasso:'Raccogli un sasso dalla strada.'}[pk.k]);}}
-    const c=S.haz.find(h=>h.t==='cane'&&!h.fed&&h.r===r&&h.l===l);
-    if(c){S.falls++;S.stun=1;S.speed=0;S.haz.splice(S.haz.indexOf(c),1);msgs.push('Il cane ti salta addosso. Cadi, poi scappa nei campi.');break;}
-    if(r>=S.rows.length-1)break;
+/* ---------- simulazione ---------- */
+function step(dt,pedal){
+  if(!S||S.over||S.paused||!S.started)return;
+  S.t+=dt;
+  const up=ZONES[zone(S.y)].up;
+  if(S.stun>0){S.stun-=dt;S.v=0;if(S.stun<=0)say('Ti rialzi e rimonti in sella.');}
+  else{
+    if(S.fiato<=0&&!S.tired){S.tired=true;say('Senza fiato: le gambe non spingono più. Lascia andare la bici finché non riprendi.');}
+    if(S.tired&&S.fiato>=2.5){S.tired=false;say('Hai ripreso fiato.');}
+    const go=pedal&&!S.tired;
+    const want=go?VP*(up?.8:1):(up?VC*.75:VC)*(S.tired?.8:1);
+    S.v+=Math.sign(want-S.v)*Math.min(Math.abs(want-S.v),(want>S.v?ACC:BRK)*dt);
+    if(go)S.fiato=Math.max(0,S.fiato-dt*(up?.85:.6));
+    else S.fiato=Math.min(6,S.fiato+dt*(up?.3:.45)*(S.tired&&pedal?.5:1));
+    // corsia
+    S.lx+=Math.sign(S.lt-S.lx)*Math.min(Math.abs(S.lt-S.lx),LANE_SPD*dt);
   }
-  if(!S.stun)S.speed=tg.v;
-  const up2=ZONES[zone(S.p.r)].up;
-  S.fiato=Math.max(0,Math.min(6,S.fiato+({1:up2?-1:1,2:-1,3:-2})[tg.v]+(q==='perfect'?1:q==='miss'?-1:0)));
-  if(S.fiato===0)msgs.push('Sei senza fiato: per un po\' vai solo piano.');
-  endTurn();
-}
-function wait(){
-  if(S.over)return;msgs=[];
-  if(S.stun>0){S.stun--;msgs.push('Ti rialzi e rimonti in sella.');}
-  else msgs.push('Ti fermi. La dinamo tace.');
-  S.fiato=Math.min(6,S.fiato+2);S.speed=0;endTurn(true);
-}
-
-function endTurn(stood){
-  S.turn++;
-  if(S.dark>0&&!stood)S.dark--; else if(S.dark>0)S.dark--;
-  // edicola
-  if(!S.shrine&&zone(S.p.r)==='crocevia'){S.shrine=true;S.items.sale++;msgs.push('All\'edicola qualcuno ha lasciato un sacchetto di sale. Lo prendi.');if(S.masca){S.masca.r=Math.max(0,S.masca.r-6);msgs.push('La masca resta indietro, lontana dalla lampada.');}}
-  // cani
-  for(const h of S.haz){if(h.t!=='cane'||h.fed)continue;
-    const dr=S.p.r-h.r;if(Math.abs(dr)>4)continue;
-    // davanti: si sposta sulla tua corsia per sbarrarti la strada; dietro: ti insegue
-    if(h.l!==S.p.l)h.l+=Math.sign(S.p.l-h.l); else if(dr>0)h.r+=Math.min(2,dr);
-    if(h.r===S.p.r&&h.l===S.p.l&&!S.stun){S.falls++;S.stun=1;S.speed=0;msgs.push('Un cane ti raggiunge e ti morde la caviglia. Cadi, e lui torna alla sua cascina.');h.gone=true;}}
+  if(S.dark>0)S.dark-=dt;
+  const y0=S.y;S.y=Math.min(S.y+S.v*dt,S.rows.length-.5);
+  // cani: scivolano verso di te quando sei vicino
+  for(const h of S.haz){
+    if(h.t==='cane'&&!h.fed){const d=h.r+.5-S.y;if(d<6&&d>-.5){h.x+=Math.sign(S.lx-h.x)*Math.min(Math.abs(S.lx-h.x),(S.night==='serena'?1.6:1.3)*dt);}
+      if(Math.abs(h.r+.5-S.y)<.45&&Math.abs(h.x-S.lx)<.55&&S.stun<=0){fall('Il cane ti salta addosso. Cadi, e lui scappa nei campi.');h.gone=true;}}
+    if(h.t==='fatuo'){h.ph=(h.ph||rnd()*6)+dt;h.x=Math.max(0,Math.min(LANES-1,h.l+Math.sin(h.ph*.9)*.7));
+      if(Math.abs(h.r+.5-S.y)<.4&&Math.abs(h.x-S.lx)<.5&&!h.gone){S.dark=3;h.gone=true;say('Passi dentro un fuoco fatuo. La dinamo si spegne.');}}
+  }
+  // righe attraversate
+  for(let r=Math.floor(y0)+1;r<=Math.floor(S.y);r++)cross(r);
   S.haz=S.haz.filter(h=>!h.gone);
-  // fuochi fatui alla deriva
-  for(const h of S.haz)if(h.t==='fatuo'&&rnd()<.5){h.l=Math.max(0,Math.min(LANES-1,h.l+(R(3)-1)));}
+  // edicola
+  if(!S.shrine&&zone(S.y)==='crocevia'){S.shrine=true;S.items.sale++;say('All\'edicola qualcuno ha lasciato un sacchetto di sale. Lo prendi.');if(S.masca)S.masca.r=Math.max(0,S.masca.r-14);}
   // masca
-  if(!S.masca&&S.p.r>=14&&!ZONES[zone(S.p.r)].lit){S.masca={r:S.p.r-6,stop:0};msgs.push('Dietro di te, nel buio, qualcosa si mette a correre.');}
-  if(S.masca&&!S.over){
-    if(ZONES[zone(S.p.r)].lit&&zone(S.p.r)==='centro'){S.masca=null;msgs.push('Le luci del paese. La masca si ferma alle prime case.');}
-    else if(S.masca.stop>0)S.masca.stop--;
-    else{S.masca.r+=(S.night==='luna'&&S.speed<=1)?3:2;if(S.masca.r>=S.p.r){return lose('La masca ti ha preso.');}}
+  if(!S.masca&&S.y>=14*K&&!ZONES[zone(S.y)].lit){S.masca={r:S.y-9,stop:0};say('Dietro di te, nel buio, qualcosa si mette a correre. È la masca: pedala, o col sale la fermi.',4.5);}
+  if(S.masca){
+    if(zone(S.y)==='centro'){S.masca=null;say('Le luci del paese. La masca si ferma alle prime case.');}
+    else if(S.masca.stop>0)S.masca.stop-=dt;
+    else{let ms=(S.night==='luna'?2.15:1.9);if(ZONES[zone(S.y)].up)ms*=.75;S.masca.r+=ms*dt;
+      if(S.masca.stop<=0)S.masca.r=Math.max(S.masca.r,S.y-11);
+      if(S.masca.r>=S.y-.3)return lose('La masca ti ha preso.');}
   }
-  for(const m of MINOR){if(!S.minorDone[m.id]&&!S.branch&&S.p.r>=m.at-1&&S.p.r<m.at+2){S.minorDone[m.id]=true;S.pendingMinor=m;render();showMinor(m);return;}}
-  // bivio
-  if(!S.branch&&S.p.r>=S.rows.length-1&&zone(S.p.r)==='quarti'){render();document.getElementById('ovFork').classList.remove('hide');return;}
-  if(S.branch&&S.p.r>=S.rows.length-1)return win();
-  hints();render();
+  // scorciatoie e bivio
+  for(const m of MINOR){if(!S.minorDone[m.id]&&!S.branch&&S.y>=m.at-2&&S.y<m.at+2){S.minorDone[m.id]=true;S.pendingMinor=m;pauseFor('ovMinor');showMinor(m);return;}}
+  if(!S.branch&&S.y>=S.rows.length-1.5){pauseFor('ovFork');return;}
+  if(S.branch&&S.y>=S.rows.length-1)return win();
+  hints();
+}
+function fall(t){S.falls++;S.stun=1.3;S.v=0;say(t);}
+function cross(r){
+  const l=lane();
+  const b=S.haz.find(h=>h.t==='buca'&&h.r===r&&h.l===l);
+  if(b){if(S.v>2.1&&S.stun<=0)fall('Una buca presa forte! Cadi nel fango.');else if(!S.seen.bucapiano){S.seen.bucapiano=1;say('Prendi una buca piano: la bici sobbalza, ma tieni.');}}
+  const pk=S.pick.find(q=>q.r===r&&q.l===l);
+  if(pk){S.pick.splice(S.pick.indexOf(pk),1);
+    if(pk.k==='forno'){S.got.forno=true;S.items.pane++;say('Prendi la pagnotta dal forno: ancora calda.');}
+    else if(pk.k==='borraccia'){S.fiato=Math.min(6,S.fiato+3);say('Una borraccia sul ciglio: riprendi fiato.');}
+    else{S.items[pk.k]++;say({pane:'Un pezzo di pane in un sacchetto.',sale:'Un sacchetto di sale su un paracarro.',sasso:'Raccogli un sasso dalla strada.'}[pk.k]);}}
 }
 function hints(){
-  const H=(k,t)=>{if(!S.seen[k]){S.seen[k]=1;msgs.push(t);}};
-  const vis=S.haz.filter(h=>litRow(h.r)&&h.r>S.p.r&&h.r<=S.p.r+4);
-  if(vis.some(h=>h.t==='buca'))H('buca','Una buca davanti. Se la prendi a 2 o 3 tratti cadi: cambia corsia o passaci piano.');
-  if(vis.some(h=>h.t==='cane'))H('cane','Un cane! Ti taglia la strada. Lanciagli il pane o un sasso, sotto.');
-  if(S.haz.some(h=>h.t==='fatuo'&&h.r>S.p.r&&h.r<=S.p.r+6))H('fatuo','Quella luce azzurra è un fuoco fatuo: non passarci in mezzo, ti spegne la dinamo.');
-  if(S.masca)H('masca','La masca ti segue. Se vai piano o ti fermi, ti raggiunge. Il sale la ferma.');
-  if(S.fiato<=2&&S.fiato>0)H('fiato','Il fiato cala. Un tratto piano lo recupera, fermarsi di più.');
+  const H=(k,t)=>{if(!S.seen[k]){S.seen[k]=1;say(t,3.8);return true;}};
+  const vis=S.haz.filter(h=>litRow(h.r)&&h.r+.5>S.y&&h.r<S.y+5);
+  if(vis.some(h=>h.t==='buca')&&H('buca','Una buca! Presa forte ti fa cadere: scansala o stacca il pollice.'))return;
+  if(vis.some(h=>h.t==='cane')&&H('cane','Un cane! Ti taglia la strada. Lanciagli il pane o un sasso, qui sotto.'))return;
+  if(S.haz.some(h=>h.t==='fatuo'&&h.r>S.y&&h.r<S.y+7)&&H('fatuo','Quella luce azzurra è un fuoco fatuo: non passarci in mezzo.'))return;
 }
-function showMinor(m){
-  document.getElementById('mT').textContent=m.t;document.getElementById('mD').textContent=m.d;
-  document.getElementById('ovMinor').classList.remove('hide');
-}
+function pauseFor(id){S.paused=true;PRESS=null;document.getElementById(id).classList.remove('hide');}
+function resume(){S.paused=false;}
+function showMinor(m){document.getElementById('mT').textContent=m.t;document.getElementById('mD').textContent=m.d;}
 function takeMinor(yes){
   document.getElementById('ovMinor').classList.add('hide');
-  const m=S.pendingMinor;S.pendingMinor=null;msgs=[];
+  const m=S.pendingMinor;S.pendingMinor=null;
   if(yes){
-    const from=S.p.r+1,to=from+m.skip;
+    const from=Math.floor(S.y)+2,to=from+m.skip;
     S.rows.splice(from,m.skip);
     S.haz=S.haz.filter(h=>h.r<from||h.r>=to).map(h=>{if(h.r>=to)h.r-=m.skip;return h;});
     S.pick=S.pick.filter(q=>q.r<from||q.r>=to).map(q=>{if(q.r>=to)q.r-=m.skip;return q;});
+    if(S.masca)S.masca.r=Math.min(S.masca.r,S.y-6);
     S.took[m.id]=true;
-    if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-3);msgs.push('Sei nel fosso fino alle caviglie. Esci gelato, senza fiato.');}
-    if(m.id==='vigna'){S.haz.push({t:'cane',r:S.p.r+2,l:S.p.l,fed:false});msgs.push('Tra i filari un cane abbaia: ti ha sentito.');}
-  } else msgs.push('Resti sulla strada.');
-  hints();render();
+    if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-3);say('Sei nel fosso fino alle caviglie. Esci gelato, senza fiato.');}
+    if(m.id==='vigna'){const r=Math.floor(S.y)+6;S.haz=S.haz.filter(h=>Math.abs(h.r-r)>1);S.haz.push({t:'cane',r,l:lane(),x:lane(),fed:false});say('Tra i filari un cane abbaia: ti ha sentito.');}
+  } else say('Resti sulla strada.');
+  resume();
 }
 function choose(kind){
   document.getElementById('ovFork').classList.add('hide');
   S.branch=kind;const a=S.rows.length;
   S.rows=S.rows.concat(branchRows(kind));const b=S.rows.length;
   S.rows=S.rows.concat(suffix());
-  populate(a,b);
-  msgs=[kind==='long'?'Prendi il giro largo. Il muro del cimitero è a sinistra.':'Prendi la salita. Le gambe bruciano, la luce cala.'];
-  render();
+  populate(a+3,b);
+  say(kind==='long'?'Prendi il giro largo. Il muro del cimitero è a sinistra.':'Prendi la salita. Le gambe bruciano.');
+  resume();
 }
-
+function dogsNear(){return S.haz.filter(h=>h.t==='cane'&&!h.fed&&h.r+.5-S.y>-1&&h.r-S.y<7&&litRow(h.r)).sort((a,b)=>a.r-b.r);}
 function useItem(k){
-  if(S.over||!S.items[k])return;
-  msgs=[];
-  if(k==='pane'&&S.night==='fame'&&S.masca&&!S.haz.some(h=>h.t==='cane'&&!h.fed&&Math.abs(h.r-S.p.r)<=4)){S.items.pane--;S.masca.stop=3;S.masca.r=Math.max(0,S.masca.r-3);msgs.push('Getti il pane alla masca. Si ferma a mangiarlo.');return render();}
+  if(!S||S.over||S.paused||!S.items[k])return;
+  if(k==='pane'&&S.night==='fame'&&S.masca&&!dogsNear().length){S.items.pane--;S.masca.stop=5;S.masca.r=S.y-16;say('Getti il pane alla masca. Si ferma a mangiarlo.');return hud(true);}
   if(k==='sale'){
-    if(!S.masca){msgs.push('Non c\'è niente da fermare, per ora.');return render();}
-    S.items.sale--;S.masca.stop=3;S.masca.r=Math.max(0,S.masca.r-3);msgs.push('Getti il sale dietro di te. La masca si ferma a contarlo.');return render();
+    if(!S.masca){say('Non c\'è niente da fermare, per ora.');return;}
+    S.items.sale--;S.masca.stop=5;S.masca.r=S.y-16;say('Getti il sale dietro di te. La masca resta indietro a contarlo.');return hud(true);
   }
-  const dogs=S.haz.filter(h=>h.t==='cane'&&!h.fed&&Math.abs(h.r-S.p.r)<=4&&litRow(h.r));
-  if(!dogs.length){msgs.push('Nessun cane a tiro.');return render();}
-  dogs.sort((a,b)=>Math.abs(a.r-S.p.r)-Math.abs(b.r-S.p.r));const d=dogs[0];
+  const d=dogsNear()[0];
+  if(!d){say('Nessun cane a tiro.');return;}
   S.items[k]--;
-  if(k==='pane'){d.fed=true;msgs.push('Lanci il pane. Il cane si ferma a mangiarlo.');}
-  else{S.haz.splice(S.haz.indexOf(d),1);msgs.push('Il sasso rimbalza sull\'asfalto. Il cane scappa nei campi.');}
-  render();
+  if(k==='pane'){d.fed=true;say('Lanci il pane. Il cane si ferma a mangiarlo.');}
+  else{d.gone=true;S.haz=S.haz.filter(h=>!h.gone);say('Il sasso rimbalza sull\'asfalto. Il cane scappa nei campi.');}
+  hud(true);
 }
 
-function clockStr(){const m=23*60+S.turn;return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
-function lose(t){S.over=true;render();end(false,t);}
-function win(){S.over=true;render();end(true);}
+function minutes(){return Math.floor(S.t*MIN_PER_S);}
+function clockStr(){const m=23*60+minutes();return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function lose(t){S.over=true;PRESS=null;end(false,t);}
+function win(){S.over=true;PRESS=null;end(true);}
 function end(ok,why){
-  const late=S.turn>45; const mis=ok&&MISSIONS[S.mission].ok(); const st=ok?(late?0:1)+(S.falls<=1?1:0)+(S.turn<=38?1:0)+(mis?1:0):0;
-  document.getElementById('endT').textContent=ok?(S.turn>45?'Arrivi, ma in ritardo':'A casa in tempo'):'Non sei arrivato';
+  const mn=minutes(),late=mn>45,mis=ok&&MISSIONS[S.mission].ok();
+  const st=ok?(late?0:1)+(S.falls<=1?1:0)+(mn<=40?1:0)+(mis?1:0):0;
+  document.getElementById('endT').textContent=ok?(late?'Arrivi, ma in ritardo':'A casa in tempo'):'Non sei arrivato';
   document.getElementById('endS').textContent=ok?'★'.repeat(st)+'☆'.repeat(4-st):'';
-  document.getElementById('endP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+NIGHTS[S.night].n+'. Missione «'+MISSIONS[S.mission].n+'»: '+(ok&&MISSIONS[S.mission].ok()?'compiuta. ':'non compiuta. ')+(ok
-    ?`Arrivi in fondo a via Marconi alle ${clockStr()}. ${S.branch==='long'?'Hai fatto il giro largo.':'Hai preso la salita.'} Cadute: ${S.falls}. Ti restano ${S.items.sasso} sassi, ${S.items.pane} pane, ${S.items.sale} sale.`
-    :`${why} Eri a ${Math.round((S.rows.length-1-S.p.r)*0.1*10)/10} km dall'arrivo, alle ${clockStr()}.`);
-  setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),400);
+  const left=((S.rows.length-1-S.y)/(10*K)*1.0).toFixed(1).replace('.',',');
+  document.getElementById('endP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+NIGHTS[S.night].n+'. Missione «'+MISSIONS[S.mission].n+'»: '+(mis?'compiuta. ':'non compiuta. ')+(ok
+    ?`Arrivi in fondo a via Marconi alle ${clockStr()}. ${S.branch==='long'?'Hai fatto il giro largo.':'Hai preso la salita.'} Cadute: ${S.falls}.`
+    :`${why} Eri a ${left} km dall'arrivo, alle ${clockStr()}.`);
+  setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),600);
 }
 
 /* ---------- disegno ---------- */
-function render(){
-  const z=zone(S.p.r), Z=ZONES[z];
-  document.getElementById('scene').style.backgroundImage=`url(${ART[z]})`;
-  document.getElementById('zoneName').textContent=Z.n;
-  document.getElementById('zoneSub').textContent=Z.s;
-  document.getElementById('mission').textContent='Missione: '+MISSIONS[S.mission].n+(MISSIONS[S.mission].ok()&&S.mission!=='nocadute'&&S.mission!=='sale'?' ✓':'');
-  document.getElementById('goalTxt').textContent='Entro le 23:45 · '+NIGHTS[S.night].n;
-  const ck=document.getElementById('clock');ck.textContent=clockStr();ck.classList.toggle('late',S.turn>=38);
-  document.getElementById('fiato').innerHTML=Array.from({length:6},(_,i)=>`<b class="${i<S.fiato?(S.fiato<=2?'low':'on'):''}"></b>`).join('');
-  const left=S.branch?S.rows.length-1-S.p.r:(S.rows.length-1-S.p.r)+10+7;
-  document.getElementById('dist').textContent=`mancano ${(left*0.1).toFixed(1).replace('.',',')} km`;
-  const W=LANES*LW+2*40, rows=VIEW_AHEAD+VIEW_BEHIND+1, H=rows*RH;
-  const top=S.p.r+VIEW_AHEAD; // riga in cima
-  const Y=r=>(top-r)*RH, X=l=>40+l*LW;
-  const tg=targets();
-  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-  <defs><radialGradient id="g"><stop offset="0" stop-color="#f3c76a" stop-opacity=".55"/><stop offset="1" stop-color="#f3c76a" stop-opacity="0"/></radialGradient>
-  <radialGradient id="gf"><stop offset="0" stop-color="#9fe8ff" stop-opacity=".9"/><stop offset="1" stop-color="#9fe8ff" stop-opacity="0"/></radialGradient>
-  ${['asfalto','ciottolo','sterrato'].map(k=>`<pattern id="p_${k}" patternUnits="userSpaceOnUse" width="242" height="242" x="36" patternTransform="translate(0 ${(top*RH)%242})"><image href="art/t_${k}.webp" width="242" height="242"/></pattern>`).join('')}${['fosso','mais','vigna','cimitero'].map(k=>`<pattern id="f_${k}" patternUnits="userSpaceOnUse" width="120" height="120" patternTransform="translate(0 ${(top*RH)%120})"><image href="art/t_${k}.webp" width="120" height="120"/></pattern>`).join('')}<radialGradient id="gr"><stop offset="0" stop-color="#ff3b2f" stop-opacity=".55"/><stop offset="1" stop-color="#ff3b2f" stop-opacity="0"/></radialGradient></defs>`;
-  for(let r=top;r>top-rows;r--){
-    if(r<0)continue; const y=Y(r);
-    if(r>=S.rows.length){s+=`<rect x="0" y="${y}" width="${W}" height="${RH}" fill="#000"/>`;continue;}
-    const k=S.rows[r];
-    const field={paese:'#1a1712',campagna:'#10140f',crocevia:'#13150f',cascina:'#141a10',mais:'#18170c',quarti:'#141a10',cimitero:'#101214',campo:'#0f1610',salita:'#16140f',centro:'#1a1712'}[k];
-    const sd=SIDE[k];
-    s+=`<rect x="0" y="${y}" width="${W}" height="${RH}" fill="${field}"/><rect x="0" y="${y}" width="36" height="${RH}" fill="url(#f_${sd[0]})"/><rect x="${W-36}" y="${y}" width="36" height="${RH}" fill="url(#f_${sd[1]})"/>`;
-    s+=`<rect x="36" y="${y}" width="${LANES*LW+8}" height="${RH}" fill="url(#p_${ROAD[k]})"/>`;
-    if(ZONES[k].lit&&r%3===1)s+=`<circle cx="${W-20}" cy="${y+RH/2}" r="26" fill="url(#g)"/><rect x="${W-22}" y="${y+RH/2-14}" width="4" height="28" fill="#555"/>`;
-    if(k==='crocevia'&&r===S.rows.indexOf('crocevia')+1)s+=`<rect x="6" y="${y+8}" width="24" height="${RH-14}" rx="3" fill="#5a5040"/><circle cx="18" cy="${y+RH/2}" r="16" fill="url(#g)"/>`;
-    if(false)for(let l=1;l<LANES;l++)s+=`<line x1="${X(l)}" y1="${y}" x2="${X(l)}" y2="${y+RH}" stroke="#3a372f" stroke-dasharray="6 10"/>`;
-    if(k==='salita')s+=`<text x="${W/2}" y="${y+RH/2+5}" text-anchor="middle" font-size="16" fill="#4a463c">▲</text>`;
-    // buio
-    if(!litRow(r))s+=`<rect x="0" y="${y}" width="${W}" height="${RH}" fill="#000" opacity="${S.masca&&r<S.p.r?.8:.74}"/>`;
-    else if(r>S.p.r&&!ZONES[k].lit)s+=`<rect x="36" y="${y}" width="${LANES*LW+8}" height="${RH}" fill="#f3c76a" opacity="${.16-(r-S.p.r)*.025}"/>`;
-  }
-  // mosse
-  for(const t of tg){s+=`<rect class="mv" data-r="${t.r}" data-l="${t.l}" data-v="${t.v}" x="${X(t.l)+5}" y="${Y(t.r)+5}" width="${LW-10}" height="${RH-10}" rx="10" fill="#fff" fill-opacity=".04" stroke="${t.v===1?'#fff':'#f3c76a'}" stroke-opacity="${t.v===1?.35:.5}" ${t.v===3?'stroke-dasharray="5 4"':''}/>`;}
-  // pericoli
-  for(const h of S.haz){if(h.r<top-rows||h.r>top)continue;const cx=X(h.l)+LW/2,cy=Y(h.r)+RH/2,vis=litRow(h.r);
-    if(h.t==='fatuo'){s+=`<circle cx="${cx}" cy="${cy}" r="24" fill="url(#gf)"/><image href="art/s_fatuo.png" x="${cx-22}" y="${cy-24}" width="44" height="48"/>`;continue;}
-    if(!vis)continue;
-    if(h.t==='buca'&&!(S.night==='temporale'&&h.r>S.p.r+1))s+=`<image href="art/s_buca.webp" x="${cx-26}" y="${cy-22}" width="52" height="44" preserveAspectRatio="xMidYMid slice"/>`;
-    if(h.t==='cane')s+=`<circle cx="${cx}" cy="${cy}" r="24" fill="${h.fed?'#2a2a2a':'#3a0806'}" stroke="${h.fed?'#555':'#ff3b2f'}" stroke-width="3"/><g transform="rotate(180 ${cx} ${cy})" opacity="${h.fed?.5:1}"><image href="art/s_cane.png" x="${cx-24}" y="${cy-24}" width="48" height="48"/></g>`;
-  }
-  for(const q of S.pick){if(q.r<top-rows||q.r>top||!litRow(q.r))continue;const cx=X(q.l)+LW/2,cy=Y(q.r)+RH/2;const img={forno:'i_pane.png',pane:'i_pane.png',sale:'i_sale.png',sasso:'i_sasso.png',borraccia:null}[q.k];
-    s+=`<circle cx="${cx}" cy="${cy}" r="19" fill="#5a4a1c" stroke="#f0c75a" stroke-width="2.5"/>`+(img?`<image href="art/${img}" x="${cx-15}" y="${cy-15}" width="30" height="30"/>`:`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="16" fill="#cfe8ff">💧︎</text>`);}
-  // masca
-  if(S.masca&&S.masca.r>=top-rows){const y=Y(Math.max(S.masca.r,top-rows+1));
-    s+=`<ellipse cx="${W/2}" cy="${y+RH/2}" rx="${W/2}" ry="${RH*0.9}" fill="url(#gr)"/><text x="${W/2}" y="${y+RH/2+6}" text-anchor="middle" font-size="12" fill="#ffb4a8" letter-spacing="2" dx="70">LA MASCA${S.masca.stop?' · ferma':''}</text><image href="art/s_masca.png" x="${W/2-26}" y="${y-6}" width="52" height="52"/>`;}
-  // tu
-  {const cx=X(S.p.l)+LW/2,cy=Y(S.p.r)+RH/2,L=lightRange();
-   if(!ZONES[z].lit)s+=`<path d="M${cx-10} ${cy-12} L${cx-LW*0.9} ${cy-RH*L} L${cx+LW*0.9} ${cy-RH*L} L${cx+10} ${cy-12} Z" fill="#f3c76a" opacity=".07"/>`;
-   s+=`<circle cx="${cx}" cy="${cy}" r="25" fill="#1f4f99" stroke="#8cc4ff" stroke-width="3"/><image href="art/s_bici.png" x="${cx-26}" y="${cy-28}" width="52" height="52" opacity="${S.dark>0?.6:1}"/>`;
-   if(S.stun)s+=`<text x="${cx}" y="${cy+40}" text-anchor="middle" font-size="12" fill="#ff8a7e">a terra</text>`;}
-  // bivio / arrivo segnati
-  const fi=S.branch?-1:S.rows.length-1; if(fi>=top-rows&&fi<=top)s+=`<text x="${W/2}" y="${Y(fi)+16}" text-anchor="middle" font-size="12" fill="#ffe2a0" letter-spacing="2">IL BIVIO</text>`;
-  if(S.branch){const ai=S.rows.length-1;if(ai<=top)s+=`<rect x="${W/2-14}" y="${Y(ai)+8}" width="28" height="${RH-14}" fill="#8a8170"/><text x="${W/2}" y="${Y(ai)+RH/2+30}" text-anchor="middle" font-size="11" fill="#ffe2a0" letter-spacing="2">MONUMENTO</text>`;}
-  s+='</svg>';
-  const b=document.getElementById('board');b.innerHTML=s;
-  drawPad();
-  document.getElementById('msg').textContent=msgs.join(' ');
-  const bar=document.getElementById('bar');
-  bar.innerHTML=[['sasso','Sasso'],['pane','Pane'],['sale','Sale']].map(([k,n])=>`<button data-k="${k}" ${!S.items[k]||S.over?'disabled':''}><img src="art/i_${k}.png" alt="" style="width:26px;height:26px"> ${n} ×${S.items[k]}</button>`).join('');
-  bar.querySelectorAll('button').forEach(x=>x.addEventListener('click',()=>useItem(x.dataset.k)));
-  const bs=document.getElementById('bStop');bs.textContent=S.stun?'Rialzati':'Fermati';bs.disabled=S.over;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');let CW=0,CH=0,SC=1,DPR=1;
+function resize(){const b=document.getElementById('board');DPR=Math.min(2,window.devicePixelRatio||1);CW=b.clientWidth;CH=b.clientHeight;cv.width=CW*DPR;cv.height=CH*DPR;SC=CW/W0;for(const k in PAT)delete PAT[k];}
+window.addEventListener('resize',resize);
+let lastZone=null,hudT=0;
+function hud(force){
+  const z=zone(S.y);
+  if(z!==lastZone){lastZone=z;document.getElementById('scene').style.backgroundImage=`url(${ART[z]})`;document.getElementById('zoneName').textContent=ZONES[z].n;document.getElementById('zoneSub').textContent=ZONES[z].s;}
+  document.getElementById('mission').textContent='Missione: '+MISSIONS[S.mission].n+(MISSIONS[S.mission].ok()&&['forno','largo','guado'].includes(S.mission)?' ✓':'');
+  const ck=document.getElementById('clock');ck.textContent=clockStr();ck.classList.toggle('late',minutes()>=40);
+  const f=document.getElementById('fiato');f.firstChild.style.width=(S.fiato/6*100)+'%';f.classList.toggle('low',S.fiato<2||!!S.tired);
+  const left=S.branch?S.rows.length-1-S.y:(S.rows.length-1-S.y)+(8*K)+(7*K);
+  document.getElementById('dist').textContent=`mancano ${(left/(10*K)).toFixed(1).replace('.',',')} km`;
+  if(force){const bar=document.getElementById('bar');const dn=S.started&&!S.over&&dogsNear().length,mk=S.started&&S.masca;
+    bar.innerHTML=[['sasso','Sasso'],['pane','Pane'],['sale','Sale']].map(([k,n])=>`<button data-k="${k}" class="${(k==='sale'&&mk)||(k!=='sale'&&dn)?'ready':''}" ${!S.items[k]||S.over?'disabled':''}><img src="art/i_${k}.png" alt="" style="width:28px;height:28px"> ${n} ×${S.items[k]}</button>`).join('');
+    bar.querySelectorAll('button').forEach(x=>x.addEventListener('pointerdown',e=>{e.preventDefault();useItem(x.dataset.k);}));}
 }
+function draw(){
+  if(!CW)resize();
+  ctx.setTransform(DPR*SC,0,0,DPR*SC,0,0);
+  const H=CH/SC, py=H-RH*1.9;
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W0,H);
+  const rTop=Math.floor(S.y+(py/RH))+1, rBot=Math.floor(S.y-(H-py)/RH)-1;
+  const Yr=r=>py-(r+1-S.y)*RH; // y dello schermo del bordo alto della riga r
+  const X=l=>40+l*LW;
+  ctx.save();ctx.translate(0,py+S.y*RH); // coordinate mondo: riga r in y=-(r+1)*RH
+  for(let r=rBot;r<=rTop;r++){
+    if(r<0)continue;const y=-(r+1)*RH;
+    if(r>=S.rows.length){ctx.fillStyle='#000';ctx.fillRect(0,y,W0,RH+1);continue;}
+    const k=S.rows[r];
+    ctx.fillStyle=FIELD[k];ctx.fillRect(0,y,W0,RH+1);
+    const sd=SIDE[k],pl=pat(sd[0],ctx,120),pr=pat(sd[1],ctx,120),pd=pat(ROAD[k],ctx,242);
+    if(pl){ctx.fillStyle=pl;ctx.fillRect(0,y,36,RH+1);}if(pr){ctx.fillStyle=pr;ctx.fillRect(W0-36,y,36,RH+1);}
+    if(pd){ctx.fillStyle=pd;ctx.fillRect(36,y,LANES*LW+8,RH+1);}
+    if(ZONES[k].lit&&r%9===4){const g=ctx.createRadialGradient(W0-20,y+RH/2,0,W0-20,y+RH/2,30);g.addColorStop(0,'rgba(243,199,106,.55)');g.addColorStop(1,'rgba(243,199,106,0)');ctx.fillStyle=g;ctx.fillRect(W0-50,y-4,50,RH+8);ctx.fillStyle='#555';ctx.fillRect(W0-22,y+RH/2-14,4,28);}
+    if(k==='salita'&&r%3===0){ctx.fillStyle='#4a463c';ctx.font='16px sans-serif';ctx.textAlign='center';ctx.fillText('▲',W0/2,y+RH/2+5);}
+  }
+  ctx.restore();
+  // oggetti e pericoli (coordinate schermo)
+  const cxL=x=>X(x)+LW/2, cyR=r=>Yr(r)+RH/2;
+  for(const q of S.pick){if(q.r<rBot||q.r>rTop||!litRow(q.r))continue;const cx=cxL(q.l),cy=cyR(q.r);
+    ctx.beginPath();ctx.arc(cx,cy,19,0,7);ctx.fillStyle='#5a4a1c';ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#f0c75a';ctx.stroke();
+    const im={forno:'i_pane',pane:'i_pane',sale:'i_sale',sasso:'i_sasso'}[q.k];
+    if(im&&IMG[im].complete)ctx.drawImage(IMG[im],cx-15,cy-15,30,30);else{ctx.fillStyle='#cfe8ff';ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('💧',cx,cy+6);}}
+  for(const h of S.haz){if(h.r<rBot||h.r>rTop)continue;const cy=cyR(h.r);
+    if(h.t==='fatuo'){const cx=cxL(h.x);const g=ctx.createRadialGradient(cx,cy,0,cx,cy,28);g.addColorStop(0,'rgba(159,232,255,.85)');g.addColorStop(1,'rgba(159,232,255,0)');ctx.fillStyle=g;ctx.fillRect(cx-30,cy-30,60,60);if(IMG.s_fatuo.complete)ctx.drawImage(IMG.s_fatuo,cx-22,cy-24,44,48);continue;}
+    if(!litRow(h.r))continue;
+    if(h.t==='buca'){if(S.night==='temporale'&&h.r+.5-S.y>1.8)continue;const cx=cxL(h.l);if(IMG.s_buca.complete)ctx.drawImage(IMG.s_buca,cx-28,cy-22,56,44);}
+    if(h.t==='cane'){const cx=cxL(h.x);ctx.beginPath();ctx.arc(cx,cy,24,0,7);ctx.fillStyle=h.fed?'#2a2a2a':'#3a0806';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=h.fed?'#555':'#ff3b2f';ctx.stroke();
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.PI);ctx.globalAlpha=h.fed?.5:1;if(IMG.s_cane.complete)ctx.drawImage(IMG.s_cane,-24,-24,48,48);ctx.restore();}
+  }
+  // buio
+  const L=light();
+  for(let r=rBot;r<=rTop;r++){if(r<0||r>=S.rows.length)continue;const d=r+.5-S.y;let a=0;
+    if(ZONES[S.rows[r]].lit)a=0;else if(d>0)a=Math.max(0,Math.min(1,(d-L+.5)))*.8;else if(d<-1)a=S.masca?.75:.55;
+    if(a>0){ctx.fillStyle=`rgba(0,0,0,${a})`;ctx.fillRect(0,Yr(r),W0,RH+.5);}}
+  // fascio della dinamo
+  const bx=cxL(S.lx);
+  if(!ZONES[zone(S.y)].lit){const g=ctx.createLinearGradient(0,py,0,py-L*RH);g.addColorStop(0,`rgba(243,199,106,${S.dark>0?.05:.16})`);g.addColorStop(1,'rgba(243,199,106,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(bx-10,py-12);ctx.lineTo(bx-LW*.95,py-L*RH);ctx.lineTo(bx+LW*.95,py-L*RH);ctx.lineTo(bx+10,py-12);ctx.closePath();ctx.fill();}
+  // masca
+  if(S.masca){const yy=py+(S.y-S.masca.r)*RH;if(yy<H+RH){const g=ctx.createRadialGradient(W0/2,yy,0,W0/2,yy,W0*.55);g.addColorStop(0,'rgba(255,59,47,.6)');g.addColorStop(1,'rgba(255,59,47,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,yy-RH*1.2,W0,RH*2.4);if(IMG.s_masca.complete)ctx.drawImage(IMG.s_masca,W0/2-26,yy-26,52,52);
+    ctx.fillStyle='#ffb4a8';ctx.font='600 11px Inter,sans-serif';ctx.textAlign='left';ctx.fillText('LA MASCA'+(S.masca.stop>0?' · ferma':''),W0/2+34,yy+4);}}
+  // tu
+  ctx.beginPath();ctx.arc(bx,py,25,0,7);ctx.fillStyle=PRESS&&!S.tired?'#2a5fb0':'#1f4f99';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=S.stun>0?'#ff8a7e':'#8cc4ff';ctx.stroke();
+  ctx.save();ctx.globalAlpha=S.dark>0?.6:1;ctx.translate(bx,py);if(S.stun>0)ctx.rotate(1.2);if(IMG.s_bici.complete)ctx.drawImage(IMG.s_bici,-26,-28,52,52);ctx.restore();
+  if(S.stun>0){ctx.fillStyle='#ff8a7e';ctx.font='12px Inter,sans-serif';ctx.textAlign='center';ctx.fillText('a terra',bx,py+42);}
+  // segni
+  ctx.textAlign='center';ctx.font='600 12px Inter,sans-serif';ctx.fillStyle='#ffe2a0';
+  if(!S.branch){const fi=S.rows.length-1;if(fi<=rTop)ctx.fillText('IL BIVIO',W0/2,Yr(fi)+16);}
+  else{const ai=S.rows.length-1;if(ai<=rTop){ctx.fillStyle='#8a8170';ctx.fillRect(W0/2-14,Yr(ai)+8,28,RH-14);ctx.fillStyle='#ffe2a0';ctx.fillText('MONUMENTO',W0/2,Yr(ai)+RH+12);}}
+  for(const m of MINOR){if(!S.branch&&!S.minorDone[m.id]&&m.at<=rTop&&m.at>=rBot){ctx.fillStyle='#ffe2a0';ctx.fillText(m.id==='guado'?'IL GUADO →':'← LA VIGNA',W0/2,Yr(m.at)+16);}}
+}
+/* ---------- input: un solo pollice ---------- */
+const board=document.getElementById('board');
+function laneAt(x){const r=board.getBoundingClientRect();const u=(x-r.left)/SC;return u<40+LW?0:u<40+2*LW?1:2;}
+board.addEventListener('pointerdown',e=>{if(!S||S.over||S.paused)return;e.preventDefault();try{board.setPointerCapture(e.pointerId);}catch(_){}
+  PRESS={id:e.pointerId};S.lt=laneAt(e.clientX);if(!S.started){S.started=true;document.getElementById('hold').classList.add('hide');}});
+board.addEventListener('pointermove',e=>{if(!PRESS||e.pointerId!==PRESS.id)return;S.lt=laneAt(e.clientX);});
+const up=e=>{if(PRESS&&e.pointerId===PRESS.id)PRESS=null;};
+board.addEventListener('pointerup',up);board.addEventListener('pointercancel',up);
+/* ---------- ciclo ---------- */
+let T0=0;
+function loop(now){
+  const dt=T0?Math.min(.05,(now-T0)/1000):0;T0=now;
+  if(S&&RUN){
+    if(window._bot&&S.started){const b=window._bot(S);S.lt=b.lane;step(dt,b.pedal);}else step(dt,!!PRESS);
+    if(msgT>0){msgT-=dt;if(msgT<=0)document.getElementById('msg').style.opacity=0;}
+    hudT-=dt;if(hudT<=0){hudT=.15;hud(true);}
+    draw();
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
 
-document.getElementById('bStop').onclick=wait;
-document.querySelectorAll('#pcols div').forEach(c=>c.addEventListener('pointerdown',(e)=>{e.preventDefault();c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),180);pedal(+c.dataset.d);}));
-document.getElementById('bRules').onclick=()=>{document.getElementById('bRulesOk').textContent='Torna in sella';document.getElementById('ovRules').classList.remove('hide');};
-const startFrom=(d)=>{newGame(d);document.getElementById('ovCover').classList.add('hide');document.getElementById('ovRules').classList.remove('hide');};
+/* ---------- avvio ---------- */
+function startFrom(daily){document.getElementById('ovCover').classList.add('hide');newGame(daily);document.getElementById('ovRules').classList.remove('hide');}
 document.getElementById('bCover').onclick=()=>startFrom(true);
 document.getElementById('bRandom').onclick=()=>startFrom(false);
-document.getElementById('bRulesOk').onclick=()=>document.getElementById('ovRules').classList.add('hide');
+document.getElementById('bRulesOk').onclick=()=>{document.getElementById('ovRules').classList.add('hide');RUN=true;resize();};
+document.getElementById('pauseB').onclick=()=>{if(S&&!S.over)pauseFor('ovPause');};
+document.getElementById('bResume').onclick=()=>{document.getElementById('ovPause').classList.add('hide');resume();};
+document.getElementById('bRules2').onclick=()=>{document.getElementById('ovPause').classList.add('hide');document.getElementById('bRulesOk').textContent='Torna in sella';document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bQuit').onclick=()=>{document.getElementById('ovPause').classList.add('hide');newGame(S.daily,LASTSEED);};
 document.getElementById('mYes').onclick=()=>takeMinor(true);
 document.getElementById('mNo').onclick=()=>takeMinor(false);
 document.getElementById('bLong').onclick=()=>choose('long');
 document.getElementById('bShort').onclick=()=>choose('short');
 document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');newGame(false);};
+document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');newGame(S.daily,LASTSEED);};
+document.getElementById('bRulesOk').addEventListener('click',()=>{if(S&&S.paused&&!S.over&&document.getElementById('bRulesOk').textContent==='Torna in sella')resume();});
 document.getElementById('coverImg').style.backgroundImage='url(art/cover.webp)';
 newGame(true);document.getElementById('nightTxt').innerHTML=`Sfida n° ${todayN()} · stanotte: <b>${NIGHTS[S.night].n}</b>. ${NIGHTS[S.night].d}<br>Missione: <b>${MISSIONS[S.mission].n}</b>. ${MISSIONS[S.mission].d}`;
-window._S=()=>S;window._minor=takeMinor;window._move=(t)=>doMove(t,'ok');window._pedal=pedal;window._targets=targets;window._choose=choose;window._wait=wait;window._use=useItem;
+window._S=()=>S;window._step=step;window._minor=takeMinor;window._choose=choose;window._use=useItem;window._new=newGame;
 </script>
 </body>
 </html>
