@@ -29,7 +29,7 @@ cd dist && python3 -m http.server 8000
 - Pagine in `/it/` e `/en/`, giochi in `games/<slug>/` con il loro `manifest.json`.
 - Testi in `i18n/it.json` e `i18n/en.json`.
 - `site.config.json`: `"payments": false` tiene spenti prezzi e sblocchi (fase di prova, tutto aperto); `"feedbackEmail"` è l'indirizzo a cui arrivano i pareri (vuoto: il parere si copia e si manda a mano).
-- Ogni push su `main` pubblica il sito su GitHub Pages (`.github/workflows/pages.yml`). Per attivarlo: Settings → Pages → Source: **GitHub Actions**.
+- Ogni push su `main` pubblica il sito su GitHub Pages (`.github/workflows/pages.yml`). Per attivarlo: Settings → Pages → Source: **GitHub Actions**. Indirizzo: https://ale2588.github.io/Mobile-games/ (la M maiuscola conta).
 
 ## Vedere la vetrina del design system
 
