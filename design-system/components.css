@@ -1,0 +1,197 @@
+/* Nottambuli · componenti
+   Richiede tokens.css. Classi brevi e piatte, nessun framework. */
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 var(--fs-md)/var(--lh-body) var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: var(--r-sm); }
+
+.page { max-width: var(--col-max); margin: 0 auto; padding: 0 var(--gutter) calc(var(--nav-h) + var(--sp-8)); }
+
+/* ---------- Tipografia ---------- */
+.t-display { font: 500 var(--fs-3xl)/var(--lh-tight) var(--font-display); letter-spacing: -.01em; margin: 0; }
+.t-title   { font: 500 var(--fs-2xl)/var(--lh-tight) var(--font-display); margin: 0; }
+.t-h2      { font: 500 var(--fs-xl)/var(--lh-snug) var(--font-display); margin: 0; }
+.t-lead    { font-size: var(--fs-lg); line-height: var(--lh-snug); color: var(--text); margin: 0; }
+.t-body    { font-size: var(--fs-md); color: var(--text-2); margin: 0; }
+.t-small   { font-size: var(--fs-sm); color: var(--text-2); }
+.t-caps    { font-size: var(--fs-xs); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+.t-italic  { font-family: var(--font-display); font-style: italic; }
+
+/* ---------- Pulsanti ---------- */
+.btn {
+  appearance: none; border: 0; cursor: pointer;
+  min-height: var(--tap); padding: 0 var(--sp-5);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  font: 600 var(--fs-md)/1 var(--font-ui); text-decoration: none;
+  border-radius: var(--r-pill);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-med), box-shadow var(--dur-med);
+}
+.btn:active { transform: scale(.97); }
+.btn--block { width: 100%; }
+.btn--lg { min-height: 56px; font-size: var(--fs-lg); }
+
+/* Primario: la luce accesa. Uno solo per schermata. */
+.btn--primary { background: var(--game-accent); color: var(--accent-ink); box-shadow: 0 10px 30px -10px var(--lamp-glow); }
+.btn--primary:hover { filter: brightness(1.06); }
+
+/* Secondario: contorno caldo */
+.btn--secondary { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--ink-600); }
+.btn--secondary:hover { box-shadow: inset 0 0 0 1.5px var(--game-accent); }
+
+/* Discreto: azioni di contorno */
+.btn--ghost { background: transparent; color: var(--text-2); padding: 0 var(--sp-3); }
+
+.btn--icon { width: var(--tap); padding: 0; border-radius: 50%; background: var(--card-raised); color: var(--text); }
+
+.btn[disabled] { opacity: .35; pointer-events: none; }
+
+/* ---------- Etichette di stato ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 24px; padding: 0 10px; border-radius: var(--r-pill);
+  font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .04em;
+  background: var(--card-raised); color: var(--text-2);
+}
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge--free     { color: var(--lamp-300); background: rgba(243,199,106,.12); }
+.badge--new      { color: var(--moon-400); background: rgba(140,196,255,.12); }
+.badge--unlocked { color: var(--ok-400);   background: rgba(127,208,160,.12); }
+.badge--soon     { color: var(--text-3); }
+
+/* ---------- Metadati gioco ---------- */
+.meta { display: flex; gap: var(--sp-4); color: var(--text-3); font-size: var(--fs-sm); }
+.meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Difficoltà: lune piene/vuote, non solo colore */
+.moons { letter-spacing: 2px; color: var(--game-accent); }
+.moons .off { color: var(--ink-600); }
+
+/* Stelle (risultati di capitolo) */
+.stars { color: var(--lamp-400); letter-spacing: 3px; font-size: var(--fs-md); }
+.stars .off { color: var(--ink-600); }
+
+/* ---------- Carta gioco ---------- */
+.game-card {
+  position: relative; display: block; text-decoration: none;
+  border-radius: var(--r-xl); overflow: hidden;
+  background: var(--card); box-shadow: var(--shadow-card);
+  isolation: isolate;
+}
+.game-card__art { aspect-ratio: 4 / 5; width: 100%; object-fit: cover; }
+.game-card__shade {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(7,8,11,0) 35%, rgba(7,8,11,.85) 72%, var(--card) 100%);
+}
+.game-card__body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: var(--sp-5); display: grid; gap: var(--sp-2); }
+.game-card__top { position: absolute; top: var(--sp-4); left: var(--sp-4); z-index: 2; display: flex; gap: var(--sp-2); }
+.game-card__title { font: 500 28px/1.05 var(--font-display); margin: 0; }
+.game-card__hook { color: var(--text-2); font-size: var(--fs-sm); margin: 0; }
+.game-card:active { transform: scale(.99); }
+.game-card--soon { filter: grayscale(.9) brightness(.7); }
+.game-card__glow { position: absolute; inset: auto -20% -40% -20%; height: 60%; z-index: 0; background: radial-gradient(closest-side, var(--game-accent), transparent); opacity: .18; }
+
+/* Carta compatta (liste, "continua") */
+.row-card {
+  display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3); border-radius: var(--r-lg); background: var(--card); text-decoration: none;
+  min-height: 88px;
+}
+.row-card img { width: 64px; height: 64px; border-radius: var(--r-md); object-fit: cover; }
+.row-card__title { font: 500 var(--fs-lg)/1.1 var(--font-display); margin: 0 0 2px; }
+
+/* ---------- Barra di avanzamento ---------- */
+.progress { height: 4px; border-radius: 2px; background: var(--ink-700); overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--game-accent); border-radius: 2px; }
+
+/* ---------- Barra in alto ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; padding: 0 var(--gutter);
+  background: linear-gradient(var(--bg) 60%, rgba(7,8,11,0));
+}
+.logo { font: 500 20px/1 var(--font-display); letter-spacing: .02em; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.logo__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lamp-400); box-shadow: 0 0 12px 3px var(--lamp-glow); }
+
+/* Selettore lingua */
+.lang { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: var(--card-raised); }
+.lang button { appearance: none; border: 0; background: none; color: var(--text-3); font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .08em; min-width: 40px; height: 30px; border-radius: var(--r-pill); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--ink-600); color: var(--text); }
+
+/* ---------- Barra in basso ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  background: rgba(12,15,20,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--ink-700);
+}
+.tabbar a { display: grid; place-items: center; align-content: center; gap: 4px; text-decoration: none; color: var(--text-3); font: 600 11px/1 var(--font-ui); letter-spacing: .04em; }
+.tabbar a svg { width: 24px; height: 24px; }
+.tabbar a[aria-current="page"] { color: var(--accent); }
+.tabbar a[aria-current="page"] svg { filter: drop-shadow(0 0 8px var(--lamp-glow)); }
+
+/* ---------- Foglio dal basso (sblocca, conferme) ---------- */
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 40; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+  max-width: var(--col-max); margin: 0 auto;
+  background: var(--surface); border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--sp-3) var(--sp-5) calc(var(--sp-6) + env(safe-area-inset-bottom));
+  box-shadow: var(--shadow-sheet);
+  animation: sheet-in var(--dur-slow) var(--ease-out);
+}
+.sheet__grip { width: 40px; height: 4px; border-radius: 2px; background: var(--ink-600); margin: 0 auto var(--sp-4); }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+
+.checklist { list-style: none; padding: 0; margin: var(--sp-4) 0; display: grid; gap: var(--sp-3); }
+.checklist li { display: grid; grid-template-columns: 22px 1fr; gap: var(--sp-3); color: var(--text-2); }
+.checklist li::before { content: "✦"; color: var(--game-accent); }
+
+.price { font: 500 var(--fs-2xl)/1 var(--font-display); }
+.price small { font: 400 var(--fs-sm) var(--font-ui); color: var(--text-3); margin-left: 6px; }
+
+/* ---------- Campi ---------- */
+.field { display: grid; gap: var(--sp-2); }
+.field label { font-size: var(--fs-sm); color: var(--text-2); }
+.input {
+  height: var(--tap); padding: 0 var(--sp-4); border-radius: var(--r-md);
+  background: var(--card-raised); border: 1.5px solid var(--ink-700); color: var(--text);
+  font: 500 var(--fs-md) var(--font-ui); letter-spacing: .08em;
+}
+.input:focus { outline: none; border-color: var(--focus); }
+.input--error { border-color: var(--danger-400); }
+.field__hint { font-size: var(--fs-xs); color: var(--text-3); }
+.field__error { font-size: var(--fs-xs); color: var(--danger-400); }
+
+/* ---------- Avvisi ---------- */
+.toast {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+  background: var(--card-raised); border-left: 3px solid var(--ok-400); font-size: var(--fs-sm);
+}
+.toast--danger { border-left-color: var(--danger-400); }
+
+/* ---------- Sezioni ---------- */
+.section { margin-top: var(--sp-10); display: grid; gap: var(--sp-4); }
+.section__head { display: flex; align-items: baseline; justify-content: space-between; }
+.stack { display: grid; gap: var(--sp-4); }
+.divider { height: 1px; background: var(--ink-700); border: 0; margin: var(--sp-6) 0; }
+
+/* Copertina della home: la luce che si accende */
+.hero { position: relative; padding: var(--sp-10) 0 var(--sp-8); display: grid; gap: var(--sp-4); }
+.hero::before {
+  content: ""; position: absolute; z-index: -1; width: 320px; height: 320px; top: -60px; right: -120px;
+  background: radial-gradient(closest-side, var(--lamp-glow), transparent);
+}

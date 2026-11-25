@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<title>Nottambuli · Design system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Solo per questa pagina vetrina */
+  .doc { max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter) var(--sp-16); }
+  .doc > h2 { font: 500 var(--fs-2xl)/1.1 var(--font-display); margin: var(--sp-16) 0 var(--sp-2); }
+  .doc > h3 { font: 600 var(--fs-sm)/1 var(--font-ui); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-3); margin: var(--sp-8) 0 var(--sp-3); }
+  .doc p.note { color: var(--text-2); max-width: 60ch; margin: 0 0 var(--sp-4); }
+  .toc { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-6); }
+  .toc a { font-size: var(--fs-sm); color: var(--text-2); text-decoration: none; padding: 8px 14px; border-radius: var(--r-pill); background: var(--card); }
+  .grid { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .swatch { border-radius: var(--r-md); overflow: hidden; background: var(--card); font-size: var(--fs-xs); }
+  .swatch i { display: block; height: 64px; }
+  .swatch div { padding: 8px 10px; display: grid; gap: 2px; }
+  .swatch b { font-weight: 600; color: var(--text); }
+  .swatch code { color: var(--text-3); }
+  .typerow { display: grid; grid-template-columns: 90px 1fr; gap: var(--sp-4); align-items: baseline; padding: var(--sp-3) 0; border-bottom: 1px solid var(--ink-700); }
+  .typerow code { color: var(--text-3); font-size: var(--fs-xs); }
+  .spacebar { display: flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-xs); color: var(--text-3); }
+  .spacebar i { display: block; height: 12px; background: var(--lamp-500); border-radius: 2px; }
+  .demo { background: var(--surface); border-radius: var(--r-lg); padding: var(--sp-5); display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
+  .demo--col { display: grid; max-width: 420px; }
+  .principles { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .principle { background: var(--card); border-radius: var(--r-lg); padding: var(--sp-5); }
+  .principle h4 { font: 500 var(--fs-lg)/1.2 var(--font-display); margin: 0 0 var(--sp-2); color: var(--lamp-300); }
+  .principle p { margin: 0; color: var(--text-2); font-size: var(--fs-sm); }
+
+  /* Telefoni */
+  .phones { display: flex; gap: var(--sp-6); overflow-x: auto; padding: var(--sp-4) var(--sp-1) var(--sp-6); scroll-snap-type: x mandatory; }
+  .phone-wrap { flex: 0 0 auto; scroll-snap-align: center; display: grid; gap: var(--sp-3); justify-items: center; }
+  .phone-wrap > span { font-size: var(--fs-sm); color: var(--text-3); }
+  .phone {
+    position: relative; width: 360px; height: 740px; border-radius: 44px; overflow: hidden;
+    background: var(--bg); box-shadow: 0 0 0 10px #15181e, 0 0 0 11px #2a2f38, 0 40px 80px -20px #000;
+  }
+  .phone__scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; }
+  .phone__scroll::-webkit-scrollbar { display: none; }
+  .phone .page { padding-bottom: calc(var(--nav-h) + var(--sp-6)); }
+  .phone .tabbar, .phone .sheet, .phone .sheet-backdrop { position: absolute; }
+  .phone .topbar { padding-top: 10px; height: 64px; }
+  .phone .sheet { animation: none; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <header class="hero">
+    <span class="logo"><span class="logo__dot"></span>Nottambuli</span>
+    <h1 class="t-display">Design system</h1>
+    <p class="t-lead">Piccoli giochi per la notte. Il sito è il buio, ogni gioco è una luce accesa.</p>
+    <nav class="toc">
+      <a href="#principi">Principi</a><a href="#colori">Colori</a><a href="#tipografia">Tipografia</a><a href="#spazi">Spazi e forme</a><a href="#componenti">Componenti</a><a href="#schermate">Schermate</a>
+    </nav>
+  </header>
+
+  <!-- PRINCIPI -->
+  <h2 id="principi">Principi</h2>
+  <div class="principles">
+    <div class="principle"><h4>Una luce per schermata</h4><p>Il colore caldo è raro e significa "fai questo". Un solo pulsante primario per schermata.</p></div>
+    <div class="principle"><h4>Pollice prima di tutto</h4><p>Le azioni stanno in basso, le aree di tocco sono di almeno 48 px e il testo non scende mai sotto i 16 px.</p></div>
+    <div class="principle"><h4>Buio vero, non grigio</h4><p>Si gioca a letto e in tram, di sera: fondo quasi nero, testo color carta, mai bianco puro.</p></div>
+    <div class="principle"><h4>Prima giochi, poi paghi</h4><p>La richiesta di pagamento arriva dopo una partita finita, in un foglio che si chiude con un tocco.</p></div>
+    <div class="principle"><h4>Ogni gioco ha la sua luce</h4><p>Il sito è uno solo, ma ogni gioco porta il suo accento: lampione per Ultima Corsa, torcia per Non voltarti.</p></div>
+  </div>
+
+  <!-- COLORI -->
+  <h2 id="colori">Colori</h2>
+  <p class="note">Una base notte in otto toni, un accento caldo (la luce) e tre colori di servizio. Il bianco puro non esiste.</p>
+  <h3>Notte</h3>
+  <div class="grid">
+    <div class="swatch"><i style="background:var(--ink-950)"></i><div><b>ink-950</b><code>#07080b · fondo</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-900)"></i><div><b>ink-900</b><code>#0c0f14 · superfici</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-850)"></i><div><b>ink-850</b><code>#12161d · carte</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-800)"></i><div><b>ink-800</b><code>#1a1f28 · campi</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-600)"></i><div><b>ink-600</b><code>#353e4d · bordi</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-400)"></i><div><b>ink-400</b><code>#6b7587 · testo spento</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-300)"></i><div><b>ink-300</b><code>#9aa3b2 · testo 2</code></div></div>
+    <div class="swatch"><i style="background:var(--ink-100)"></i><div><b>ink-100</b><code>#e6e2d8 · testo</code></div></div>
+  </div>
+  <h3>Luce e servizio</h3>
+  <div class="grid">
+    <div class="swatch"><i style="background:var(--lamp-300)"></i><div><b>lamp-300</b><code>#ffe2a0</code></div></div>
+    <div class="swatch"><i style="background:var(--lamp-400)"></i><div><b>lamp-400</b><code>#f3c76a · accento</code></div></div>
+    <div class="swatch"><i style="background:var(--lamp-500)"></i><div><b>lamp-500</b><code>#d9a644</code></div></div>
+    <div class="swatch"><i style="background:var(--moon-400)"></i><div><b>moon-400</b><code>#8cc4ff · info, focus</code></div></div>
+    <div class="swatch"><i style="background:var(--ok-400)"></i><div><b>ok-400</b><code>#7fd0a0 · sbloccato</code></div></div>
+    <div class="swatch"><i style="background:var(--danger-400)"></i><div><b>danger-400</b><code>#ff5a4e · pericolo</code></div></div>
+  </div>
+  <h3>Accento dei giochi</h3>
+  <div class="grid">
+    <div class="swatch" data-game="ultima-corsa"><i style="background:var(--game-accent)"></i><div><b>Ultima Corsa</b><code>#f3c76a · lampioni</code></div></div>
+    <div class="swatch" data-game="non-voltarti"><i style="background:var(--game-accent)"></i><div><b>Non voltarti</b><code>#ff8a5c · torcia</code></div></div>
+  </div>
+
+  <!-- TIPOGRAFIA -->
+  <h2 id="tipografia">Tipografia</h2>
+  <p class="note"><b>Fraunces</b>, un serif caldo da libro di fiabe nere, per i titoli. <b>Inter</b> per l'interfaccia e i testi: leggibile in piedi su un tram.</p>
+  <div class="typerow"><code>3xl · 44</code><span class="t-display">La notte è lunga</span></div>
+  <div class="typerow"><code>2xl · 32</code><span class="t-title">Scegli una luce</span></div>
+  <div class="typerow"><code>xl · 24</code><span class="t-h2">Sfida di oggi</span></div>
+  <div class="typerow"><code>lg · 19</code><span class="t-lead">Riporta tutti a casa prima che il bosco se li prenda.</span></div>
+  <div class="typerow"><code>md · 16</code><span class="t-body">Testo base. Mai più piccolo su mobile.</span></div>
+  <div class="typerow"><code>sm · 14</code><span class="t-small">Testo secondario, metadati.</span></div>
+  <div class="typerow"><code>xs · 12</code><span class="t-caps">Etichetta maiuscola</span></div>
+
+  <!-- SPAZI -->
+  <h2 id="spazi">Spazi e forme</h2>
+  <p class="note">Scala da 4 px. Margine laterale 16 px su mobile, colonna massima 480 px su desktop. Forme morbide: le carte gioco hanno angoli da 26 px, come le tessere di un gioco da tavolo.</p>
+  <div class="demo demo--col">
+    <div class="spacebar"><i style="width:4px"></i>sp-1 · 4</div>
+    <div class="spacebar"><i style="width:8px"></i>sp-2 · 8</div>
+    <div class="spacebar"><i style="width:12px"></i>sp-3 · 12</div>
+    <div class="spacebar"><i style="width:16px"></i>sp-4 · 16</div>
+    <div class="spacebar"><i style="width:24px"></i>sp-6 · 24</div>
+    <div class="spacebar"><i style="width:32px"></i>sp-8 · 32</div>
+    <div class="spacebar"><i style="width:48px"></i>sp-12 · 48</div>
+    <div class="spacebar"><i style="width:64px"></i>sp-16 · 64</div>
+  </div>
+
+  <!-- COMPONENTI -->
+  <h2 id="componenti">Componenti</h2>
+
+  <h3>Pulsanti</h3>
+  <div class="demo">
+    <button class="btn btn--primary">Gioca gratis</button>
+    <button class="btn btn--secondary">Sblocca · 1,99 €</button>
+    <button class="btn btn--ghost">Ho già un codice</button>
+    <button class="btn btn--icon" aria-label="Chiudi">✕</button>
+    <button class="btn btn--primary" disabled>Non disponibile</button>
+  </div>
+  <div class="demo" data-game="non-voltarti" style="margin-top:var(--sp-3)">
+    <button class="btn btn--primary">Gioca gratis</button>
+    <span class="t-small">Dentro la scheda di un gioco il primario prende l'accento del gioco.</span>
+  </div>
+
+  <h3>Etichette, difficoltà, stelle</h3>
+  <div class="demo">
+    <span class="badge badge--free">Gratis oggi</span>
+    <span class="badge badge--new">Nuovo</span>
+    <span class="badge badge--unlocked">Sbloccato</span>
+    <span class="badge badge--soon">In arrivo</span>
+    <span class="moons" aria-label="Difficoltà 3 su 5">●●●<span class="off">●●</span></span>
+    <span class="stars" aria-label="2 stelle su 3">★★<span class="off">★</span></span>
+  </div>
+
+  <h3>Carta gioco</h3>
+  <div class="demo demo--col">
+    <a class="game-card" data-game="non-voltarti" href="#">
+      <img class="game-card__art" src="../assets/games/non-voltarti/cover.webp" alt="">
+      <div class="game-card__shade"></div>
+      <div class="game-card__top"><span class="badge badge--new">Nuovo</span><span class="badge badge--free">Sfida gratis</span></div>
+      <div class="game-card__body">
+        <h3 class="game-card__title">Non voltarti</h3>
+        <p class="game-card__hook">Riporta tutti a casa prima che il bosco se li prenda.</p>
+        <div class="meta"><span>◷ 8–15 min</span><span class="moons">●●●●<span class="off">●</span></span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3>Carta compatta e avanzamento</h3>
+  <div class="demo demo--col">
+    <a class="row-card" data-game="ultima-corsa" href="#">
+      <img src="../assets/games/ultima-corsa/icon.webp" alt="">
+      <div><p class="row-card__title">Ultima Corsa</p><div class="t-small">Continua: capitolo 4, Notte bianca</div><div class="progress" style="margin-top:8px"><i style="width:40%"></i></div></div>
+      <span class="stars">★★<span class="off">★</span></span>
+    </a>
+  </div>
+
+  <h3>Barra in alto e lingua</h3>
+  <div class="demo demo--col" style="padding:0;overflow:hidden">
+    <div class="topbar" style="position:relative">
+      <span class="logo"><span class="logo__dot"></span>Nottambuli</span>
+      <div class="lang" role="group" aria-label="Lingua"><button aria-pressed="true">IT</button><button aria-pressed="false">EN</button></div>
+    </div>
+  </div>
+
+  <h3>Campo codice e avvisi</h3>
+  <div class="demo demo--col">
+    <div class="field"><label for="c1">Codice di sblocco</label><input id="c1" class="input" placeholder="NOTT-XXXX-XXXX"><span class="field__hint">Lo trovi nell'email della ricevuta.</span></div>
+    <div class="field"><label for="c2">Codice di sblocco</label><input id="c2" class="input input--error" value="NOTT-1234"><span class="field__error">Codice non valido. Controlla le lettere e riprova.</span></div>
+    <div class="toast">✓ Campagna sbloccata. Buona notte.</div>
+    <div class="toast toast--danger">Connessione assente. Il gioco funziona, lo sblocco no.</div>
+  </div>
+
+  <!-- SCHERMATE -->
+  <h2 id="schermate">Schermate</h2>
+  <p class="note">Le tre schermate chiave, a 360 px di larghezza. Scorri di lato; dentro ogni telefono si scorre in verticale.</p>
+
+  <div class="phones">
+
+    <!-- HOME -->
+    <div class="phone-wrap"><div class="phone"><div class="phone__scroll">
+      <div class="topbar">
+        <span class="logo"><span class="logo__dot"></span>Nottambuli</span>
+        <div class="lang"><button aria-pressed="true">IT</button><button aria-pressed="false">EN</button></div>
+      </div>
+      <main class="page">
+        <section class="hero" style="padding-top:var(--sp-6)">
+          <span class="t-caps">Mercoledì 25 novembre</span>
+          <h1 class="t-title">La notte è lunga.<br><span class="t-italic" style="color:var(--lamp-300)">Scegli una luce.</span></h1>
+          <a class="btn btn--primary btn--lg btn--block" href="#">Gioca la sfida di oggi</a>
+          <span class="t-small" style="text-align:center">Oggi: Non voltarti · 10 minuti · gratis</span>
+        </section>
+        <section class="section">
+          <div class="section__head"><h2 class="t-h2">Continua</h2></div>
+          <a class="row-card" data-game="ultima-corsa" href="#">
+            <img src="../assets/games/ultima-corsa/icon.webp" alt="">
+            <div><p class="row-card__title">Ultima Corsa</p><div class="t-small">Capitolo 4 di 10</div><div class="progress" style="margin-top:8px"><i style="width:40%"></i></div></div>
+            <span class="stars">★★<span class="off">★</span></span>
+          </a>
+        </section>
+        <section class="section">
+          <div class="section__head"><h2 class="t-h2">I giochi</h2><span class="t-small">2</span></div>
+          <a class="game-card" data-game="non-voltarti" href="#">
+            <img class="game-card__art" src="../assets/games/non-voltarti/cover.webp" alt="">
+            <div class="game-card__shade"></div>
+            <div class="game-card__top"><span class="badge badge--new">Nuovo</span></div>
+            <div class="game-card__body">
+              <h3 class="game-card__title">Non voltarti</h3>
+              <p class="game-card__hook">Riporta tutti a casa prima che il bosco se li prenda.</p>
+              <div class="meta"><span>◷ 8–15 min</span><span class="moons">●●●●<span class="off">●</span></span></div>
+            </div>
+          </a>
+          <a class="game-card" data-game="ultima-corsa" href="#">
+            <img class="game-card__art" src="../assets/games/ultima-corsa/cover.webp" alt="">
+            <div class="game-card__shade"></div>
+            <div class="game-card__top"><span class="badge badge--unlocked">Sbloccato</span></div>
+            <div class="game-card__body">
+              <h3 class="game-card__title">Ultima Corsa</h3>
+              <p class="game-card__hook">Accendi i lampioni, porta la gente al tram prima dei vampiri.</p>
+              <div class="meta"><span>◷ 5–10 min</span><span class="moons">●●●<span class="off">●●</span></span></div>
+            </div>
+          </a>
+          <div class="game-card game-card--soon" style="aspect-ratio:4/2;display:grid;place-items:center;text-align:center">
+            <div><span class="badge badge--soon">In arrivo</span><p class="t-h2" style="margin-top:10px">Contrabbando</p></div>
+          </div>
+        </section>
+      </main>
+      <nav class="tabbar">
+        <a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>Giochi</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Sfida</a>
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Progressi</a>
+      </nav>
+    </div></div><span>Home</span></div>
+
+    <!-- SCHEDA GIOCO -->
+    <div class="phone-wrap"><div class="phone" data-game="non-voltarti"><div class="phone__scroll">
+      <div style="position:relative">
+        <img src="../assets/games/non-voltarti/key.webp" alt="" style="width:100%;height:440px;object-fit:cover;object-position:center 35%">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.5),rgba(7,8,11,0) 25%,rgba(7,8,11,0) 55%,var(--bg))"></div>
+        <button class="btn btn--icon" style="position:absolute;top:18px;left:16px" aria-label="Indietro">←</button>
+      </div>
+      <main class="page" style="margin-top:-90px;position:relative">
+        <div class="stack">
+          <div style="display:flex;gap:8px"><span class="badge badge--new">Nuovo</span><span class="badge badge--free">Sfida gratis</span></div>
+          <h1 class="t-title" style="font-size:40px">Non voltarti</h1>
+          <p class="t-lead">La macchina è nel fosso. Riporta i tuoi tre amici a casa prima che il bosco se li prenda.</p>
+          <div class="meta"><span>◷ 8–15 min</span><span>Difficoltà <span class="moons">●●●●<span class="off">●</span></span></span></div>
+          <a class="btn btn--primary btn--lg btn--block" href="#">Gioca gratis</a>
+          <a class="btn btn--secondary btn--block" href="#">Sblocca la campagna · 1,99 €</a>
+        </div>
+        <section class="section">
+          <h2 class="t-h2">Come si gioca</h2>
+          <ul class="checklist" style="margin:0">
+            <li>Muoviti di una casella in silenzio, di due correndo.</li>
+            <li>Punta la torcia: chi illumini si fa coraggio, i mostri si fermano.</li>
+            <li>Arriva al cancello con più amici possibile.</li>
+          </ul>
+        </section>
+        <section class="section">
+          <h2 class="t-h2">Le tue notti</h2>
+          <div class="row-card" style="grid-template-columns:1fr auto"><div><p class="row-card__title">Miglior risultato</p><div class="t-small">2 amici salvi su 3</div></div><span class="stars">★★<span class="off">★</span></span></div>
+        </section>
+      </main>
+    </div></div><span>Scheda gioco</span></div>
+
+    <!-- SBLOCCA -->
+    <div class="phone-wrap"><div class="phone" data-game="non-voltarti"><div class="phone__scroll">
+      <img src="../assets/games/non-voltarti/key.webp" alt="" style="width:100%;height:100%;object-fit:cover;filter:brightness(.45)">
+      <div style="position:absolute;top:80px;left:0;right:0;text-align:center;padding:0 24px">
+        <p class="t-caps" style="color:var(--text-2)">Fine della notte</p>
+        <p class="t-title">Al cancello</p>
+        <p class="stars" style="font-size:28px;margin:8px 0">★★<span class="off">★</span></p>
+        <p class="t-small">Marta e Luca sono con te. Ines è rimasta nel bosco.</p>
+      </div>
+    </div>
+      <div class="sheet-backdrop"></div>
+      <div class="sheet" role="dialog" aria-label="Sblocca la campagna">
+        <div class="sheet__grip"></div>
+        <p class="t-caps">Ti è piaciuto?</p>
+        <h2 class="t-h2" style="margin-top:6px">Il bosco ha dieci notti</h2>
+        <ul class="checklist">
+          <li>Campagna di 10 notti, dall'autunno all'inverno</li>
+          <li>Nuovi mostri e nuovi oggetti, notte dopo notte</li>
+          <li>Stelle e record salvati</li>
+        </ul>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--sp-4)"><span class="price">1,99 €<small>una volta, per sempre</small></span></div>
+        <div class="stack" style="gap:var(--sp-2)">
+          <a class="btn btn--primary btn--lg btn--block" href="#">Sblocca</a>
+          <a class="btn btn--ghost btn--block" href="#">Ho già un codice</a>
+          <a class="btn btn--ghost btn--block" href="#" style="color:var(--text-3)">Non ora</a>
+        </div>
+      </div>
+    </div><span>Fine partita e sblocco</span></div>
+
+  </div>
+</div>
+</body>
+</html>
