@@ -1,0 +1,48 @@
+{
+ "slug": "la-cena",
+ "title": {
+  "it": "La cena",
+  "en": "The Dinner"
+ },
+ "hook": {
+  "it": "1923, una villa sul lago di Como. Sei ospiti a tavola, uno è un vampiro. A mezzanotte si spengono le luci.",
+  "en": "1923, a villa on Lake Como. Six guests at the table, one is a vampire. At midnight the lights go out."
+ },
+ "lead": {
+  "it": "Osserva gli ospiti, ascolta cosa dicono dei vicini, incrocia le voci. Il vampiro mente su tutto, un innocente mente su una cosa sola, e alcuni segni si vedono solo a sera inoltrata. Accusa prima di mezzanotte.",
+  "en": "Watch the guests, listen to what they say about their neighbours, cross-check. The vampire lies about everything, one innocent lies about one thing only, and some signs only show late in the evening. Accuse before midnight."
+ },
+ "howto": {
+  "it": [
+   "Osserva un ospite: scopri con certezza un segno. Se ne manca uno, è innocente.",
+   "Chiedi dei vicini: due voci al prezzo di una, ma qualcuno mente.",
+   "Mani gelide dalle 22:00, cane dalle 22:30. Accusa quando sei sicuro."
+  ],
+  "en": [
+   "Watch a guest: learn one sign for certain. If one is missing, they're innocent.",
+   "Ask about the neighbours: two rumours for one action, but someone is lying.",
+   "Cold hands from 10 pm, the dog from 10:30. Accuse when you're sure."
+  ]
+ },
+ "campaign": {
+  "it": "Ogni cena ha un vampiro, un bugiardo e posti a tavola diversi. La sfida di oggi è uguale per tutti.",
+  "en": "Every dinner has a different vampire, liar and seating. Today's challenge is the same for everyone."
+ },
+ "minutes": [
+  5,
+  10
+ ],
+ "difficulty": 4,
+ "accent": "#e0b060",
+ "chapters": 0,
+ "free": "daily",
+ "price": {
+  "eur": 1.99
+ },
+ "status": "live",
+ "lang": [
+  "it"
+ ],
+ "new": true,
+ "order": 0
+}

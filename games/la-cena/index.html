@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07080b">
+<title>La cena</title>
+<link rel="icon" href="art/icon.webp"><link rel="apple-touch-icon" href="art/icon.webp">
+<style>
+:root{--bg:#07080b;--tx:#e6e2d8;--t2:#9aa3b2;--lamp:#f3c76a;--lamp3:#ffe2a0;--red:#ff5a4e;--ok:#7fd0a0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;height:100%;overflow:hidden;overscroll-behavior:none}
+#app{max-width:440px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+#top{padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #1a1f28;background:linear-gradient(180deg,rgba(7,8,11,.25),#07080b),#000 url(art/key.webp) center 62%/cover;min-height:86px}
+#top b{font:500 22px/1.1 Georgia,serif;display:block}
+#top small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);display:block;margin-bottom:3px}
+#clock{font:700 22px Inter,sans-serif;text-align:right}#clock.late{color:var(--red)}
+#left{font-size:12px;color:var(--t2);text-align:right}
+#table{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;padding:4px}
+#table svg{width:100%;height:100%;max-height:100%}
+#table svg *{pointer-events:none}#table svg .g{pointer-events:all;cursor:pointer}
+#msg{min-height:74px;max-height:140px;overflow-y:auto;padding:6px 14px;font-size:14px;line-height:1.4;border-top:1px solid #1a1f28;background:#0c0e12}
+#msg .q{font-family:Georgia,serif;font-style:italic;color:#ece2c8}
+#hint{padding:0 14px 4px;font-size:12px;color:#7f899b;text-align:center}
+#ctrl{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px max(10px,env(safe-area-inset-bottom))}
+button{font:600 14px Inter,system-ui,sans-serif;background:#15181b;color:var(--tx);border:1px solid #2a2f34;border-radius:12px;min-height:50px;padding:6px}
+button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lamp3)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:8;max-width:440px;margin:0 auto;background:#12100c;border-top:1px solid #3a2e1e;border-radius:18px 18px 0 0;padding:14px 14px max(14px,env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.6)}
+.sheet .hd{display:flex;gap:12px;align-items:center}.sheet .pt{width:64px;height:64px;border-radius:50%;border:2px solid #f3c76a;background:#2a2116;overflow:hidden}
+.sheet h3{margin:0;font:500 21px Georgia,serif}.sheet .rl{font-size:13px;color:var(--t2)}
+.facts{margin:10px 0;display:grid;gap:4px;font-size:13px}
+.facts div{display:flex;gap:8px;align-items:baseline}.facts .s{color:#ff9a8a}.facts .n{color:#7fd0a0}.facts .h{color:#c9b892;font-style:italic}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.sig{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 8px}.sig.hide{display:none}.sig button{min-height:48px;font-size:12px;padding:4px;line-height:1.15}.sig button small{color:#9aa3b2}
+.mk{display:flex;gap:6px;margin:8px 0}.mk button{flex:1;min-height:38px;font-size:12px}.mk button.on{border-color:var(--lamp);color:var(--lamp3);background:#221d10}
+.ov{position:fixed;inset:0;background:rgba(4,5,6,.97);z-index:9;overflow-y:auto;display:flex;padding:20px}
+.ov .box{margin:auto;max-width:400px;width:100%}
+.ov h1{font:500 36px/1.05 Georgia,serif;margin:0 0 8px}.ov h2{font:500 26px/1.1 Georgia,serif;margin:0 0 8px}
+.ov p{line-height:1.45;color:var(--t2)}.ov ul{padding-left:18px;color:#c9c4b8;font-size:14px;line-height:1.5}.ov li{margin-bottom:6px}.ov b{color:var(--tx)}
+.main{width:100%;background:var(--lamp);color:#1a1408;border:0;font-size:17px;min-height:54px;border-radius:999px;margin-top:10px}
+.sec{width:100%;background:none;border:1.5px solid #353e4d;border-radius:999px;margin-top:8px;min-height:50px}
+.cover{height:58vh;border-radius:18px;background:#000 url(art/cover.webp) center/cover;box-shadow:inset 0 -150px 90px -30px #040506;display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+table.nb{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+table.nb th,table.nb td{border:1px solid #2a2f34;padding:5px 2px;text-align:center}
+table.nb th{font-weight:500;color:var(--t2);font-size:16px}
+table.nb td.nm{text-align:left;padding-left:6px;white-space:nowrap}
+table.nb .y{color:#ff9a8a;font-weight:700}table.nb .no{color:#7fd0a0;font-weight:700}table.nb .hs{color:#c9b892}
+table.nb tr.inn td{opacity:.45}
+.score{font:500 44px Georgia,serif;color:var(--lamp)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top"><div><small id="sub">Villa sul lago di Como · 1923</small><b>La cena</b></div><div><div id="clock">20:30</div><div id="left"></div></div></div>
+  <div id="table"></div>
+  <div id="msg"></div>
+  <div id="hint">Tocca un ospite per osservarlo, interrogarlo o accusarlo.</div>
+  <div id="ctrl"><button id="bNote">📓 Taccuino</button><button id="bRules">Regole</button></div>
+</div>
+
+<div class="sheet hide" id="shG"><div class="hd"><div class="pt" id="gP"></div><div style="flex:1"><h3 id="gN"></h3><div class="rl" id="gR"></div></div><button id="gX" style="min-height:36px;width:36px;padding:0;border-radius:99px">✕</button></div>
+  <div class="facts" id="gF"></div>
+  <div class="mk"><button data-m="0">Nessuna idea</button><button data-m="1">Sospetto</button><button data-m="2">Innocente</button></div>
+  <div class="sig hide" id="gSig"></div>
+  <div class="row3"><button id="gO">👁 Osserva lui<br><small>scegli il segno</small></button><button id="gA">💬 Chiedigli dei vicini<br><small>due voci, forse false</small></button><button id="gJ" class="ready">☝ Accusa</button></div>
+</div>
+
+<div class="ov" id="ovCover"><div class="box">
+  <div class="cover"><h1>La cena</h1><p style="margin:0;color:#d8d2c4">Sei ospiti. Una villa sul lago di Como. Uno di loro non è quello che dice di essere. A mezzanotte si spengono le luci.</p></div>
+  <p id="cvTxt"></p>
+  <button class="main" id="bDaily">Sfida di oggi</button><button class="sec" id="bRand">Un'altra cena</button>
+</div></div>
+
+<div class="ov hide" id="ovRules"><div class="box">
+  <h2>Come si gioca</h2>
+  <ul>
+    <li>Tra i sei ospiti c'è un <b>vampiro</b>. Trovalo prima di mezzanotte.</li>
+    <li>Il vampiro mostra <b>tutti e sei i segni</b>: 🧄 evita l'aglio, 🌙 è arrivato dopo il tramonto, 🧊 ha le mani gelide, 🐕 il cane gli ringhia, ✝ distoglie lo sguardo dal crocifisso, 🍷 non tocca il vino. Gli innocenti ne mostrano qualcuno, per mille ragioni normali, ma <b>mai tutti</b>.</li>
+    <li>Quindi un ospite è innocente appena scopri <b>un segno che non ha</b>.</li>
+    <li>Tocca un ospite. <b>Osserva</b>: scopri con certezza uno dei suoi segni. <b>Chiedi</b>: ti racconta un segno dei due vicini di tavola. Due informazioni al prezzo di una, ma <b>il vampiro mente su tutto</b>, e un innocente mente <b>su un solo segno</b> (ha qualcosa da nascondere: tocca a te capire quale).</li>
+    <li>Alcuni segni si vedono solo più tardi: le <b>mani gelide</b> dalle 22:00, quando si balla; il <b>cane</b> dalle 22:30, quando lo liberano in giardino. Prima puoi solo sentirne parlare.</li>
+    <li>Ogni azione costa un quarto d'ora. Alle 23:00 succede qualcosa.</li>
+    <li>Quando sei sicuro, <b>accusa</b>. Più tempo resta, più punti. Se tutti gli altri sono provati innocenti, il bonus è pieno. Se sbagli, la cena finisce male.</li>
+    <li>Il <b>taccuino</b> raccoglie tutto: segni visti con i tuoi occhi e cose dette (che possono essere false).</li>
+  </ul>
+  <button class="main" id="bRulesOk">A tavola</button>
+</div></div>
+
+<div class="ov hide" id="ovNote"><div class="box" style="margin-top:0">
+  <h2>Il taccuino</h2>
+  <p style="margin:0;font-size:13px"><span style="color:#ff9a8a">●</span> segno visto · <span style="color:#7fd0a0">○</span> segno che NON ha (quindi innocente) · <span style="color:#c9b892">"…"</span> detto da qualcuno</p>
+  <div id="nbT"></div>
+  <button class="main" id="bNoteOk">Torna a tavola</button>
+</div></div>
+
+<div class="ov hide" id="ovEnd"><div class="box">
+  <h2 id="eT"></h2><div class="score" id="eS"></div><p id="eP"></p>
+  <button class="main" id="bAgain">Un'altra cena</button><button class="sec" id="bSame">Rigioca questa</button>
+</div></div>
+
+<script>
+const SIGNS=[
+ {i:'🧄',n:'aglio',y:'Non tocca nemmeno un boccone dell\'arrosto all\'aglio.',no:'Fa il bis di arrosto all\'aglio.',sy:'evita l\'aglio',sn:'mangia l\'aglio'},
+ {i:'🌙',n:'tramonto',y:'È arrivato a villa dopo il tramonto.',no:'Era qui già nel pomeriggio, a giocare a bocce.',sy:'è arrivato dopo il tramonto',sn:'era qui già di giorno'},
+ {i:'🧊',n:'mani',y:'Ti stringe la mano: è gelida.',no:'Ti stringe la mano: è calda, quasi sudata.',sy:'ha le mani gelide',sn:'ha le mani calde'},
+ {i:'🐕',n:'cane',y:'Il levriero di casa gli ringhia, a denti scoperti.',no:'Il levriero di casa gli si accuccia sui piedi.',sy:'non piace al cane',sn:'piace al cane'},
+ {i:'✝',n:'crocifisso',y:'Distoglie lo sguardo dal crocifisso sopra il camino.',no:'Guarda il crocifisso del camino senza battere ciglio.',sy:'evita il crocifisso',sn:'guarda il crocifisso'},
+ {i:'🍷',n:'vino',y:'Il suo bicchiere di vino è ancora pieno.',no:'Ha già finito il secondo bicchiere di Barbera.',sy:'non beve il vino',sn:'beve il vino'}];
+const SI=i=>`<img src="art/s_${SIGNS[i].n}.png" alt="" style="width:22px;height:22px;vertical-align:-5px">`;
+const GUESTS=[
+ {n:'La contessa Ludovica',r:'padrona di casa, vedova',e:'👒'},{n:'Il colonnello Ferraris',r:'eroe del Carso',e:'🎖'},
+ {n:'Il dottor Valli',r:'medico condotto',e:'🩺'},{n:'Mimì Sorel',r:'cantante d\'operetta',e:'🎭'},
+ {n:'Il notaio Bersani',r:'esecutore del testamento',e:'📜'},{n:'Ettore',r:'giovane poeta squattrinato',e:'🖋'}];
+const START=20*60+30,STEP=15,END=24*60,TURNS=(END-START)/STEP;
+const UNLOCK={2:6,3:8}; // mani dalle 22:00, cane dalle 22:30
+const locked=i=>UNLOCK[i]!=null&&S.turn<UNLOCK[i];
+let SEED=1;function rnd(){SEED|=0;SEED=SEED+0x6D2B79F5|0;let t=Math.imul(SEED^SEED>>>15,1|SEED);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
+const R=n=>Math.floor(rnd()*n);
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=R(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
+let S,LAST=0,SEL=null;
+
+function newGame(daily,seed){
+  SEED=seed!=null?seed:(daily?todayN()*6151+3:(Date.now()%1e9));LAST=SEED;
+  const seats=shuf([0,1,2,3,4,5]); // posto -> ospite
+  const vamp=R(6);let liar;do{liar=R(6);}while(liar===vamp);
+  const tr=[];for(let g=0;g<6;g++){if(g===vamp){tr.push([1,1,1,1,1,1]);continue;}
+    const k=3+R(3);/* 3..5 segni */ const on=shuf([0,1,2,3,4,5]).slice(0,k);tr.push([0,1,2,3,4,5].map(i=>on.includes(i)?1:0));}
+  S={daily:!!daily,turn:0,seats,vamp,liar,tr,seen:tr.map(()=>[null,null,null,null,null,null]),said:tr.map(()=>[]),mark:[0,0,0,0,0,0],out:[false,false,false,false,false,false],
+     order:tr.map(()=>shuf([0,1,2,3,4,5])),over:false,log:[],faint:null,liarSign:R(6)};
+  say('Si cena. La contessa batte il cucchiaino sul bicchiere: «Che bella serata, tutti insieme.» Uno di voi non mangia l\'aglio per una buona ragione.');
+  render();
+}
+const nameOf=g=>GUESTS[g].n;
+const seatOf=g=>S.seats.indexOf(g);
+const neighbors=g=>{const p=seatOf(g);return[S.seats[(p+5)%6],S.seats[(p+1)%6]];};
+function clock(t){const m=START+t*STEP;return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function say(html){S.log.unshift(html);S.log=S.log.slice(0,6);}
+function proven(g){return S.seen[g].some(v=>v===0)||S.out[g];}
+function act(kind,g,si){
+  if(S.over)return;S.hl=[g];SEL=null;document.getElementById('shG').classList.add('hide');
+  if(kind==='obs'){const i=si!=null?si:S.order[g].find(i=>S.seen[g][i]===null&&!locked(i));if(i==null||S.seen[g][i]!==null||locked(i)){say('Di '+nameOf(g)+' hai già visto tutto.');S.hl=[];return render();}
+    const v=S.tr[g][i];S.seen[g][i]=v;say(`<b>${nameOf(g)}</b> · ${SI(i)} <span class="q">${v?SIGNS[i].y:SIGNS[i].no}</span>`+(v?'':' <span style="color:#7fd0a0">Innocente.</span>'));}
+  if(kind==='ask'){const out=[];
+    for(const h of neighbors(g)){if(S.out[h])continue;S.hl.push(h);const cand=[0,1,2,3,4,5].filter(i=>S.seen[h][i]===null&&!S.said[h].some(x=>x.by===g&&x.i===i));let i=cand.length?cand[R(cand.length)]:R(6);
+      if(g===S.liar&&cand.includes(S.liarSign)&&rnd()<.5)i=S.liarSign;
+      const lie=g===S.vamp||(g===S.liar&&i===S.liarSign);const claim=lie?1-S.tr[h][i]:S.tr[h][i];S.said[h].push({by:g,i,v:claim});out.push(`di ${nameOf(h).replace(/^(Il |La |Lo )/,'').replace(/^(contessa |colonnello |dottor |notaio )/,'')}: «${claim?SIGNS[i].sy:SIGNS[i].sn}»`);}
+    say(out.length?`<b>${nameOf(g)}</b> ti racconta, a bassa voce, ${out.join('; e ')}. <span style="color:#9aa3b2">(Potrebbe mentire.)</span>`:`<b>${nameOf(g)}</b> non ha niente da dirti.`);}
+  S.turn++;
+  // contraddizioni
+  if(S.turn===6)say('<b>22:00.</b> Il grammofono parte, si balla. Ora puoi stringere le mani a tutti: '+SI(2)+' mani gelide osservabili.');
+  if(S.turn===8)say('<b>22:30.</b> Liberano il levriero in giardino, gira tra le sedie: '+SI(3)+' cane osservabile.');
+  if(S.turn===10&&!S.faint){const cand=[0,1,2,3,4,5].filter(x=>x!==S.vamp&&!S.out[x]);const f=cand[R(cand.length)];S.out[f]=true;S.faint=f;
+    say(`<span style="color:#ff9a8a">Alle 23:00 ${nameOf(f)} si accascia sulla poltrona, pallido, con due piccoli segni sul collo. È vivo, per ora. Di certo non è lui il vampiro.</span>`);}
+  if(S.turn>=TURNS){return finish(null);}
+  render();
+}
+function accuse(g){if(S.over)return;finish(g);}
+function finish(g){
+  S.over=true;document.getElementById('shG').classList.add('hide');
+  const ok=g===S.vamp,left=TURNS-S.turn,proof=[0,1,2,3,4,5].every(x=>x===S.vamp||proven(x));
+  const pts=ok?left*2+(proof?6:0)+4:0;
+  let best=0;try{best=+localStorage.getItem('ce_best')||0;if(pts>best)localStorage.setItem('ce_best',pts);}catch(_){}
+  document.getElementById('eT').textContent=g==null?'Mezzanotte':ok?'Smascherato':'Hai sbagliato';
+  document.getElementById('eS').textContent=pts+' punti';
+  const V=nameOf(S.vamp);
+  document.getElementById('eP').innerHTML=(S.daily?`Cena n° ${todayN()}. `:'')+(g==null?`Le luci si spengono. Quando si riaccendono, manca qualcuno, e ${V} si pulisce le labbra col tovagliolo.`
+    :ok?`${V} si alza lentamente. Il levriero ringhia. Poi la finestra si apre da sola, e di lui resta solo il mantello sulla sedia. ${proof?'Hai provato l\'innocenza di tutti gli altri: bonus pieno.':'Non avevi le prove per tutti: niente bonus.'} Tempo rimasto: ${left*15} minuti.`
+    :`${nameOf(g)} ti guarda offeso. Il colpevole era ${V}, che ti sorride da dietro il bicchiere pieno.`)
+    +` Il bugiardo innocente era ${nameOf(S.liar)}: mentiva solo su «${SIGNS[S.liarSign].n}». Record: ${Math.max(best,pts)}.`;
+  {const oe=document.getElementById('ovEnd');oe.style.background=`linear-gradient(rgba(4,5,6,.35),rgba(4,5,6,.94) 55%),#000 url(art/${ok?'fine_si':'fine_no'}.webp) center top/cover`;}
+  render();setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),300);
+}
+
+/* ---------- disegno ---------- */
+function render(){
+  document.getElementById('clock').textContent=clock(S.turn);document.getElementById('clock').classList.toggle('late',S.turn>=TURNS-4);
+  document.getElementById('left').textContent=`${TURNS-S.turn} azioni prima di mezzanotte`;
+  const W=360,H=480;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="cd"><stop offset="0" stop-color="#f3c76a" stop-opacity=".35"/><stop offset="1" stop-color="#f3c76a" stop-opacity="0"/></radialGradient>${[0,1,2,3,4,5].map(g=>`<clipPath id="cp${g}"><circle r="34"/></clipPath>`).join('')}</defs>
+  <image href="art/tavola.webp" x="0" y="0" width="${W}" height="${H}"/><rect x="0" y="0" width="${W}" height="${H}" fill="#000" opacity="${Math.min(.55,S.turn*.035)}"/>
+  <circle cx="180" cy="205" r="${Math.max(20,60-S.turn*2.5)}" fill="url(#cd)"/>`;
+  const pos=[[180,52],[316,160],[316,302],[180,420],[44,302],[44,160]];
+  S.seats.forEach((g,p)=>{const [x,y]=pos[p],inn=proven(g),m=S.mark[g],fin=S.over&&g===S.vamp;
+    const ring=fin?'#ff3b2f':SEL===g?'#8cc4ff':m===1?'#ff9a8a':inn||m===2?'#7fd0a0':'#f3c76a';
+    s+=`<g><circle class="g" data-g="${g}" cx="${x}" cy="${y}" r="38" fill="#120e09" stroke="${ring}" stroke-width="${SEL===g?4:3}"/>
+      <g transform="translate(${x} ${y})"><image href="art/g${g}.png" x="-34" y="-34" width="68" height="68" clip-path="url(#cp${g})" style="${S.out[g]?'filter:grayscale(1) brightness(.55)':''}"/></g>
+      <rect x="${x-44}" y="${y+38}" width="88" height="15" rx="7" fill="#0b0806" opacity=".78"/><text x="${x}" y="${y+49}" text-anchor="middle" font-size="10" fill="#ecdcb8">${GUESTS[g].n.replace(/^(Il |La )/,'')}</text>`;
+    const nseen=S.seen[g].filter(v=>v===1).length;if(nseen)s+=`<g><circle cx="${x+28}" cy="${y-28}" r="11" fill="#5a1410" stroke="#ff9a8a"/><text x="${x+28}" y="${y-24}" text-anchor="middle" font-size="11" font-weight="700" fill="#ffd0c8">${nseen}</text></g>`;
+    if(inn)s+=`<circle cx="${x-28}" cy="${y-28}" r="11" fill="#0f2a1c" stroke="#7fd0a0"/><text x="${x-28}" y="${y-24}" text-anchor="middle" font-size="12" fill="#7fd0a0">✓</text>`;
+    if(S.out[g])s+=`<text x="${x}" y="${y+6}" text-anchor="middle" font-size="22">🩸</text>`;
+    if((S.hl||[]).includes(g))s+=`<circle cx="${x}" cy="${y}" r="45" fill="none" stroke="#ffe2a0" stroke-width="3" stroke-dasharray="6 5"><animate attributeName="stroke-opacity" values="1;.2;1" dur="1.2s" repeatCount="3"/></circle>`;
+    s+='</g>';});
+  s+='</svg>';
+  const t=document.getElementById('table');t.innerHTML=s;
+  t.querySelectorAll('.g').forEach(el=>el.addEventListener('click',()=>openG(+el.dataset.g)));
+  document.getElementById('msg').innerHTML=S.log.map((l,i)=>`<div style="opacity:${i?0.5:1};margin-bottom:4px;${i?'font-size:12px':'font-size:15px'}">${l}</div>`).join('');
+  if(SEL!=null)drawSheet();
+}
+function factsHTML(g){let h='';
+  SIGNS.forEach((sg,i)=>{const v=S.seen[g][i];if(v===1)h+=`<div><span>${SI(i)}</span><span class="s">${sg.sy[0].toUpperCase()+sg.sy.slice(1)} (visto)</span></div>`;else if(v===0)h+=`<div><span>${SI(i)}</span><span class="n">${sg.sn[0].toUpperCase()+sg.sn.slice(1)} (visto): innocente</span></div>`;});
+  for(const x of S.said[g])h+=`<div><span>${SI(x.i)}</span><span class="h">«${x.v?SIGNS[x.i].sy:SIGNS[x.i].sn}», secondo ${nameOf(x.by)}</span></div>`;
+  return h||'<div style="color:#7f899b">Non sai ancora niente.</div>';}
+function openG(g){if(S.over)return;SEL=g;drawSheet();document.getElementById('shG').classList.remove('hide');render();}
+function drawSheet(){const g=SEL;document.getElementById('gSig').classList.add('hide');{const b=document.getElementById('gJ');b.dataset.arm='';b.innerHTML='☝ Accusa';}document.getElementById('gP').innerHTML=`<img src="art/g${g}.png" style="width:100%;height:100%;border-radius:50%;${S.out[g]?'filter:grayscale(1) brightness(.6)':''}">`;document.getElementById('gN').textContent=GUESTS[g].n;document.getElementById('gR').textContent=GUESTS[g].r;
+  document.getElementById('gF').innerHTML=factsHTML(g);
+  document.querySelectorAll('.mk button').forEach(b=>b.classList.toggle('on',+b.dataset.m===S.mark[g]));
+  const done=![0,1,2,3,4,5].some(i=>S.seen[g][i]===null&&!locked(i));document.getElementById('gO').disabled=S.over||done||S.out[g];document.getElementById('gA').disabled=S.over||S.out[g];document.getElementById('gJ').disabled=S.over||S.out[g];}
+function noteHTML(){let h='<table class="nb"><tr><th></th>'+SIGNS.map((s,i)=>`<th>${SI(i)}</th>`).join('')+'</tr>';
+  for(const g of S.seats){h+=`<tr class="${proven(g)?'inn':''}"><td class="nm"><img src="art/g${g}.png" style="width:24px;height:24px;vertical-align:-7px"> ${GUESTS[g].n.replace(/^(Il |La )/,'').split(' ').slice(-1)[0]}${proven(g)?' ✅':''}</td>`;
+    SIGNS.forEach((sg,i)=>{const v=S.seen[g][i];const hs=S.said[g].filter(x=>x.i===i);
+      h+=`<td>${v===1?'<span class="y">●</span>':v===0?'<span class="no">○</span>':hs.length?`<span class="hs">${hs.map(x=>x.v?'●':'○').join('')}"</span>`:''}</td>`;});
+    h+='</tr>';}
+  return h+'</table>';}
+
+document.getElementById('gX').onclick=()=>{SEL=null;document.getElementById('shG').classList.add('hide');render();};
+document.getElementById('gO').onclick=()=>{const el=document.getElementById('gSig');if(!el.classList.contains('hide')){el.classList.add('hide');return;}
+  const g=SEL;el.innerHTML=SIGNS.map((sg,i)=>{const v=S.seen[g][i],lk=locked(i);
+    return `<button data-i="${i}" ${v!==null||lk?'disabled':''}>${SI(i)} ${sg.n}<br><small>${v!==null?'già visto':lk?'dalle '+clock(UNLOCK[i]):'osserva'}</small></button>`;}).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>act('obs',SEL,+b.dataset.i));el.classList.remove('hide');};
+document.getElementById('gA').onclick=()=>act('ask',SEL);
+document.getElementById('gJ').onclick=()=>{const b=document.getElementById('gJ');if(b.dataset.arm==='1'){b.dataset.arm='';accuse(SEL);}else{b.dataset.arm='1';b.innerHTML='Sicuro?<br><small>tocca ancora</small>';}};
+document.querySelectorAll('.mk button').forEach(b=>b.onclick=()=>{S.mark[SEL]=+b.dataset.m;drawSheet();render();});
+document.getElementById('bNote').onclick=()=>{document.getElementById('nbT').innerHTML=noteHTML();document.getElementById('ovNote').classList.remove('hide');};
+document.getElementById('bNoteOk').onclick=()=>document.getElementById('ovNote').classList.add('hide');
+document.getElementById('bRules').onclick=()=>{document.getElementById('bRulesOk').textContent='Torna a tavola';document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bRulesOk').onclick=()=>document.getElementById('ovRules').classList.add('hide');
+const start=d=>{document.getElementById('ovCover').classList.add('hide');newGame(d);document.getElementById('ovRules').classList.remove('hide');};
+document.getElementById('bDaily').onclick=()=>start(true);
+document.getElementById('bRand').onclick=()=>start(false);
+document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');SEL=null;newGame(false);};
+document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');SEL=null;newGame(S.daily,LAST);};
+document.getElementById('cvTxt').innerHTML=`Cena n° ${todayN()}. Trova il vampiro prima che si spengano le luci.`;
+newGame(true);
+window._S=()=>S;window._act=act;window._acc=accuse;window._new=newGame;window._proven=proven;window._locked=locked;
+</script>
+<script id="sh-skip">(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_la-cena';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
+const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
+</body>
+</html>
