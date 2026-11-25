@@ -1,0 +1,48 @@
+{
+ "slug": "pedalata-notturna",
+ "title": {
+  "it": "Pedalata notturna",
+  "en": "Night Ride"
+ },
+ "hook": {
+  "it": "Da Bosco Marengo a Fresonara, di notte, con la dinamo e la masca alle spalle.",
+  "en": "From Bosco Marengo to Fresonara at night, with a dynamo light and a witch behind you."
+ },
+ "lead": {
+  "it": "Sei in bici, è tardi, e a casa ti aspettano entro le 23:45. La dinamo illumina tanto quanto pedali, ma il fiato finisce.",
+  "en": "You're on your bike, it's late, and you're expected home by 23:45. The dynamo lights the road as fast as you pedal, but your breath runs out."
+ },
+ "howto": {
+  "it": [
+   "Avanza di 1, 2 o 3 tratti: più veloce, più luce, meno fiato.",
+   "Evita buche, cani e fuochi fatui; pane, sassi e sale ti aiutano.",
+   "Al bivio di Cascina Quarti scegli: giro largo o salita della chiesa."
+  ],
+  "en": [
+   "Ride 1, 2 or 3 sections: faster means more light and less breath.",
+   "Avoid potholes, dogs and will-o'-the-wisps; bread, stones and salt help.",
+   "At the Cascina Quarti fork choose: the long way or the church climb."
+  ]
+ },
+ "campaign": {
+  "it": "Ogni notte ha le sue condizioni: nebbia, luna piena, temporale. La sfida di oggi è uguale per tutti.",
+  "en": "Every night has its own conditions: fog, full moon, storm. Today's challenge is the same for everyone."
+ },
+ "minutes": [
+  5,
+  10
+ ],
+ "difficulty": 3,
+ "accent": "#f3c76a",
+ "chapters": 0,
+ "free": "daily",
+ "price": {
+  "eur": 1.99
+ },
+ "status": "live",
+ "lang": [
+  "it"
+ ],
+ "new": true,
+ "order": 0
+}
