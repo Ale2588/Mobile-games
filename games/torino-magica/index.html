@@ -67,12 +67,18 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
     <li><b>Libri</b>: quando un mostro è a due passi, tiragli un libro in testa (il pulsante diventa «📕 Lancia»). Lo stordisci e lo respingi per qualche turno. Ne prendi uno in più in ogni libreria, edicola o casa editrice dove passi.</li>
     <li>Sotto, oltre ai tesori, ci sono gallerie laterali con gianduiotti (2 punti).</li>
     <li>Ogni giornata parti da un posto diverso della città, e tombini e lampioni cambiano.</li>
+    <li><b>Il Collezionista</b> 🎩, un signore col cappello, gira per il centro di pomeriggio: raccoglie i gianduiotti e <b>apre i tombini</b> per scendere a rubare i tesori. Ogni tombino che apre, stanotte, è un mostro in più. Se lo raggiungi ti restituisce quello che ha preso, e scappa. Puoi anche richiudere i tombini che lascia aperti.</li>
+    <li>Per strada <b>incontri gente</b>. Fermarsi costa tempo, ma a volte ne vale la pena.</li>
     <li>Le persone che aiuti ti restituiscono il favore di notte: il caffè ti lascia la serranda aperta, il giornalaio ti avvisa, il libraio ti presta una torcia.</li>
     <li>Torna a casa. Conta solo quello che riporti: se un mostro ti prende, la giornata è persa. Rientro prima del buio: +3.</li>
   </ul>
   <button class="main" id="bRulesOk">In giro</button>
 </div></div>
 
+<div class="ov hide" id="ovEv" style="background:rgba(4,5,6,.88)"><div class="box" style="margin-bottom:max(20px,env(safe-area-inset-bottom))">
+  <p id="evK" style="letter-spacing:.12em;text-transform:uppercase;font-size:11px;margin:0 0 6px;color:#f0b8d8"></p><h2 id="evT"></h2><p id="evX" style="color:#d8d2c4"></p>
+  <button class="main" id="evA"></button><button class="sec" id="evB"></button>
+</div></div>
 <div class="ov hide" id="ovEnd"><div class="box">
   <h2 id="eT"></h2><div class="score" id="eS"></div><p id="eP"></p>
   <button class="main" id="bAgain">Un'altra giornata</button><button class="sec" id="bSame">Riprova la stessa</button>
@@ -151,7 +157,7 @@ function buildMissions(){
   const favs=pool.filter(m=>m.fav),pick=[favs[0],...pool.filter(m=>m!==favs[0]).slice(0,2)].sort(()=>rnd()-.5);
   const under=rnd()<.5?{t:'tesoro',k:'manoscritto',pts:4,txt:'Si dice che sotto Porta Palazzo ci sia un manoscritto perduto. Scendi a cercarlo.'}:{t:'tesoro',k:'amuleto',pts:4,txt:'Il tuo editore giura che nelle gallerie c\'è un amuleto egizio. Trovalo: farà un romanzo.'};
   return [...pick,under];}
-const FAV={barista:'☕ Il caffè ti lascia la serranda aperta',giornalaio:'🗞 Il giornalaio ti avvisa',libraio:'🔦 Hai la torcia del libraio'};
+const FAV={medaglia:'🏅 Medaglietta di san Giovanni',gatto:'🐈 Il gatto ti segue',barista:'☕ Il caffè ti lascia la serranda aperta',giornalaio:'🗞 Il giornalaio ti avvisa',libraio:'🔦 Hai la torcia del libraio'};
 function curM(){return S.mq[S.mi];}
 function mTarget(){const m=curM();if(!m)return S.night?{c:PLACES.casa.c,r:PLACES.casa.r,L:'su'}:null;if(m.t==='luogo')return{c:PLACES[m.p].c,r:PLACES[m.p].r,L:'su'};
   const t=S.treas.find(x=>x.k===m.k&&!x.got);return t?{c:t.c,r:t.r,L:'giu'}:null;}
@@ -160,6 +166,65 @@ function checkMission(){let m=curM(),g=0;while(m&&g++<8){let ok=false;
     if(!ok)break;S.mpts+=m.pts;if(m.fav){S.fav[m.fav]=true;msgs.push(FAV[m.fav]+(m.fav==='barista'?' stanotte: lì dentro i mostri non entrano.':m.fav==='giornalaio'?' se di notte un mostro ti si avvicina.':': di notte vedi più lontano.'));}
     msgs.push(`✓ Fatto: +${m.pts}.`);S.mi++;m=curM();if(m)msgs.push('Ora: '+m.txt);}
 }
+
+/* ---------- il Collezionista ---------- */
+function farStreet(min){const out=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(tile(c,r)!=='#'&&!placeAt(c,r)&&!isTomb(c,r)&&dist(c,r,S.p.c,S.p.r)>=min)out.push([c,r]);return out[R(out.length)];}
+function colStep(){const C=S.col;if(!C||C.gone)return;
+  if(S.turn>=DUSK){C.gone=true;if(!C.down)msgs.push(`Il Collezionista si tocca il cappello e sparisce sotto i portici${C.carry?`, con ${C.carry} gianduiotti in tasca`:''}.`);return;}
+  if(C.rest>0){C.rest--;return;}
+  if(C.down>0){C.down--;if(C.down)return;
+    const ts=TOMB.filter(([c,r])=>!(c===C.tc&&r===C.tr)&&!(S.L==='su'&&c===S.p.c&&r===S.p.r));const [c,r]=ts[R(ts.length)];C.c=c;C.r=r;
+    const k=key(c,r),was=S.opened.has(k);S.opened.add(k);let st='';
+    const need=S.mq.slice(S.mi).filter(m=>m.t==='tesoro').map(m=>m.k);const cand=S.treas.filter(t=>!t.got&&!need.includes(t.k));
+    if(cand.length&&rnd()<.6){const t=cand[R(cand.length)];t.got=true;C.loot.push(t);st=` Sotto il braccio ha ${TREAS[t.k].n}.`;}
+    msgs.push(`Un tombino si solleva ${dirTo(c,r).replace('da ','a ')}: risale il Collezionista${was?'':', e lo lascia aperto'}.${st}`);return;}
+  if(S.turn%2)return;
+  const opts=nbL(C.c,C.r,'su').filter(([c,r])=>!(S.L==='su'&&c===S.p.c&&r===S.p.r));if(!opts.length)return;
+  let nx;
+  if(S.L==='su'&&cheb(C.c,C.r,S.p.c,S.p.r)<=2){opts.sort((a,b)=>cheb(b[0],b[1],S.p.c,S.p.r)-cheb(a[0],a[1],S.p.c,S.p.r)||dist(b[0],b[1],S.p.c,S.p.r)-dist(a[0],a[1],S.p.c,S.p.r));nx=opts[0];}
+  else{const dm=bfs(C.c,C.r,'su');const tg=[...S.gian.filter(g=>dist(g.c,g.r,C.c,C.r)<=3).map(g=>[g.c,g.r]),...TOMB.filter(([c,r])=>!S.opened.has(key(c,r)))];
+    if(!tg.length)return;tg.sort((a,b)=>(dm[key(...a)]??999)-(dm[key(...b)]??999));const [tc,tr]=tg[0];const dd=bfs(tc,tr,'su');
+    opts.sort((a,b)=>(dd[key(...a)]??999)-(dd[key(...b)]??999));nx=opts[0];}
+  C.c=nx[0];C.r=nx[1];
+  const gi=S.gian.findIndex(g=>g.c===C.c&&g.r===C.r);if(gi>=0){S.gian.splice(gi,1);C.carry++;}
+  if(isTomb(C.c,C.r)&&!S.opened.has(key(C.c,C.r))&&!(S.L==='su'&&cheb(C.c,C.r,S.p.c,S.p.r)<=2)){S.opened.add(key(C.c,C.r));C.down=7;C.tc=C.c;C.tr=C.r;
+    msgs.push(`Clang di ghisa, ${dirTo(C.c,C.r)}: il Collezionista ha aperto un tombino ed è sceso.`);}
+  if(!C.seen&&S.L==='su'&&!C.down&&cheb(C.c,C.r,S.p.c,S.p.r)<=4){C.seen=true;msgs.push('Un signore col cappello raccoglie un gianduiotto da terra e ti guarda. È il Collezionista: apre tombini, ruba tesori. Prendilo.');}
+}
+function catchCol(){const C=S.col;let t=`Prendi il Collezionista per la manica.`;
+  if(C.carry){S.gpts+=C.carry;t+=` Ti molla ${C.carry} gianduiotti`;C.carry=0;}else t+=' Non ha niente in tasca';
+  if(C.loot.length){const x=C.loot.shift();S.bag.push(x);t+=` e ${TREAS[x.k].n}`;}
+  t+=', poi scappa via.';msgs.push(t);const f=farStreet(7);if(f){C.c=f[0];C.r=f[1];}C.rest=4;}
+
+/* ---------- incontri ---------- */
+const EVENTS=[
+ {t:'Un turista giapponese',x:'Cerca la Sindone, con una cartina al contrario. Non parla italiano.',a:['Accompagnalo al Duomo','15 minuti'],b:'Indichi a gesti',
+  A:()=>{spend(3);S.match+=2;return'Si inchina tre volte e ti regala due scatole di fiammiferi dell\'albergo.';}},
+ {t:'La Stampa',x:'Un fotografo ti riconosce: «Una foto per l\'inserto cultura? Due minuti.» Non sono mai due minuti.',a:['Posa','10 minuti · +3'],b:'Scappi',
+  A:()=>{spend(2);S.mpts+=3;return'Ti fa girare tre volte verso la luce. Uscirà domenica: +3.';}},
+ {t:'Una vecchina',x:'In piazza ti prende la mano, la guarda e scuote la testa: «Lì sotto non si scende, figlia.»',a:['Ascoltala','10 minuti'],b:'Sorridi e vai',
+  A:()=>{spend(2);S.shield=1;S.fav.medaglia=true;return'Ti chiude in mano una medaglietta di san Giovanni. «Una volta sola. Poi arrangiati.» Se un mostro ti prende, ti lascia andare.';}},
+ {t:'Un gatto perso',x:'Un bambino piange sul portone: il suo gatto è finito in un cortile.',a:['Cercalo','15 minuti'],b:'Non hai tempo',
+  A:()=>{spend(3);S.fav.gatto=true;return'Lo trovi su un ballatoio. Il bambino lo riprende, ma il gatto, più tardi, ti segue. Di notte soffia quando qualcosa si avvicina.';}},
+ {t:'Il tuo ex',x:'Seduto al bar, ti fa segno. «Ieri ho visto un tizio col cappello aprire un tombino. Vuoi sapere dove va a cercare?»',a:['Un caffè','10 minuti'],b:'Lo saluti appena',
+  A:()=>{spend(2);const t=S.treas.find(t=>!t.got);if(t){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(UNDER.u.has(key(t.c+dc,t.r+dr)))S.known.add(key(t.c+dc,t.r+dr));return`Ti disegna sul tovagliolo dov'è ${TREAS[t.k].n}, là sotto. Ora lo trovi sulla mappa delle gallerie.`;}return'Parla solo di sé. Come sempre.';}},
+ {t:'La bancarella',x:'Libri usati sotto i portici, a mille lire. Un\'enciclopedia intera, pesantissima.',a:['Compra due volumi','5 minuti · −2 punti'],b:'Tiri dritto',
+  A:()=>{spend(1);S.mpts-=2;S.books+=2;return'Due volumi della Treccani in borsa. Ottimi da tirare.';}},
+ {t:'Un acquazzone',x:'Viene giù tutto d\'un colpo. Sotto i portici sono già tutti riparati.',a:['Aspetta che spiova','10 minuti'],b:'Corri sotto l\'acqua',
+  A:()=>{spend(2);return'Spiove. Il selciato luccica.';},B:()=>{if(S.match>0){S.match--;return'Arrivi fradicia, e una scatola di fiammiferi è da buttare.';}return'Arrivi fradicia.';}},
+ {t:'Il vigile',x:'«Signora, ha visto chi lascia i tombini aperti? È la terza volta oggi.»',a:['Glielo dici','5 minuti'],b:'Non hai visto niente',need:()=>S.opened.size>0,
+  A:()=>{spend(1);const arr=[...S.opened].filter(k=>k!==key(S.p.c,S.p.r)).slice(0,2);arr.forEach(k=>S.opened.delete(k));return arr.length?`Fischia, chiama due operai. Chiudono ${arr.length} tombini.`:'Prende nota, e basta.';}},
+ {t:'Il Collezionista',x:'Ti si affianca, si tocca il cappello: «Quello che ha in borsa, glielo compro. Adesso, e a buon prezzo.»',a:['Vendi un tesoro','+3 sul suo valore'],b:'Non è in vendita',need:()=>S.bag.length>0&&!S.col.gone,
+  A:()=>{const t=S.bag.shift();S.mpts+=TREAS[t.k].p+3;return`Gli lasci ${TREAS[t.k].n}. Paga in contanti: +${TREAS[t.k].p+3}, e la borsa è più leggera.`;}}];
+function spend(n){for(let i=0;i<n;i++){S.turn++;colStep();}}
+let EVCUR=null;
+function maybeEvent(){if(S.over||S.L!=='su'||S.turn>=DUSK-2||!S.evT.length||S.turn<S.evT[0])return;
+  let idx=S.evQ.findIndex(i=>!EVENTS[i].need||EVENTS[i].need());if(idx<0)return;const e=EVENTS[S.evQ.splice(idx,1)[0]];S.evT.shift();EVCUR=e;
+  document.getElementById('evK').textContent='Per strada · '+clock(S.turn);document.getElementById('evT').textContent=e.t;document.getElementById('evX').textContent=e.x;
+  document.getElementById('evA').innerHTML=`${e.a[0]} <small style="font-weight:500;opacity:.75">· ${e.a[1]}</small>`;document.getElementById('evB').textContent=e.b;
+  document.getElementById('ovEv').classList.remove('hide');}
+function evPick(a){const e=EVCUR;if(!e)return;EVCUR=null;document.getElementById('ovEv').classList.add('hide');msgs=[];
+  const r=a?e.A():(e.B?e.B():'Tiri dritto.');msgs.unshift(r);render();}
 
 /* ---------- partita ---------- */
 let S,msgs=[],LAST=0;
@@ -172,6 +237,8 @@ function newGame(daily,seed){
   const streets=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(tile(c,r)!=='#'&&!placeAt(c,r)&&!isTomb(c,r)&&dist(c,r,14,21)>3&&dist(c,r,st[0],st[1])>1)streets.push([c,r]);
   for(let i=0;i<14;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.gian.push({c,r});}
   for(let i=0;i<3;i++){const [c,r]=streets.splice(R(streets.length),1)[0];S.boxes.push({c,r});}
+  {const far=streets.filter(([c,r])=>dist(c,r,st[0],st[1])>=9);const [c,r]=far[R(far.length)];S.col={c,r,carry:0,down:0,rest:2,loot:[],gone:false,seen:false};}
+  S.evQ=EVENTS.map((e,i)=>i).sort(()=>rnd()-.5);S.evT=[6,17,28,39];S.shield=0;
   const ucells=[...UNDER.u].map(k=>k.split(',').map(Number)).filter(([c,r])=>!isTomb(c,r));
   const near2=[6,1];let mc=ucells.filter(([c,r])=>dist(c,r,near2[0],near2[1])<=7);if(!mc.length)mc=ucells;const [mx,my]=mc[R(mc.length)];S.treas.push({k:'manoscritto',c:mx,r:my});
   for(const k of ['amuleto','oro','pergamena']){const far=ucells.filter(([c,r])=>TOMB.every(([a,b])=>dist(a,b,c,r)>=3)&&!S.treas.some(t=>t.c===c&&t.r===r));const [c,r]=far[R(far.length)];S.treas.push({k,c,r});}
@@ -195,7 +262,8 @@ function move(c,r){
   if(S.over||!nbL(S.p.c,S.p.r,S.L).some(([a,b])=>a===c&&b===r))return;msgs=[];S.pan={c:0,r:0};
   if(S.bag.length>=2&&S.turn%4===3&&!S.seen['peso'+S.turn]){S.seen['peso'+S.turn]=1;msgs.push('Il sacco pesa: ti fermi a riprendere fiato.');return endTurn();}
   S.p={c,r};if(!(c===14&&r===21))S.left=true;
-  if(S.mons.some(m=>m.L===S.L&&m.c===c&&m.r===r))return caught();
+  if(S.L==='su'&&S.col&&!S.col.gone&&!S.col.down&&S.col.c===c&&S.col.r===r)catchCol();
+  if(S.mons.some(m=>m.L===S.L&&m.c===c&&m.r===r)){if(!caught())return;}
   arrive();endTurn();
 }
 function arrive(){const {c,r}=S.p;reveal();
@@ -214,7 +282,7 @@ function hole(){
   if(S.over||!isTomb(S.p.c,S.p.r))return;msgs=[];
   if(S.L==='su'){const k=key(S.p.c,S.p.r);const first=!S.opened.has(k);S.opened.add(k);S.L='giu';msgs.push(first?'Sollevi il tombino. Scendi nel buio umido: questo resterà aperto.':'Riscendi dal tombino che avevi aperto.');}
   else{S.opened.add(key(S.p.c,S.p.r));S.L='su';msgs.push('Risali in strada.');}
-  if(S.mons.some(m=>m.L===S.L&&m.c===S.p.c&&m.r===S.p.r))return caught();
+  if(S.mons.some(m=>m.L===S.L&&m.c===S.p.c&&m.r===S.p.r)){if(!caught())return;}
   reveal();endTurn();
 }
 function strike(){if(S.over||S.match<=0)return;msgs=[];S.match--;
@@ -228,7 +296,7 @@ function throwBook(){const m=nearMon()[0];if(S.over||!m||S.books<=0)return;msgs=
   m.c=best[0];m.r=best[1];m.rest=4;msgs.push(['Gli tiri in testa un Calvino rilegato. Barcolla all\'indietro, stordito.','Un Pavese prima edizione, dritto in faccia. Arretra, guaendo.','Gli lanci il dizionario dei sinonimi. Funziona.'][S.books%3]+(S.books?` Ti restano ${S.books} libri.`:' Era l\'ultimo libro.'));endTurn();}
 function wait(){if(S.over)return;msgs=['Aspetti, in ascolto.'];endTurn();}
 function endTurn(){
-  S.turn++;if(S.myLight>0){S.myLight--;if(!S.myLight)msgs.push('Il fiammifero si spegne.');}
+  S.turn++;colStep();if(S.myLight>0){S.myLight--;if(!S.myLight)msgs.push('Il fiammifero si spegne.');}
   if(S.turn===DUSK)msgs.push('Il sole scende dietro la Mole. Tra mezz\'ora è buio.');
   if(S.turn===NIGHT){S.night=true;let n=0;
     for(const k of S.opened){const [c,r]=k.split(',').map(Number);if(c===S.p.c&&r===S.p.r&&S.L==='su')continue;S.mons.push({c,r,L:'su',rest:1});n++;}
@@ -247,14 +315,16 @@ function endTurn(){
     let nx;if(hunt){const dd=bfs(S.p.c,S.p.r,m.L,(c,r)=>block(c,r)&&!(c===S.p.c&&r===S.p.r));opts.sort((a,b)=>(dd[key(...a)]??999)-(dd[key(...b)]??999));nx=opts[0];}
     else{if(m.L==='su'&&!S.night)continue;nx=opts[R(opts.length)];}
     m.c=nx[0];m.r=nx[1];
-    if(sameL&&m.c===S.p.c&&m.r===S.p.r)return caught();
+    if(sameL&&m.c===S.p.c&&m.r===S.p.r){if(!caught())return;}
   }
-  if(S.fav.giornalaio&&S.night&&S.L==='su'){const near=S.mons.filter(m=>m.L==='su'&&dist(m.c,m.r,S.p.c,S.p.r)<=4&&!seeNow(m.c,m.r));if(near.length&&S.turn%2===0)msgs.push('Ti torna in mente il giornalaio: «Occhio '+dirTo(near[0].c,near[0].r).replace('da ','a ')+'.»');}
+  if((S.fav.giornalaio||S.fav.gatto)&&S.night&&S.L==='su'){const near=S.mons.filter(m=>m.L==='su'&&dist(m.c,m.r,S.p.c,S.p.r)<=4&&!seeNow(m.c,m.r));if(near.length&&S.turn%2===0)msgs.push(S.fav.giornalaio?'Ti torna in mente il giornalaio: «Occhio '+dirTo(near[0].c,near[0].r).replace('da ','a ')+'.»':'Il gatto soffia, il pelo dritto, verso '+dirTo(near[0].c,near[0].r).replace('da ','')+'.');}
   if(S.L==='giu'&&S.mons.some(m=>m.L==='giu'&&dist(m.c,m.r,S.p.c,S.p.r)<=2)&&!S.seen.mon){S.seen.mon=1;msgs.push('Qualcosa si muove nel buio della galleria. Vicino.');}
   if(S.left&&S.L==='su'&&S.p.c===14&&S.p.r===21){S.over=true;render();return end(true);}
-  render();
+  render();maybeEvent();
 }
-function caught(){S.over=true;S.reveal=true;render();
+function caught(){if(S.shield){S.shield=0;delete S.fav.medaglia;for(const m of S.mons)if(m.L===S.L&&cheb(m.c,m.r,S.p.c,S.p.r)<=1){const o=nbL(m.c,m.r,m.L).filter(([c,r])=>cheb(c,r,S.p.c,S.p.r)>1);if(o.length)[m.c,m.r]=o[R(o.length)];m.rest=3;}
+    msgs.push('Una mano gelida ti afferra, poi molla di colpo: la medaglietta scotta in tasca. Non succederà un\'altra volta.');render();return true;}
+  S.over=true;S.reveal=true;render();
   const why=S.L==='giu'?'Nel buio della galleria qualcosa ti afferra la caviglia.':S.opened.size?'Ti raggiunge sotto i portici. Forse era salito da uno dei tombini che hai aperto tu.':'Ti raggiunge sotto i portici.';
   msgs=[why];render();document.getElementById('ctrl').classList.add('hide');document.getElementById('ctrlEnd').classList.remove('hide');S.why=why;}
 function end(ok){
@@ -309,6 +379,10 @@ function render(){
   for(const mo of S.mons){if(mo.L!==S.L||!inV(mo.c,mo.r))continue;if(!(seeNow(mo.c,mo.r)||S.reveal))continue;if(S.L==='su'&&!S.night&&!S.reveal)continue;const cx=X(mo.c)+CS/2,cy=Y(mo.r)+CS/2;
     s+=`<circle cx="${cx}" cy="${cy}" r="${CS*.7}" fill="url(#rd)"/><image href="art/s_mostro_${mo.L}.png" x="${cx-26}" y="${cy-26}" width="52" height="52" opacity="${mo.rest>1?.55:1}"/>${mo.rest>1?`<text x="${cx+16}" y="${cy-14}" font-size="14">💫</text>`:''}`;
     if(S.reveal&&mo.c===S.p.c&&mo.r===S.p.r)s+=`<circle cx="${cx}" cy="${cy}" r="${CS*.62}" fill="none" stroke="#ff3b2f" stroke-width="4"/>`;}
+  {const C=S.col;if(C&&!C.gone&&!C.down&&S.L==='su'&&!inV(C.c,C.r)&&phase()==='giorno'){const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2;let dx=X(C.c)+CS/2-px,dy=Y(C.r)+CS/2-py;const k=Math.min((W/2-20)/Math.abs(dx||1e-6),(H/2-20)/Math.abs(dy||1e-6));const ex=W/2+dx*k*.76,ey=H/2+dy*k*.76;
+    s+=`<circle cx="${ex}" cy="${ey}" r="15" fill="#1a1a22" fill-opacity=".85" stroke="#c9b892" stroke-width="2"/><image href="art/s_collezionista.png" x="${ex-16}" y="${ey-16}" width="32" height="32"/>`;}}
+  {const C=S.col;if(C&&!C.gone&&!C.down&&S.L==='su'&&inV(C.c,C.r)&&(phase()==='giorno'||seeNow(C.c,C.r))){const cx=X(C.c)+CS/2,cy=Y(C.r)+CS/2;
+    s+=`<circle cx="${cx}" cy="${cy}" r="20" fill="#1a1a22" fill-opacity=".8" stroke="#c9b892" stroke-width="2.5" stroke-dasharray="${C.rest?'4 3':'0'}"/><image href="art/s_collezionista.png" x="${cx-25}" y="${cy-25}" width="50" height="50"/>${C.carry?`<circle cx="${cx+16}" cy="${cy-15}" r="9" fill="#6b4a1e" stroke="#f3c76a"/><text x="${cx+16}" y="${cy-11}" text-anchor="middle" font-size="11" font-weight="700" fill="#ffe2a0">${C.carry}</text>`:''}`;}}
   // obiettivo
   {const t=mTarget();if(t&&t.L===S.L){if(inV(t.c,t.r))s+=`<rect x="${X(t.c)+2}" y="${Y(t.r)+2}" width="${CS-4}" height="${CS-4}" rx="9" fill="none" stroke="#f3c76a" stroke-width="3"/>`;
     else{const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2;let dx=X(t.c)+CS/2-px,dy=Y(t.r)+CS/2-py;const k=Math.min((W/2-18)/Math.abs(dx||1e-6),(H/2-18)/Math.abs(dy||1e-6));const ex=W/2+dx*k,ey=H/2+dy*k,ang=Math.atan2(dy,dx)*180/Math.PI;
@@ -339,6 +413,7 @@ document.getElementById('app').insertAdjacentHTML('beforeend','<div id="ctrlEnd"
 document.getElementById('bSeeEnd').onclick=()=>end(false);
 function resetCtrl(){document.getElementById('ctrl').classList.remove('hide');document.getElementById('ctrlEnd').classList.add('hide');}
 document.getElementById('bHole').onclick=hole;
+document.getElementById('evA').onclick=()=>evPick(true);document.getElementById('evB').onclick=()=>evPick(false);
 document.getElementById('bWait').onclick=()=>{if(nearMon().length&&S.books>0)throwBook();else wait();};
 document.getElementById('bClose').onclick=closeT;
 document.getElementById('bMatch').onclick=strike;
@@ -351,7 +426,7 @@ document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').
 document.getElementById('bSame').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');resetCtrl();newGame(S.daily,LAST);};
 document.getElementById('cvTxt').innerHTML=`Sfida n° ${todayN()}. Fai le tue commissioni. Torna a casa prima che la città si svegli.`;
 newGame(true);
-window._T=()=>TOMB;window._strike=strike;window._throw=throwBook;window._near=nearMon;window._S=()=>S;window._move=move;window._hole=hole;window._wait=wait;window._new=newGame;window._step=stepToward;window._bfs=bfs;window._open=openAt;window._isTomb=isTomb;
+window._ev=evPick;window._T=()=>TOMB;window._strike=strike;window._throw=throwBook;window._near=nearMon;window._S=()=>S;window._move=move;window._hole=hole;window._wait=wait;window._new=newGame;window._step=stepToward;window._bfs=bfs;window._open=openAt;window._isTomb=isTomb;
 </script>
 <script id="sh-skip">(function(){if(!/[?&]play\b/.test(location.search))return;const k='sh_rules_torino-magica';let seen=null;try{seen=localStorage.getItem(k);localStorage.setItem(k,'1');}catch(e){}
 const c=id=>{const e=document.getElementById(id);if(e)e.click();};setTimeout(()=>{c('bDaily');if(seen)c('bRulesOk');},0);})();</script>
