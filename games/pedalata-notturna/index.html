@@ -55,6 +55,7 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
 <div id="app">
   <div class="scene" id="scene"><div class="lbl"><span id="zoneSub"></span><b id="zoneName"></b></div>
     <div class="hud"><div><b id="clock">23:00</b> / 23:45</div><div id="dist"></div></div></div>
+  <div id="mission" style="padding:4px 14px 0;font-size:12px;color:#ffe2a0"></div>
   <div id="goal"><span id="goalTxt">Al monumento entro le 23:45</span><span class="fiato">Fiato <i id="fiato"></i></span></div>
   <div id="board"></div>
   <div id="msg"></div>
@@ -81,7 +82,8 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
     <li><b>I cani</b> delle cascine ti inseguono: il <b>pane</b> li ferma, il <b>sasso</b> li spaventa.</li>
     <li><b>I fuochi fatui</b> si vedono sempre. Se ci passi in mezzo, la dinamo si spegne per due turni.</li>
     <li><b>La masca</b> ti segue da dietro: se vai piano ti raggiunge. Il <b>sale</b> la ferma. L'edicola del crocevia la tiene lontana.</li>
-    <li>Gli oggetti si usano senza perdere il turno.</li>
+    <li>Gli oggetti si usano senza perdere il turno. Lungo la strada, nella luce, ne trovi altri, e la <b>borraccia</b> ti ridà fiato.</li>
+    <li>Ogni notte ha una <b>missione</b>: compierla vale una stella in più. E ci sono due <b>scorciatoie</b>, il guado e la vigna, ognuna con il suo prezzo.</li>
   </ul>
   <button class="main" id="bRulesOk">Avanti</button>
 </div></div>
@@ -93,6 +95,11 @@ button.aim{border-color:var(--lamp);color:var(--lamp)}
     <button id="bLong"><b>Il giro largo</b>In piano, intorno alla cascina: passi accanto al cimitero e al campo da calcio.</button>
     <button id="bShort"><b>La salita della chiesa</b>Più corta, ma in salita: pedali piano e la dinamo cala.</button>
   </div>
+</div></div>
+
+<div class="ov hide" id="ovMinor"><div class="box">
+  <h2 id="mT"></h2><p id="mD"></p>
+  <div class="choice"><button id="mYes"><b>Prendo la scorciatoia</b>Meno strada, ma ha un prezzo.</button><button id="mNo"><b>Resto sulla strada</b>Più lunga, ma la conosci.</button></div>
 </div></div>
 
 <div class="ov hide" id="ovEnd"><div class="box">
@@ -126,6 +133,15 @@ const NIGHTS={
   temporale:{n:'Temporale',d:'Più buche, e le vedi solo quando ci sei sopra.'},
   serena:{n:'Notte serena',d:'Vedi un tratto in più, ma i cani sono tutti fuori.'},
   fame:{n:'La masca ha fame',d:'Stanotte il pane ferma anche lei.'}};
+const MISSIONS={
+  forno:{n:'Passa dal forno',d:'Raccogli la pagnotta in paese, prima di uscire.',ok:()=>S.got.forno},
+  largo:{n:'Saluta alla Cascina Quarti',d:'Fai il giro largo, davanti alla cascina.',ok:()=>S.branch==='long'},
+  nocadute:{n:'Senza cadere',d:'Arriva al monumento senza mai cadere.',ok:()=>S.falls===0},
+  sale:{n:'Tieni il sale',d:'Arriva con almeno un sacchetto di sale.',ok:()=>S.items.sale>0},
+  guado:{n:'Il guado',d:'Prendi la scorciatoia del guado nel fosso.',ok:()=>S.took.guado}};
+const MINOR=[
+  {id:'guado',at:20,skip:5,t:'Il guado del fosso',d:'Tagli attraverso il fosso: 5 tratti in meno, ma l\'acqua gelata ti toglie 3 di fiato.'},
+  {id:'vigna',at:37,skip:3,t:'Il taglio nella vigna',d:'Passi tra i filari: 3 tratti in meno, ma il cane della cascina ti sente di sicuro.'}];
 function todayN(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,25))/864e5)+1;}
 let S, msgs=[];
 
@@ -149,9 +165,11 @@ function populate(from,to){ // pericoli per le righe [from,to)
 function newGame(daily){
   SEED=daily?todayN()*7919+17:(Date.now()%1e9);const nk=Object.keys(NIGHTS)[R(5)];
   S={night:nk,daily:!!daily,rows:prefix(),haz:[],p:{r:0,l:1},speed:0,turn:0,falls:0,stun:0,dark:0,items:{sasso:2,pane:1,sale:1},
-     masca:null,branch:null,over:false,forkAsked:false,aim:null,shrine:false,fiato:6,seen:{}};
+     masca:null,branch:null,over:false,forkAsked:false,aim:null,shrine:false,fiato:6,seen:{},got:{},took:{},pick:[],minorDone:{},mission:Object.keys(MISSIONS)[R(5)]};
   populate(0,S.rows.length);
-  msgs=[NIGHTS[S.night].n+'. '+NIGHTS[S.night].d+' Sono le 23:00. A casa ti aspettano entro le 23:45. Pedala forte e la dinamo illumina lontano, ma il fiato finisce.'];
+  for(let r=8;r<S.rows.length-2;r+=7+R(4)){if(ZONES[S.rows[r]].lit)continue;const k=['borraccia','pane','sale','sasso','borraccia'][R(5)];S.pick.push({k,r,l:R(LANES)});}
+  if(S.mission==='forno')S.pick.push({k:'forno',r:3,l:R(LANES)});
+  msgs=['Missione: '+MISSIONS[S.mission].d+' '+NIGHTS[S.night].n+'. '+NIGHTS[S.night].d+' Sono le 23:00. A casa ti aspettano entro le 23:45. Pedala forte e la dinamo illumina lontano, ma il fiato finisce.'];
   render();
 }
 
@@ -190,6 +208,8 @@ function move(tg){
     if(b)msgs.push('Prendi una buca piano: la bici sobbalza, ma tieni.');
     const f=hazAt(r,l,'fatuo');
     if(f){S.dark=2;S.haz.splice(S.haz.indexOf(f),1);msgs.push('Passi dentro un fuoco fatuo. La dinamo si spegne.');}
+    const pk=S.pick.find(q=>q.r===r&&q.l===l);
+    if(pk){S.pick.splice(S.pick.indexOf(pk),1);if(pk.k==='forno'){S.got.forno=true;S.items.pane++;msgs.push('Prendi la pagnotta dal forno: ancora calda.');}else if(pk.k==='borraccia'){S.fiato=Math.min(6,S.fiato+3);msgs.push('Una borraccia sul ciglio: riprendi fiato.');}else{S.items[pk.k]++;msgs.push({pane:'Un pezzo di pane in un sacchetto.',sale:'Un sacchetto di sale lasciato su un paracarro.',sasso:'Raccogli un sasso dalla strada.'}[pk.k]);}}
     const c=S.haz.find(h=>h.t==='cane'&&!h.fed&&h.r===r&&h.l===l);
     if(c){S.falls++;S.stun=1;S.speed=0;S.haz.splice(S.haz.indexOf(c),1);msgs.push('Il cane ti salta addosso. Cadi, poi scappa nei campi.');break;}
     if(r>=S.rows.length-1)break;
@@ -228,6 +248,7 @@ function endTurn(stood){
     else if(S.masca.stop>0)S.masca.stop--;
     else{S.masca.r+=(S.night==='luna'&&S.speed<=1)?3:2;if(S.masca.r>=S.p.r){return lose('La masca ti ha preso.');}}
   }
+  for(const m of MINOR){if(!S.minorDone[m.id]&&!S.branch&&S.p.r>=m.at-1&&S.p.r<m.at+2){S.minorDone[m.id]=true;S.pendingMinor=m;render();showMinor(m);return;}}
   // bivio
   if(!S.branch&&S.p.r>=S.rows.length-1&&zone(S.p.r)==='quarti'){render();document.getElementById('ovFork').classList.remove('hide');return;}
   if(S.branch&&S.p.r>=S.rows.length-1)return win();
@@ -241,6 +262,24 @@ function hints(){
   if(S.haz.some(h=>h.t==='fatuo'&&h.r>S.p.r&&h.r<=S.p.r+6))H('fatuo','Quella luce azzurra è un fuoco fatuo: non passarci in mezzo, ti spegne la dinamo.');
   if(S.masca)H('masca','La masca ti segue. Se vai piano o ti fermi, ti raggiunge. Il sale la ferma.');
   if(S.fiato<=2&&S.fiato>0)H('fiato','Il fiato cala. Un tratto piano lo recupera, fermarsi di più.');
+}
+function showMinor(m){
+  document.getElementById('mT').textContent=m.t;document.getElementById('mD').textContent=m.d;
+  document.getElementById('ovMinor').classList.remove('hide');
+}
+function takeMinor(yes){
+  document.getElementById('ovMinor').classList.add('hide');
+  const m=S.pendingMinor;S.pendingMinor=null;msgs=[];
+  if(yes){
+    const from=S.p.r+1,to=from+m.skip;
+    S.rows.splice(from,m.skip);
+    S.haz=S.haz.filter(h=>h.r<from||h.r>=to).map(h=>{if(h.r>=to)h.r-=m.skip;return h;});
+    S.pick=S.pick.filter(q=>q.r<from||q.r>=to).map(q=>{if(q.r>=to)q.r-=m.skip;return q;});
+    S.took[m.id]=true;
+    if(m.id==='guado'){S.fiato=Math.max(0,S.fiato-3);msgs.push('Sei nel fosso fino alle caviglie. Esci gelato, senza fiato.');}
+    if(m.id==='vigna'){S.haz.push({t:'cane',r:S.p.r+2,l:S.p.l,fed:false});msgs.push('Tra i filari un cane abbaia: ti ha sentito.');}
+  } else msgs.push('Resti sulla strada.');
+  hints();render();
 }
 function choose(kind){
   document.getElementById('ovFork').classList.add('hide');
@@ -273,10 +312,10 @@ function clockStr(){const m=23*60+S.turn;return String(Math.floor(m/60)%24).padS
 function lose(t){S.over=true;render();end(false,t);}
 function win(){S.over=true;render();end(true);}
 function end(ok,why){
-  const late=S.turn>45; const st=ok?(late?0:1)+(S.falls<=1?1:0)+(S.turn<=38?1:0):0;
+  const late=S.turn>45; const mis=ok&&MISSIONS[S.mission].ok(); const st=ok?(late?0:1)+(S.falls<=1?1:0)+(S.turn<=38?1:0)+(mis?1:0):0;
   document.getElementById('endT').textContent=ok?(S.turn>45?'Arrivi, ma in ritardo':'A casa in tempo'):'Non sei arrivato';
-  document.getElementById('endS').textContent=ok?'★'.repeat(st)+'☆'.repeat(3-st):'';
-  document.getElementById('endP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+NIGHTS[S.night].n+'. '+(ok
+  document.getElementById('endS').textContent=ok?'★'.repeat(st)+'☆'.repeat(4-st):'';
+  document.getElementById('endP').textContent=(S.daily?`Sfida n° ${todayN()} · `:'')+NIGHTS[S.night].n+'. Missione «'+MISSIONS[S.mission].n+'»: '+(ok&&MISSIONS[S.mission].ok()?'compiuta. ':'non compiuta. ')+(ok
     ?`Arrivi in fondo a via Marconi alle ${clockStr()}. ${S.branch==='long'?'Hai fatto il giro largo.':'Hai preso la salita.'} Cadute: ${S.falls}. Ti restano ${S.items.sasso} sassi, ${S.items.pane} pane, ${S.items.sale} sale.`
     :`${why} Eri a ${Math.round((S.rows.length-1-S.p.r)*0.1*10)/10} km dall'arrivo, alle ${clockStr()}.`);
   setTimeout(()=>document.getElementById('ovEnd').classList.remove('hide'),400);
@@ -288,6 +327,7 @@ function render(){
   document.getElementById('scene').style.backgroundImage=`url(${ART[z]})`;
   document.getElementById('zoneName').textContent=Z.n;
   document.getElementById('zoneSub').textContent=Z.s;
+  document.getElementById('mission').textContent='Missione: '+MISSIONS[S.mission].n+(MISSIONS[S.mission].ok()&&S.mission!=='nocadute'&&S.mission!=='sale'?' ✓':'');
   document.getElementById('goalTxt').textContent='Entro le 23:45 · '+NIGHTS[S.night].n;
   const ck=document.getElementById('clock');ck.textContent=clockStr();ck.classList.toggle('late',S.turn>=38);
   document.getElementById('fiato').innerHTML=Array.from({length:6},(_,i)=>`<b class="${i<S.fiato?(S.fiato<=2?'low':'on'):''}"></b>`).join('');
@@ -326,6 +366,8 @@ function render(){
     if(h.t==='buca'&&!(S.night==='temporale'&&h.r>S.p.r+1))s+=`<image href="art/s_buca.webp" x="${cx-26}" y="${cy-22}" width="52" height="44" preserveAspectRatio="xMidYMid slice"/>`;
     if(h.t==='cane')s+=`<circle cx="${cx}" cy="${cy}" r="24" fill="${h.fed?'#2a2a2a':'#3a0806'}" stroke="${h.fed?'#555':'#ff3b2f'}" stroke-width="3"/><g transform="rotate(180 ${cx} ${cy})" opacity="${h.fed?.5:1}"><image href="art/s_cane.png" x="${cx-24}" y="${cy-24}" width="48" height="48"/></g>`;
   }
+  for(const q of S.pick){if(q.r<top-rows||q.r>top||!litRow(q.r))continue;const cx=X(q.l)+LW/2,cy=Y(q.r)+RH/2;const img={forno:'i_pane.png',pane:'i_pane.png',sale:'i_sale.png',sasso:'i_sasso.png',borraccia:null}[q.k];
+    s+=`<circle cx="${cx}" cy="${cy}" r="19" fill="#5a4a1c" stroke="#f0c75a" stroke-width="2.5"/>`+(img?`<image href="art/${img}" x="${cx-15}" y="${cy-15}" width="30" height="30"/>`:`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="16" fill="#cfe8ff">💧︎</text>`);}
   // masca
   if(S.masca&&S.masca.r>=top-rows){const y=Y(Math.max(S.masca.r,top-rows+1));
     s+=`<ellipse cx="${W/2}" cy="${y+RH/2}" rx="${W/2}" ry="${RH*0.9}" fill="url(#gr)"/><text x="${W/2}" y="${y+RH/2+6}" text-anchor="middle" font-size="12" fill="#ffb4a8" letter-spacing="2" dx="70">LA MASCA${S.masca.stop?' · ferma':''}</text><image href="art/s_masca.png" x="${W/2-26}" y="${y-6}" width="52" height="52"/>`;}
@@ -353,12 +395,14 @@ const startFrom=(d)=>{newGame(d);document.getElementById('ovCover').classList.ad
 document.getElementById('bCover').onclick=()=>startFrom(true);
 document.getElementById('bRandom').onclick=()=>startFrom(false);
 document.getElementById('bRulesOk').onclick=()=>document.getElementById('ovRules').classList.add('hide');
+document.getElementById('mYes').onclick=()=>takeMinor(true);
+document.getElementById('mNo').onclick=()=>takeMinor(false);
 document.getElementById('bLong').onclick=()=>choose('long');
 document.getElementById('bShort').onclick=()=>choose('short');
 document.getElementById('bAgain').onclick=()=>{document.getElementById('ovEnd').classList.add('hide');newGame(false);};
 document.getElementById('coverImg').style.backgroundImage='url(art/cover.webp)';
-newGame(true);document.getElementById('nightTxt').innerHTML=`Sfida n° ${todayN()} · stanotte: <b>${NIGHTS[S.night].n}</b>. ${NIGHTS[S.night].d}`;
-window._S=()=>S;window._move=move;window._targets=targets;window._choose=choose;window._wait=wait;window._use=useItem;
+newGame(true);document.getElementById('nightTxt').innerHTML=`Sfida n° ${todayN()} · stanotte: <b>${NIGHTS[S.night].n}</b>. ${NIGHTS[S.night].d}<br>Missione: <b>${MISSIONS[S.mission].n}</b>. ${MISSIONS[S.mission].d}`;
+window._S=()=>S;window._minor=takeMinor;window._move=move;window._targets=targets;window._choose=choose;window._wait=wait;window._use=useItem;
 </script>
 </body>
 </html>
