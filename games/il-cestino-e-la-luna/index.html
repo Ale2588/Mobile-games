@@ -39,12 +39,14 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
 .score{font:500 44px Georgia,serif;color:var(--lamp)}
 .fr{display:flex;gap:10px;align-items:center;padding:6px 10px;margin-bottom:6px;border-radius:10px;background:#1a1f28}.fr img{width:44px;height:44px}.fr b{display:block}.fr span{font-size:13px;color:#9aa3b2}
 .ch2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.ch2>div{padding:10px;border-radius:12px;border:1.5px solid #353e4d;font-size:13px;color:#c9c4b8;line-height:1.4}.ch2 b{display:block;color:#e6e2d8;font-size:14px;margin-bottom:3px}
+#mis{margin:6px 10px 0;padding:7px 10px;border-radius:10px;background:#221d10;border:1.5px solid #f3c76a;color:#ffe2a0;font-size:13px;line-height:1.35}#mis b{color:#f3c76a}
 .hide{display:none!important}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="top"><div><span id="phase"></span><b id="place">Torre Mondovì</b></div><div style="text-align:right;position:relative;padding-top:34px"><div id="clock">16:00</div><button id="bRules" style="position:absolute;right:0;top:-2px;min-height:30px;width:30px;padding:0;border-radius:99px;background:rgba(7,8,11,.55);font-size:13px">?</button><div style="font-size:12px;color:var(--t2)" id="wx"></div></div></div>
+  <div id="mis"></div>
   <div id="stats"><span>Cestino <b id="sBasket">0/8</b></span><span>Funghi <b id="sPts">0</b></span><span>Foto <b id="sPh">0</b></span><span>Con te <b id="sFr">0/3</b></span></div>
   <div id="board"></div>
   <div id="msg"></div>
@@ -71,6 +73,7 @@ button:disabled{opacity:.3}button.ready{border-color:var(--lamp);color:var(--lam
     <li>Alle <b>19:00 sorge la luna</b> ed escono i lupi mannari. Li senti ululare, vedi i loro occhi solo da vicino. Seguono il rumore e l'odore del cestino: più è pieno, più da lontano ti fiutano.</li>
     <li><b>Pinin, Teresa e Gigi</b> girano per conto loro. Di giorno ti mandano via dai loro posti. Dopo le 19:00 sono persi nel buio: li senti chiamare e vedi la loro pila a due caselle di distanza. <b>Passaci accanto</b> e ti seguono. Ognuno che riporti in paese vale <b>5 punti</b>, ma i lupi fiutano anche loro, e se ne prendono uno si fermano a mangiarlo.</li>
     <li><b>Le cappelle</b> (San Gottardo, Sant'Elena, San Bernardo, San Giorgio) e il borgo di <b>Roatta</b> sono rifugi: i lupi non entrano. Dalla <b>Panchina Gigante</b> vedi lontano, anche i lupi. La lanterna della <b>Madonna del Pilone</b> fa luce di notte.</li>
+    <li><b>Le missioni</b> arrivano una alla volta, in alto: raccogli, fotografa, raggiungi, consegna. La <b>stella dorata</b> sul bordo ti indica dove andare. Valgono punti solo se torni in paese.</li>
     <li><b>Butta un fungo</b> per sviarli: si fermano a mangiarlo. Perdi i suoi punti.</li>
     <li>Conta solo ciò che riporti in paese. Se un lupo ti prende, perdi il cestino e tieni solo le foto. Non c'è un orario limite, ma più la notte avanza più lupi escono dal bosco. Rientro prima del tramonto: +3; prima della luna: +1. I porcini più belli sono nel bosco fondo, lontano dal paese.</li>
   </ul>
@@ -137,6 +140,37 @@ const open=(c,r)=>inG(c,r)&&!MAP.block[key(c,r)];
 function genTrail(){return MAP.trail;}
 const fromHome=(c,r)=>Math.min(...Object.keys(VIL).map(k=>{const [a,b]=k.split(',').map(Number);return dist(a,b,c,r);}));
 function bfsFrom(tc,tr,avoid){const d={};const q=[[tc,tr]];d[key(tc,tr)]=0;while(q.length){const [c,r]=q.shift();const dd=d[key(c,r)];for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++){const nc=c+dc,nr=r+dr,k=key(nc,nr);if(!open(nc,nr)||k in d||(avoid&&avoid(nc,nr)))continue;d[k]=dd+1;q.push([nc,nr]);}}return d;}
+const lmPos=n=>{const k=Object.keys(FIXED_LM).find(k=>FIXED_LM[k]===n);const [c,r]=k.split(',').map(Number);return{c,r};};
+const CHAP=['santuario','cappella_bosco','cappella_colle','sangiorgio','frazione'];
+function buildMissions(){
+  const an=rnd()<.5?['cinghiale','capriolo']:['capriolo','cinghiale'];
+  const places=['panchina','pilone','santuario','cappella_bosco','cappella_colle','sangiorgio'].sort(()=>rnd()-.5);
+  const deliver=CHAP.filter(c=>c!==places[0]).sort(()=>rnd()-.5)[0];
+  return [
+    {t:'funghi',n:3,pts:2,txt:'Riempi un po\' il cestino: raccogli 3 funghi.'},
+    {t:'foto',k:an[0],pts:4,txt:`Fotografa un ${an[0]}. Le tracce portano ${'{dir}'}.`},
+    {t:'luogo',lm:places[0],pts:3,txt:`Raggiungi ${LM[places[0]].n}.`},
+    {t:'consegna',lm:deliver,pts:6,txt:`Il parroco vuole un porcino: portane uno a ${LM[deliver].n}.`},
+    {t:'foto',k:an[1],pts:4,txt:`Fotografa un ${an[1]}. Le tracce portano ${'{dir}'}.`},
+    {t:'foto',k:'gufo',pts:6,txt:'Dopo il tramonto: fotografa un gufo. Lo senti ${dir}.',night:1}];}
+function curM(){return S.mq&&S.mq[S.mi];}
+function mTarget(){const m=curM();if(!m)return null;
+  if(m.t==='luogo'||m.t==='consegna')return lmPos(m.lm);
+  if(m.t==='foto'){const a=S.ani.filter(a=>a.k===m.k).sort((a,b)=>dist(a.c,a.r,S.p.c,S.p.r)-dist(b.c,b.r,S.p.c,S.p.r))[0];return a?{c:a.c,r:a.r}:null;}
+  return null;}
+function mText(){const m=curM();if(!m)return'';if(m.night&&phase()==='giorno')return 'Aspetta il tramonto: poi ci sarà da fotografare un gufo.';const t=mTarget();return m.txt.replace('${dir}',t?dirTo(t.c,t.r).replace('da ','verso '):'qui intorno').replace('{dir}',t?dirTo(t.c,t.r).replace('da ','verso '):'qui intorno');}
+function checkMission(){let m=curM();let guard=0;
+  while(m&&guard++<6){
+    if(m.t==='foto'&&!S.ani.some(a=>a.k===m.k)&&!(m.k==='gufo'&&phase()==='giorno')&&!S.photos.some(p=>p.k===m.k&&p.after>=S.mstart)){msgs.push('Gli animali da fotografare sono spariti. Missione saltata.');nextM();m=curM();continue;}
+    let ok=false;
+    if(m.t==='funghi')ok=S.basket.length>=m.base+m.n;
+    if(m.t==='foto')ok=S.photos.some(p=>p.k===m.k&&p.after>=S.mstart);
+    if(m.t==='luogo'){const q=lmPos(m.lm);ok=S.p.c===q.c&&S.p.r===q.r;}
+    if(m.t==='consegna'){const q=lmPos(m.lm);if(S.p.c===q.c&&S.p.r===q.r){const i=S.basket.findIndex(x=>x.k==='porcino');if(i>=0){S.basket.splice(i,1);ok=true;}else if(!S.seenHint['np'+S.mi]){S.seenHint['np'+S.mi]=1;msgs.push('Il parroco ti guarda il cestino: «Senza porcino non se ne parla.»');}}}
+    if(!ok)break;
+    S.mpts+=m.pts;S.mdone++;msgs.push(`✓ Missione compiuta: +${m.pts}.`);nextM();m=curM();}
+  }
+function nextM(){S.mi++;S.mstart=S.turn;const m=curM();if(m){if(m.t==='funghi')m.base=S.basket.length;msgs.push('Nuova missione: '+mText());}}
 function newGame(daily,seed){
   if(!MAP)MAP=buildMap();
   SEED=seed!=null?seed:(daily?todayN()*104729+3:(Date.now()%1e9));LAST=SEED;
@@ -153,8 +187,9 @@ function newGame(daily,seed){
   for(const k of ['capriolo','capriolo','capriolo','capriolo','capriolo','cinghiale','cinghiale','cinghiale','cinghiale','cinghiale']){if(!spots.length)break;const i=R(spots.length);const [c,r]=spots.splice(i,1)[0];S.ani.push({k,c,r});}
   {const used=[];FR.forEach((f,i)=>{let c,r,t=0;do{c=R(GW);r=R(GH);t++;}while(t<300&&(!open(c,r)||fromHome(c,r)<6||S.lm[key(c,r)]||used.some(([a,b])=>dist(a,b,c,r)<6)));used.push([c,r]);S.friends.push({i,c,r,st:'lost'});});}
   for(const k of Object.keys(VIL)){const [vc,vr]=k.split(',').map(Number);for(let dc=-1;dc<=1;dc++)for(let dr=-1;dr<=1;dr++)if(inG(vc+dc,vr+dr))S.known.add(key(vc+dc,vr+dr));}
+  S.mq=buildMissions();S.mi=0;S.mstart=0;S.mpts=0;S.mdone=0;S.mq[0].base=0;
   reveal();
-  msgs=['Vi dividete in piazza: Pinin, Teresa e Gigi spariscono tra gli alberi. «Ci vediamo qui prima che faccia buio!» '+WX[wx].n+'. '+WX[wx].d];
+  msgs=['Prima missione: '+S.mq[0].txt+' Vi dividete in piazza: Pinin, Teresa e Gigi spariscono tra gli alberi. «Ci vediamo qui prima che faccia buio!» '+WX[wx].n+'. '+WX[wx].d];
   render();
 }
 function moonTurn(){return S.wx==='luna'?TURN_MOON-4:TURN_MOON;}
@@ -198,7 +233,7 @@ function takeDub(yes){
 }
 function shoot(){
   if(S.over||S.pending)return;const a=photoTarget();if(!a)return;msgs=[];
-  S.photos.push({id:a,k:a.k});msgs.push('Clic. '+ANI[a.k].n[0].toUpperCase()+ANI[a.k].n.slice(1)+' nella foto: '+ANI[a.k].p+' punti.');
+  S.photos.push({id:a,k:a.k,after:S.turn});msgs.push('Clic. '+ANI[a.k].n[0].toUpperCase()+ANI[a.k].n.slice(1)+' nella foto: '+ANI[a.k].p+' punti.');
   S.ani.splice(S.ani.indexOf(a),1);S.noise=false;endTurn();
 }
 function bait(){
@@ -263,6 +298,7 @@ function endTurn(){
   if(S.wolves.length&&S.turn>moonTurn()&&(S.turn-moonTurn())%8===0&&S.wolves.length<6){
     const sp=[];for(let r=0;r<GH;r++)for(let c=0;c<GW;c++)if(open(c,r)&&dist(c,r,S.p.c,S.p.r)>=6&&(r===0||r===GH-1||c===0||c===GW-1)&&!isV(c,r)&&!LM[S.lm[key(c,r)]]?.chap)sp.push([c,r]);
     if(sp.length){const [c,r]=sp[R(sp.length)];S.wolves.push({c,r,eat:0});msgs.push('Un altro ululato si unisce al primo. Sono '+S.wolves.length+'.');}}
+  checkMission();
   if(S.left&&isV(S.p.c,S.p.r)){S.friends.forEach(f=>{if(f.st==='follow')f.st='safe';});S.over=true;render();return end(true);}
   render();
 }
@@ -277,13 +313,13 @@ function end(ok,why){
   const sc=score(),ph=S.photos.reduce((a,p)=>a+ANI[p.k].p,0);
   let bonus=0;if(ok){if(S.turn<=TURN_SUNSET)bonus=3;else if(S.turn<=moonTurn())bonus=1;}
   const saved=S.friends.filter(f=>f.st==='safe');const fp=saved.length*5;
-  const tot=ok?sc.p+ph+bonus+fp:ph;
+  const tot=ok?sc.p+ph+bonus+fp+S.mpts:ph;
   const bk='tm_best';let best=0;try{best=+localStorage.getItem(bk)||0;if(tot>best)localStorage.setItem(bk,tot);}catch(_){}
   document.getElementById('eT').textContent=ok?'In paese, alle '+clock(S.turn):'Un lupo ti ha preso';
   document.getElementById('eS').textContent=tot+' punti';
   const nd=S.basket.filter(m=>m.k==='dubbio');
   let p=(S.daily?`Sfida n° ${todayN()} · `:'')+WX[S.wx].n+'. ';
-  if(ok){p+=`Funghi: ${sc.p}`+(nd.length?` (i dubbi: ${nd.map(m=>m.real==='ovolo'?'ovolo':'amanita').join(', ')}${sc.poison?' — un\'amanita ha avvelenato metà del cestino':''})`:'')+`. Foto: ${ph}. `+(bonus?`Rientro presto: +${bonus}. `:'')+(saved.length?`In salvo con te: ${saved.map(f=>FR[f.i].n).join(', ')} (+${fp}). `:'Nessuno è tornato con te. ')+(S.friends.some(f=>f.st==='gone')?`Non sono tornati: ${S.friends.filter(f=>f.st!=='safe').map(f=>FR[f.i].n).join(', ')}. `:'');}
+  if(ok){p+=`Funghi: ${sc.p}`+(nd.length?` (i dubbi: ${nd.map(m=>m.real==='ovolo'?'ovolo':'amanita').join(', ')}${sc.poison?' — un\'amanita ha avvelenato metà del cestino':''})`:'')+`. Foto: ${ph}. Missioni: ${S.mdone} (+${S.mpts}). `+(bonus?`Rientro presto: +${bonus}. `:'')+(saved.length?`In salvo con te: ${saved.map(f=>FR[f.i].n).join(', ')} (+${fp}). `:'Nessuno è tornato con te. ')+(S.friends.some(f=>f.st==='gone')?`Non sono tornati: ${S.friends.filter(f=>f.st!=='safe').map(f=>FR[f.i].n).join(', ')}. `:'');}
   else p+=(why||'Un lupo ti è addosso. Lasci cadere il cestino e scappi.')+` Ti restano le foto: ${ph} punti. `;
   p+=`Record: ${Math.max(best,tot)}.`;
   document.getElementById('eP').textContent=p;
@@ -297,6 +333,7 @@ function render(){
   {const L=S.lm[key(S.p.c,S.p.r)];let img,nm;
     const V=VIL[key(S.p.c,S.p.r)],h=fromHome(S.p.c,S.p.r);if(V){img=V;nm=S.p.c>=2&&S.p.r===4?'Piazza':'Torre Mondovì';}else if(L){img={rerum:'case',borbera:'strada'}[L]||L;nm=LM[L].n;}else if(h<=2){img='castagni_paese';nm='I castagni sotto il paese';}else if(S.p.r<=3){img='bosco_alto';nm='Il bosco a nord';}else if(S.p.r>=19){img='bosco_alto';nm='Il bosco a sud';}else if(S.p.c>=15){img='bosco_alto';nm='Il bosco a est';}else if(S.p.c<=4){img='castagneto';nm='Il bosco a ovest';}else{img='castagneto';nm='Verso Via Ascheri';}
     const t=document.getElementById('top');if(t.dataset.img!==img){t.dataset.img=img;t.style.backgroundImage=`url(art/${img}.webp)`;}document.getElementById('place').textContent=nm;}
+  {const m=curM(),el=document.getElementById('mis');el.innerHTML=m?`<b>Missione ${S.mi+1}/${S.mq.length}</b> · ${mText()} <span style="color:#c9b892">(+${m.pts})</span>`:`<b>Missioni finite</b> · ${S.mdone}/${S.mq.length} compiute. Torna in paese.`;}
   document.getElementById('phase').textContent={giorno:'Pomeriggio',tramonto:'Tramonto',notte:'Notte · la luna è alta'}[ph];
   const ck=document.getElementById('clock');ck.textContent=clock(S.turn);ck.classList.toggle('late',S.turn>=moonTurn()-2);
   document.getElementById('wx').textContent=WX[S.wx].n;
@@ -325,6 +362,10 @@ function render(){
     {let a=0;if(!isV(c,r)&&!seeNow(c,r)){a=night?(ph==='notte'?.66:.45):0;}if(a)s+=`<rect x="${X(c)}" y="${Y(r)}" width="${CS}" height="${CS}" fill="#000" opacity="${a}"/>`;}
   }
   if(night){const cx=X(S.p.c)+CS/2,cy=Y(S.p.r)+CS/2;s+=`<circle cx="${cx}" cy="${cy}" r="${CS*1.6}" fill="url(#lt)"/>`;}
+  {const m=curM(),t=mTarget();if(m&&t&&!(m.night&&phase()==='giorno')&&(m.t!=='foto'||true)){
+    if(inV(t.c,t.r)&&(m.t!=='foto'||seeNow(t.c,t.r)))s+=`<rect x="${X(t.c)+2}" y="${Y(t.r)+2}" width="${CS-4}" height="${CS-4}" rx="8" fill="none" stroke="#f3c76a" stroke-width="3"/>`;
+    else if(!inV(t.c,t.r)){const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2;let dx=X(t.c)+CS/2-px,dy=Y(t.r)+CS/2-py;const k=Math.min((W/2-18)/Math.abs(dx||1e-6),(H/2-18)/Math.abs(dy||1e-6));const ex=W/2+dx*k,ey=H/2+dy*k,ang=Math.atan2(dy,dx)*180/Math.PI;
+      s+=`<g transform="translate(${ex} ${ey}) rotate(${ang})"><path d="M16 0 L0 -11 L0 11 Z" fill="#f3c76a" stroke="#1a1408" stroke-width="1.5"/></g><text x="${ex-Math.cos(ang*Math.PI/180)*14}" y="${ey-Math.sin(ang*Math.PI/180)*14+5}" text-anchor="middle" font-size="15" font-weight="800" fill="#f3c76a" stroke="#1a1408" stroke-width="3" paint-order="stroke">★</text>`;}}}
   if(phase()==='notte')for(const f of S.friends){if(f.st!=='lost'||inV(f.c,f.r))continue;const px=X(S.p.c)+CS/2,py=Y(S.p.r)+CS/2,tx=X(f.c)+CS/2,ty=Y(f.r)+CS/2;let dx=tx-px,dy=ty-py;const k=Math.min((W/2-20)/Math.abs(dx||1e-6),(H/2-20)/Math.abs(dy||1e-6));
     const ex=W/2+dx*k,ey=H/2+dy*k,ang=Math.atan2(dy,dx)*180/Math.PI,fresh=S.turn-(f.heard??-9)<=2;
     s+=`<g opacity="${fresh?1:.55}"><g transform="translate(${ex} ${ey}) rotate(${ang})"><path d="M14 0 L2 -9 L2 9 Z" fill="${FR[f.i].c}"/></g><circle cx="${ex-Math.cos(ang*Math.PI/180)*8}" cy="${ey-Math.sin(ang*Math.PI/180)*8}" r="13" fill="#0b0d10" stroke="${FR[f.i].c}" stroke-width="2.5"/><text x="${ex-Math.cos(ang*Math.PI/180)*8}" y="${ey-Math.sin(ang*Math.PI/180)*8+5}" text-anchor="middle" font-size="13" font-weight="700" fill="${FR[f.i].c}">${FR[f.i].n[0]}</text></g>`;}
@@ -361,6 +402,7 @@ function drawMap(){const z=12;let m=`<svg viewBox="0 0 ${GW*z} ${GH*z}" style="w
   for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const k=key(c,r),kn=S.known.has(k)||isV(c,r);if(!kn){m+=`<rect x="${c*z}" y="${r*z}" width="${z}" height="${z}" fill="#050607"/>`;continue;}
     const bl=MAP.block[k];m+=`<rect x="${c*z}" y="${r*z}" width="${z}" height="${z}" fill="${bl?BLOCK[bl].c:isV(c,r)?'#8a7450':S.trail.has(k)?'#6b5a3e':'#1f3222'}"/>`;
     const L=S.lm[k];if(L&&LM[L].i)m+=`<circle cx="${c*z+z/2}" cy="${r*z+z/2}" r="4" fill="${LM[L].chap?'#f3c76a':'#cfd3da'}"/>`;}
+  {const t=mTarget(),mm=curM();if(t&&mm&&!(mm.night&&phase()==='giorno'))m+=`<text x="${t.c*z+z/2}" y="${t.r*z+z/2+5}" text-anchor="middle" font-size="14" fill="#f3c76a" stroke="#1a1408" stroke-width="2" paint-order="stroke">★</text>`;}
   m+=`<rect x=".5" y=".5" width="${GW*z-1}" height="${GH*z-1}" fill="none" stroke="#353e4d"/><text x="${7.5*z}" y="${4*z-3}" text-anchor="middle" font-size="9" fill="#ffe2a0">paese</text>`;
   m+=`<circle cx="${S.p.c*z+z/2}" cy="${S.p.r*z+z/2}" r="5" fill="#8cc4ff" stroke="#fff" stroke-width="1.5"/></svg>`;document.getElementById('mapBox').innerHTML=m;}
 
