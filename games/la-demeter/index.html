@@ -27,7 +27,7 @@ html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system
 #board svg{height:100%;width:100%;display:block}
 #board svg *{pointer-events:none}#board svg .room{pointer-events:all;cursor:pointer}
 #storm{margin:2px 10px 0;padding:8px 10px;border-radius:10px;background:#221d10;border:1.5px solid #f3c76a;color:#ffe2a0;font-size:14px;text-align:center}#storm.urg{background:#3a0f0b;border-color:#ff5a4e;color:#ffd0c8;animation:pulse 1s infinite alternate}#storm.ok{background:#0f2a1c;border-color:#7fd0a0;color:#cfeedd}@keyframes pulse{to{opacity:.65}}
-#tasks{display:flex;gap:6px;padding:2px 10px 4px;overflow-x:auto}#tasks .tk{display:flex;align-items:center;gap:4px;background:#1a1408;border:1.5px solid #f3c76a;border-radius:8px;padding:2px 7px 2px 3px;font-size:11px;color:#ffe2a0;white-space:nowrap}#tasks .tk img{width:22px;height:22px}#tasks .tk.done{border-color:#3a4a3a;color:#7fd0a0;opacity:.6;text-decoration:line-through}
+#tasks{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 4px}#tasks .tk.done span{display:none}#tasks .tk{display:flex;align-items:center;gap:4px;background:#1a1408;border:1.5px solid #f3c76a;border-radius:8px;padding:2px 7px 2px 3px;font-size:11px;color:#ffe2a0;white-space:nowrap}#tasks .tk img{width:22px;height:22px}#tasks .tk.done{border-color:#3a4a3a;color:#7fd0a0;opacity:.6;text-decoration:line-through}
 .evc{display:flex;gap:12px;align-items:center;margin-top:10px;padding:12px;border-radius:14px;background:#1a1f28;border:1px solid #353e4d}.evc img{width:54px;height:54px}.evc b{display:block;font:500 20px Georgia,serif;color:#e6e2d8}.evc span{font-size:14px;color:#9aa3b2;line-height:1.4}
 .tl{display:flex;gap:10px;align-items:center;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#1a1408;border:1.5px solid #f3c76a}.tl img{width:36px;height:36px}.tl b{display:block;color:#ffe2a0}.tl span{font-size:13px;color:#c9b892}
 #msg{min-height:40px;padding:4px 14px;text-align:center;font-size:13px;font-style:italic;line-height:1.35}
@@ -362,7 +362,7 @@ function render(){
   s+='</svg>';
   const b=document.getElementById('board');b.innerHTML=s;
   b.querySelectorAll('.room').forEach(el=>el.addEventListener('click',()=>act('move',el.dataset.r)));
-  document.getElementById('tasks').innerHTML=(S.night&&!S.over&&!S.storm?S.tasks:[]).map(t=>`<span class="tk ${t.done?'done':''}"><img src="art/i_${TICON[t.k]}.png" alt="">${(x=>x[0].toUpperCase()+x.slice(1))(TASKS[t.k].n.replace(/^(Una |Il |La |L'|Le )/,''))}${!t.done&&t.prog?` ${t.prog}/${need(t)}`:''}</span>`).join('');
+  document.getElementById('tasks').innerHTML=(S.night&&!S.over&&!S.storm?S.tasks:[]).map(t=>`<span class="tk ${t.done?'done':''}"><img src="art/i_${TICON[t.k]}.png" alt=""><span>${(x=>x[0].toUpperCase()+x.slice(1))(TASKS[t.k].n.replace(/^(Una |Il |La |L'|Le )/,''))}${!t.done&&t.prog?` ${t.prog}/${need(t)}`:''}</span>${t.done?'✓':''}</span>`).join('');
   document.getElementById('msg').textContent=msgs.join(' ');
   {const bn=document.getElementById('storm');if(S.storm&&!S.over){const left=TURNS-S.turn+1,ok=S.p==='timone';bn.className=ok?'ok':(left<=3?'urg':'');bn.innerHTML=ok?`🧭 Sei al timone. Resisti fino all'alba: ${left} ${left===1?'turno':'turni'}.`:`🧭 All'alba devi essere al <b>TIMONE</b>. Mancano ${left} ${left===1?'turno':'turni'}.`;bn.classList.remove('hide');}else bn.classList.add('hide');}
   const night=S.night&&!S.over;
